@@ -3,6 +3,7 @@ import NavigationBar from "@/components/NavigationBar";
 import { useState } from "react";
 import { Gift, Flame, Utensils, Trophy, Award } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 export default function RewardsPage() {
   const [activeTab, setActiveTab] = useState<"rewards" | "history">("rewards");
@@ -54,6 +55,10 @@ export default function RewardsPage() {
   ];
 
   const totalPoints = 450;
+
+  const handleRedeem = (rewardName: string, pointsCost: number) => {
+    toast.success(`Redeemed ${rewardName} for ${pointsCost} points! 🎉`);
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20 px-4">
@@ -125,7 +130,10 @@ export default function RewardsPage() {
                     <div className="mt-3 flex items-center justify-between">
                       <span className="text-[#aaf163] font-semibold">{reward.pointsCost} points</span>
                       {canAfford && (
-                        <button className="px-4 py-2 bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] text-white rounded-full text-sm font-semibold">
+                        <button 
+                          onClick={() => handleRedeem(reward.name, reward.pointsCost)}
+                          className="px-4 py-2 bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] text-white rounded-full text-sm font-semibold hover:scale-105 transition-transform"
+                        >
                           Redeem
                         </button>
                       )}

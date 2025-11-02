@@ -4,8 +4,11 @@ import { useState } from "react";
 import { BarChart3, CheckCircle, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/contexts/AuthContext";
+import { motion } from "framer-motion";
 
 export default function Home() {
+  const { user } = useAuth();
   const [activeView, setActiveView] = useState<"weekly" | "quarterly">("quarterly");
 
   return (
@@ -157,13 +160,17 @@ export default function Home() {
                 <BarChart3 className="w-5 h-5" />
                 Your Program
               </h3>
-              <button className="text-muted-foreground text-sm flex items-center gap-1">
+              <button className="text-muted-foreground text-sm flex items-center gap-1 hover:text-white transition-colors">
                 View Stats →
               </button>
             </div>
 
             {/* Post-Workout Meal Card */}
-            <div className="bg-muted rounded-2xl p-4 mb-6">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-muted rounded-2xl p-4 mb-6"
+            >
               <div className="h-1 rounded-full bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#aaf163] mb-4"></div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -178,14 +185,16 @@ export default function Home() {
                     <Flame className="w-4 h-4" />
                     320 kcal
                   </span>
-                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                  <button className="hover:rotate-180 transition-transform duration-300">
+                    <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                  </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Timeline */}
             <div className="relative">
-              <svg className="absolute left-1/2 top-0 -translate-x-1/2 w-full h-full" style={{ zIndex: 0 }}>
+              <svg className="absolute left-1/2 top-0 -translate-x-1/2 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
                 <defs>
                   <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="0%" stopColor="#7c57ff" />
@@ -203,21 +212,28 @@ export default function Home() {
 
               <div className="flex flex-col items-center gap-8 relative" style={{ zIndex: 1 }}>
                 {[12, 13, 14, 15, 16].map((day, idx) => (
-                  <Link key={day} to={day === 16 ? "/workout/16" : "#"}>
-                    <div className={`relative ${idx % 2 === 0 ? 'ml-32' : 'mr-32'}`}>
-                      <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-[#60a5fa] to-[#7c57ff] flex items-center justify-center text-white text-2xl font-bold shadow-lg ${day === 16 ? 'ring-4 ring-[#7c57ff]/50' : ''}`}>
-                        {day}
-                        <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#aaf163] flex items-center justify-center">
-                          <CheckCircle2 className="w-5 h-5 text-background" />
+                  <motion.div
+                    key={day}
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: idx * 0.1 }}
+                  >
+                    <Link to={day === 16 ? "/workout/16" : "#"}>
+                      <div className={`relative ${idx % 2 === 0 ? 'ml-32' : 'mr-32'}`}>
+                        <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-[#60a5fa] to-[#7c57ff] flex items-center justify-center text-white text-2xl font-bold shadow-lg hover:scale-110 transition-transform ${day === 16 ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
+                          {day}
+                          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#aaf163] flex items-center justify-center">
+                            <CheckCircle2 className="w-5 h-5 text-background" />
+                          </div>
                         </div>
+                        {day === 16 && (
+                          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-[#aaf163] text-background text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                            TODAY
+                          </div>
+                        )}
                       </div>
-                      {day === 16 && (
-                        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-[#aaf163] text-background text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
-                          TODAY
-                        </div>
-                      )}
-                    </div>
-                  </Link>
+                    </Link>
+                  </motion.div>
                 ))}
               </div>
             </div>

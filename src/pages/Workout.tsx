@@ -2,6 +2,8 @@ import NavigationBar from "@/components/NavigationBar";
 import { useState } from "react";
 import { Users, Clock, Target, Eye, Play, X, ChevronDown } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 export default function WorkoutPage() {
   const [showDetails, setShowDetails] = useState(false);
@@ -44,6 +46,14 @@ export default function WorkoutPage() {
         difficulty: "Intermediate",
       },
     ],
+  };
+
+  const handleStartWorkout = () => {
+    toast.success("Workout started! Good luck! 💪");
+  };
+
+  const handleViewDetails = (exerciseName: string) => {
+    toast.info(`Viewing details for ${exerciseName}`);
   };
 
   return (
@@ -92,13 +102,16 @@ export default function WorkoutPage() {
           </div>
 
           <div className="flex gap-3">
-            <button className="flex-1 bg-white text-[#7c57ff] py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:bg-white/90 transition-all">
+            <button 
+              onClick={handleStartWorkout}
+              className="flex-1 bg-white text-[#7c57ff] py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:bg-white/90 transition-all hover:scale-105"
+            >
               <Play className="w-5 h-5 fill-current" />
               Start Workout
             </button>
             <button 
               onClick={() => setShowDetails(true)}
-              className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center hover:bg-white/30 transition-all"
+              className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center hover:bg-white/30 transition-all hover:scale-105"
             >
               <Eye className="w-6 h-6 text-white" />
             </button>
@@ -108,7 +121,13 @@ export default function WorkoutPage() {
         {/* Exercise List */}
         <div className="mt-6 space-y-4">
           {workout.exercisesList.map((exercise, index) => (
-            <div key={exercise.id} className="bg-muted rounded-2xl overflow-hidden">
+            <motion.div 
+              key={exercise.id} 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-muted rounded-2xl overflow-hidden"
+            >
               <div className="bg-gradient-to-r from-muted to-muted/50 p-4">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full bg-background flex items-center justify-center text-white font-bold text-xl">
@@ -138,11 +157,14 @@ export default function WorkoutPage() {
                   </div>
                 </div>
 
-                <button className="w-full mt-4 bg-muted/50 text-muted-foreground py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-muted/70 transition-all">
+                <button 
+                  onClick={() => handleViewDetails(exercise.name)}
+                  className="w-full mt-4 bg-muted/50 text-muted-foreground py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-muted/70 transition-all hover:text-white"
+                >
                   View Details →
                 </button>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -224,16 +246,25 @@ export default function WorkoutPage() {
               </div>
             </div>
 
-            <button className="w-full bg-white text-[#7c57ff] py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg mb-3">
+            <button 
+              onClick={handleStartWorkout}
+              className="w-full bg-white text-[#7c57ff] py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg mb-3 hover:scale-105 transition-transform"
+            >
               <Play className="w-5 h-5 fill-current" />
               Start Workout
             </button>
 
             <div className="grid grid-cols-2 gap-3">
-              <button className="bg-[#2a2a2a] text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2">
+              <button 
+                onClick={() => toast.info("Customize feature coming soon!")}
+                className="bg-[#2a2a2a] text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-[#3a3a3a] transition-colors"
+              >
                 ✏️ Customize
               </button>
-              <button className="bg-[#2a2a2a] text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2">
+              <button 
+                onClick={() => toast.info("Reschedule feature coming soon!")}
+                className="bg-[#2a2a2a] text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-[#3a3a3a] transition-colors"
+              >
                 📅 Reschedule
               </button>
             </div>
