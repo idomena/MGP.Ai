@@ -1,25 +1,16 @@
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
-import { Dumbbell, Apple, Activity, MessageCircle } from "lucide-react";
+import { Dumbbell, Apple, Activity, MessageCircle, Weight, Heart, ClipboardList } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function AssistantPage() {
-  const quickPrompts = [
-    {
-      id: 1,
-      text: "How can I improve my bench press?",
-      icon: Dumbbell,
-    },
-    {
-      id: 2,
-      text: "What should I eat before a workout?",
-      icon: Apple,
-    },
-    {
-      id: 3,
-      text: "My shoulder hurts when I lift weights",
-      icon: Activity,
-    },
+  const categories = [
+    { id: 1, label: "Exercises", icon: Dumbbell },
+    { id: 2, label: "Pain", icon: Activity },
+    { id: 3, label: "Diet", icon: Apple },
+    { id: 4, label: "Mass", icon: Weight },
+    { id: 5, label: "Toning", icon: Heart },
+    { id: 6, label: "Program", icon: ClipboardList },
   ];
 
   return (
@@ -28,44 +19,45 @@ export default function AssistantPage() {
 
       <div className="mt-6">
         <h1 className="text-2xl font-bold">
-          Hello{" "}
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00c6ff] to-[#7c57ff]">
-            Champion
+          <span className="flex items-center gap-2 text-white">
+            <MessageCircle className="w-6 h-6" />
+            Hello <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00c6ff] to-[#7c57ff]">Ido Mena</span>
           </span>
         </h1>
-        <h2 className="text-2xl font-bold mt-1">How Can I Help You Today?</h2>
+        <h2 className="text-2xl font-bold mt-2 text-white">How Can I Help You Today?</h2>
       </div>
 
       {/* Main Chat Button */}
       <div className="mt-6">
         <Link to="/assistant/chat">
-          <div className="relative bg-gradient-to-r from-[#7c57ff] to-[#00c6ff] rounded-xl p-0.5 shadow-lg hover:shadow-[0_0_15px_rgba(124,87,255,0.5)] transition-all duration-300 hover:scale-[1.02] cursor-pointer">
-            <div className="bg-[#2a2a2a] rounded-[10px] p-4 flex items-center">
-              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mr-3 shadow-inner">
-                <MessageCircle className="w-6 h-6 text-[#7c57ff]" />
+          <div className="relative bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] rounded-2xl p-0.5 shadow-lg hover:shadow-[0_0_20px_rgba(124,87,255,0.5)] transition-all duration-300">
+            <div className="bg-[#2a2a2a] rounded-[15px] p-5 flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-inner">
+                <MessageCircle className="w-7 h-7 text-[#7c57ff]" />
               </div>
               <div className="flex-1">
-                <h3 className="text-white font-medium text-sm">Start a conversation</h3>
-                <p className="text-white/60 text-xs">Ask me anything about fitness</p>
+                <h3 className="text-white font-semibold text-base">Start a conversation</h3>
+                <p className="text-white/60 text-sm">Ask me anything about fitness</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-[#aaf163]/20 flex items-center justify-center">
+                <MessageCircle className="w-5 h-5 text-[#aaf163]" />
               </div>
             </div>
           </div>
         </Link>
       </div>
 
-      {/* Quick Prompts */}
+      {/* Categories */}
       <div className="mt-8">
-        <h3 className="text-white font-semibold mb-4">Quick Questions</h3>
-        <div className="space-y-3">
-          {quickPrompts.map((prompt) => {
-            const Icon = prompt.icon;
+        <h3 className="text-white font-semibold text-lg mb-4">Categories</h3>
+        <div className="grid grid-cols-3 gap-4">
+          {categories.map((category) => {
+            const Icon = category.icon;
             return (
-              <Link key={prompt.id} to={`/assistant/chat?prompt=${encodeURIComponent(prompt.text)}`}>
-                <div className="bg-[#3f3f3f] rounded-xl p-4 flex items-center hover:bg-[#4a4a4a] transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] flex items-center justify-center mr-3">
-                    <Icon className="w-5 h-5 text-white" />
-                  </div>
-                  <p className="text-white text-sm flex-1">{prompt.text}</p>
+              <Link key={category.id} to={`/assistant/chat?category=${encodeURIComponent(category.label)}`}>
+                <div className="bg-muted rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:bg-muted/80 transition-colors aspect-square">
+                  <Icon className="w-8 h-8 text-white" />
+                  <p className="text-white text-sm font-medium">{category.label}</p>
                 </div>
               </Link>
             );
