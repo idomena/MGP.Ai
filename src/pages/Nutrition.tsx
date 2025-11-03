@@ -5,18 +5,27 @@ import { useNavigate } from "react-router-dom";
 
 export default function NutritionPage() {
   const [activeTab, setActiveTab] = useState<"scan" | "history" | "insights">("scan");
+  const [isNavigating, setIsNavigating] = useState(false);
   const navigate = useNavigate();
 
-  const handleCameraClick = () => {
+  const handleCameraClick = async () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    await new Promise(resolve => setTimeout(resolve, 200));
     navigate("/ocr");
   };
 
-  const handleGalleryClick = () => {
+  const handleGalleryClick = async () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    await new Promise(resolve => setTimeout(resolve, 200));
     navigate("/ocr");
   };
 
-  const handleSearchClick = () => {
-    // Could implement search functionality here
+  const handleSearchClick = async () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    await new Promise(resolve => setTimeout(resolve, 200));
     navigate("/ocr");
   };
 
@@ -50,22 +59,34 @@ export default function NutritionPage() {
         <div className="mt-8 px-4">
           {/* Scan Options */}
           <div className="flex justify-center gap-8 mb-12">
-            <button onClick={handleCameraClick} className="flex flex-col items-center gap-2">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow">
+            <button 
+              onClick={handleCameraClick}
+              disabled={isNavigating}
+              className="flex flex-col items-center gap-2 disabled:opacity-50"
+            >
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center shadow-lg hover:shadow-xl transition-all active:scale-95">
                 <Camera className="w-8 h-8 text-white" />
               </div>
               <span className="text-[#7c57ff] text-sm font-semibold">Camera</span>
             </button>
 
-            <button onClick={handleGalleryClick} className="flex flex-col items-center gap-2">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors">
+            <button 
+              onClick={handleGalleryClick}
+              disabled={isNavigating}
+              className="flex flex-col items-center gap-2 disabled:opacity-50"
+            >
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-all active:scale-95">
                 <ImageIcon className="w-8 h-8 text-muted-foreground" />
               </div>
               <span className="text-muted-foreground text-sm font-semibold">Gallery</span>
             </button>
 
-            <button onClick={handleSearchClick} className="flex flex-col items-center gap-2">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors">
+            <button 
+              onClick={handleSearchClick}
+              disabled={isNavigating}
+              className="flex flex-col items-center gap-2 disabled:opacity-50"
+            >
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-all active:scale-95">
                 <Search className="w-8 h-8 text-muted-foreground" />
               </div>
               <span className="text-muted-foreground text-sm font-semibold">Search</span>

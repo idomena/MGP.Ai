@@ -1,16 +1,23 @@
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
 import { Dumbbell, Apple, Activity, MessageCircle, Weight, Heart, ClipboardList } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export default function AssistantPage() {
+  const navigate = useNavigate();
+
+  const handleCategoryClick = (prompt: string) => {
+    navigate(`/assistant/chat?prompt=${encodeURIComponent(prompt)}`);
+  };
+
   const categories = [
-    { id: 1, label: "Exercises", icon: Dumbbell },
-    { id: 2, label: "Pain", icon: Activity },
-    { id: 3, label: "Diet", icon: Apple },
-    { id: 4, label: "Mass", icon: Weight },
-    { id: 5, label: "Toning", icon: Heart },
-    { id: 6, label: "Program", icon: ClipboardList },
+    { id: 1, label: "Exercises", icon: Dumbbell, prompt: "Tell me about effective exercises for building strength" },
+    { id: 2, label: "Pain", icon: Activity, prompt: "I'm experiencing some workout-related pain, can you help?" },
+    { id: 3, label: "Diet", icon: Apple, prompt: "What should I eat for my fitness goals?" },
+    { id: 4, label: "Mass", icon: Weight, prompt: "How can I build muscle mass effectively?" },
+    { id: 5, label: "Toning", icon: Heart, prompt: "What's the best way to tone my body?" },
+    { id: 6, label: "Program", icon: ClipboardList, prompt: "Help me create a workout program" },
   ];
 
   return (
@@ -51,15 +58,20 @@ export default function AssistantPage() {
       <div className="mt-8">
         <h3 className="text-white font-semibold text-lg mb-4">Categories</h3>
         <div className="grid grid-cols-3 gap-4">
-          {categories.map((category) => {
+          {categories.map((category, index) => {
             const Icon = category.icon;
             return (
-              <Link key={category.id} to={`/assistant/chat?category=${encodeURIComponent(category.label)}`}>
-                <div className="bg-muted rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:bg-muted/80 transition-colors aspect-square">
-                  <Icon className="w-8 h-8 text-white" />
-                  <p className="text-white text-sm font-medium">{category.label}</p>
-                </div>
-              </Link>
+              <motion.div
+                key={category.id}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.1 }}
+                onClick={() => handleCategoryClick(category.prompt)}
+                className="bg-muted rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:bg-muted/80 transition-all cursor-pointer active:scale-95 aspect-square"
+              >
+                <Icon className="w-8 h-8 text-white" />
+                <p className="text-white text-sm font-medium">{category.label}</p>
+              </motion.div>
             );
           })}
         </div>

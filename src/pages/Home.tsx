@@ -10,6 +10,15 @@ import { motion } from "framer-motion";
 export default function Home() {
   const { user } = useAuth();
   const [activeView, setActiveView] = useState<"weekly" | "quarterly">("quarterly");
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const handleViewChange = async (view: "weekly" | "quarterly") => {
+    if (view === activeView || isTransitioning) return;
+    setIsTransitioning(true);
+    await new Promise(resolve => setTimeout(resolve, 300));
+    setActiveView(view);
+    setIsTransitioning(false);
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20 px-4">
@@ -20,14 +29,16 @@ export default function Home() {
         <div className="bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] rounded-full p-1">
           <div className="flex">
             <button
-              className={`flex-1 ${activeView === "weekly" ? "bg-background" : "bg-transparent"} text-white py-3 px-6 rounded-full text-center font-semibold transition-all duration-300`}
-              onClick={() => setActiveView("weekly")}
+              className={`flex-1 ${activeView === "weekly" ? "bg-background" : "bg-transparent"} text-white py-3 px-6 rounded-full text-center font-semibold transition-all duration-300 disabled:opacity-50`}
+              onClick={() => handleViewChange("weekly")}
+              disabled={isTransitioning}
             >
               Weekly Program
             </button>
             <button
-              className={`flex-1 ${activeView === "quarterly" ? "bg-background" : "bg-transparent"} text-white py-3 px-6 rounded-full text-center font-semibold transition-all duration-300`}
-              onClick={() => setActiveView("quarterly")}
+              className={`flex-1 ${activeView === "quarterly" ? "bg-background" : "bg-transparent"} text-white py-3 px-6 rounded-full text-center font-semibold transition-all duration-300 disabled:opacity-50`}
+              onClick={() => handleViewChange("quarterly")}
+              disabled={isTransitioning}
             >
               Quarterly Plan
             </button>

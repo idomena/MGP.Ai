@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 export default function CalendarPage() {
   const [activeView, setActiveView] = useState<"weekly" | "quarterly">("quarterly");
   const [currentMonth, setCurrentMonth] = useState("JANUARY");
+  const [selectedDate, setSelectedDate] = useState<number | null>(null);
 
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
   const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -78,10 +79,16 @@ export default function CalendarPage() {
             <div key={day} className="flex justify-center">
               <Link to={day === 16 ? "/workout/16" : "#"}>
                 <button
-                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all
-                    ${day === 16 ? "bg-[#7c57ff] scale-110 shadow-lg" : "bg-white hover:bg-gray-100"}`}
+                  onClick={() => setSelectedDate(day)}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-90
+                    ${day === 16 
+                      ? "bg-[#7c57ff] scale-110 shadow-lg ring-2 ring-[#7c57ff]/50" 
+                      : selectedDate === day
+                      ? "bg-[#4a4a4a] ring-2 ring-[#60a5fa]"
+                      : "bg-white hover:bg-gray-100"
+                    }`}
                 >
-                  <span className={day === 16 ? "text-white font-bold" : "text-gray-900"}>
+                  <span className={day === 16 || selectedDate === day ? "text-white font-bold" : "text-gray-900"}>
                     {day}
                   </span>
                 </button>
