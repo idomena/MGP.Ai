@@ -4,9 +4,11 @@ import { Users, Clock, Target, Eye, Play, X, ChevronDown } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import WorkoutSession from "@/components/WorkoutSession";
 
 export default function WorkoutPage() {
   const [showDetails, setShowDetails] = useState(false);
+  const [isWorkoutActive, setIsWorkoutActive] = useState(false);
 
   const workout = {
     id: "16",
@@ -49,7 +51,18 @@ export default function WorkoutPage() {
   };
 
   const handleStartWorkout = () => {
+    setIsWorkoutActive(true);
     toast.success("Workout started! Good luck! 💪");
+  };
+
+  const handleWorkoutComplete = () => {
+    setIsWorkoutActive(false);
+    toast.success("Workout complete! Great job! 🎉");
+  };
+
+  const handleWorkoutExit = () => {
+    setIsWorkoutActive(false);
+    toast.info("Workout paused. Come back anytime!");
   };
 
   const handleViewDetails = (exerciseName: string) => {
@@ -57,7 +70,15 @@ export default function WorkoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20 px-4">
+    <>
+      {isWorkoutActive ? (
+        <WorkoutSession
+          exercises={workout.exercisesList}
+          onComplete={handleWorkoutComplete}
+          onExit={handleWorkoutExit}
+        />
+      ) : (
+        <div className="min-h-screen bg-background pb-20 px-4">
       <div className="pt-6">
         <h1 className="text-white text-2xl font-bold text-center mb-6">
           {workout.name}
@@ -69,9 +90,6 @@ export default function WorkoutPage() {
             <div>
               <h2 className="text-white text-2xl font-bold">Today's Workout</h2>
               <p className="text-white/80 text-sm mt-1">{workout.shortName}</p>
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
-              <span className="text-white font-semibold">{workout.day}</span>
             </div>
           </div>
 
@@ -274,5 +292,7 @@ export default function WorkoutPage() {
 
       <NavigationBar />
     </div>
+      )}
+    </>
   );
 }

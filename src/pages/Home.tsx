@@ -1,16 +1,27 @@
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
 import { useState } from "react";
-import { BarChart3, CheckCircle, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, CheckCircle2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { BarChart3, CheckCircle, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, CheckCircle2, Users, Clock, Play, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 export default function Home() {
   const { user } = useAuth();
-  const [activeView, setActiveView] = useState<"weekly" | "quarterly">("quarterly");
+  const [activeView, setActiveView] = useState<"weekly" | "quarterly">("weekly");
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [showWorkoutModal, setShowWorkoutModal] = useState(false);
+
+  const workoutDetails = {
+    12: { name: "Chest & Triceps", muscles: "Chest, Triceps", time: "35 min", exercises: 5 },
+    13: { name: "Back & Biceps", muscles: "Back, Biceps", time: "40 min", exercises: 4 },
+    14: { name: "Legs", muscles: "Quads, Hamstrings", time: "45 min", exercises: 6 },
+    15: { name: "Shoulders & Core", muscles: "Shoulders, Abs", time: "30 min", exercises: 4 },
+    16: { name: "Back + Front hand", muscles: "Back, Biceps, Forearms", time: "28 min", exercises: 3 },
+  };
 
   const handleViewChange = async (view: "weekly" | "quarterly") => {
     if (view === activeView || isTransitioning) return;
@@ -18,6 +29,17 @@ export default function Home() {
     await new Promise(resolve => setTimeout(resolve, 300));
     setActiveView(view);
     setIsTransitioning(false);
+  };
+
+  const handleDayClick = (day: number) => {
+    setSelectedDay(day);
+    setShowWorkoutModal(true);
+  };
+
+  const navigate = useNavigate();
+
+  const handleStartWorkout = (day: number) => {
+    navigate(`/workout/${day}`);
   };
 
   return (
@@ -229,7 +251,7 @@ export default function Home() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: idx * 0.1 }}
                   >
-                    <Link to={day === 16 ? "/workout/16" : "#"}>
+                    <button onClick={() => handleDayClick(day)}>
                       <div className={`relative ${idx % 2 === 0 ? 'ml-32' : 'mr-32'}`}>
                         <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-[#60a5fa] to-[#7c57ff] flex items-center justify-center text-white text-2xl font-bold shadow-lg hover:scale-110 transition-transform ${day === 16 ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
                           {day}
@@ -243,7 +265,7 @@ export default function Home() {
                           </div>
                         )}
                       </div>
-                    </Link>
+                    </button>
                   </motion.div>
                 ))}
               </div>
@@ -251,6 +273,74 @@ export default function Home() {
           </div>
         </>
       )}
+
+      {/* Workout Details Modal */}
+      <Dialog open={showWorkoutModal} onOpenChange={setShowWorkoutModal}>
+        <DialogContent className="bg-gradient-to-br from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] border-none p-0 max-w-md">
+          <div className="p-6">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h2 className="text-white text-2xl font-bold">
+                  {selectedDay && workoutDetails[selectedDay as keyof typeof workoutDetails]?.name}
+                </h2>
+                <p className="text-white/80 text-sm mt-1">Day {selectedDay}</p>
+              </div>
+              <button 
+                onClick={() => setShowWorkoutModal(false)}
+                className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              <div className="bg-[#2a2a2a] rounded-xl p-4 text-center">
+                <Users className="w-5 h-5 text-[#7c57ff] mx-auto mb-2" />
+                <p className="text-muted-foreground text-xs mb-1">Exercises</p>
+                <p className="text-white font-bold">
+                  {selectedDay && workoutDetails[selectedDay as keyof typeof workoutDetails]?.exercises}
+                </p>
+              </div>
+              <div className="bg-[#2a2a2a] rounded-xl p-4 text-center">
+                <Clock className="w-5 h-5 text-[#60a5fa] mx-auto mb-2" />
+                <p className="text-muted-foreground text-xs mb-1">Duration</p>
+                <p className="text-white font-bold">
+                  {selectedDay && workoutDetails[selectedDay as keyof typeof workoutDetails]?.time}
+                </p>
+              </div>
+              <div className="bg-[#2a2a2a] rounded-xl p-4 text-center">
+                <Target className="w-5 h-5 text-[#aaf163] mx-auto mb-2" />
+                <p className="text-muted-foreground text-xs mb-1">Muscles</p>
+                <p className="text-white font-bold text-xs">
+                  {selectedDay && workoutDetails[selectedDay as keyof typeof workoutDetails]?.muscles.split(',')[0]}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-[#2a2a2a] rounded-xl p-4 mb-6">
+              <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
+                <Target className="w-5 h-5 text-[#7c57ff]" />
+                Targeted Muscles
+              </h3>
+              <p className="text-muted-foreground text-sm">
+                {selectedDay && workoutDetails[selectedDay as keyof typeof workoutDetails]?.muscles}
+              </p>
+            </div>
+
+            <button 
+              onClick={() => {
+                if (selectedDay) {
+                  handleStartWorkout(selectedDay);
+                }
+              }}
+              className="w-full bg-white text-[#7c57ff] py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:scale-105 transition-transform"
+            >
+              <Play className="w-5 h-5 fill-current" />
+              Start Workout
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <NavigationBar />
     </div>
