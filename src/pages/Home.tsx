@@ -230,17 +230,61 @@ export default function Home() {
               <svg className="absolute left-1/2 top-0 -translate-x-1/2 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
                 <defs>
                   <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#7c57ff" />
-                    <stop offset="100%" stopColor="#00c6ff" />
+                    <stop offset="0%" stopColor="#7c57ff" stopOpacity="0.8" />
+                    <stop offset="50%" stopColor="#60a5fa" stopOpacity="0.9" />
+                    <stop offset="100%" stopColor="#00c6ff" stopOpacity="0.8" />
                   </linearGradient>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
                 </defs>
+                {/* Glow effect path */}
                 <path
                   d="M 200 60 Q 150 120, 200 180 Q 250 240, 200 300 Q 150 360, 200 420 Q 250 480, 200 540"
                   stroke="url(#pathGradient)"
-                  strokeWidth="3"
+                  strokeWidth="8"
                   fill="none"
-                  strokeDasharray="8 4"
+                  opacity="0.3"
+                  filter="url(#glow)"
                 />
+                {/* Main path */}
+                <path
+                  d="M 200 60 Q 150 120, 200 180 Q 250 240, 200 300 Q 150 360, 200 420 Q 250 480, 200 540"
+                  stroke="url(#pathGradient)"
+                  strokeWidth="4"
+                  fill="none"
+                  strokeLinecap="round"
+                />
+                {/* Animated dots */}
+                {[60, 180, 300, 420, 540].map((y, i) => (
+                  <circle
+                    key={i}
+                    cx="200"
+                    cy={y}
+                    r="4"
+                    fill="url(#pathGradient)"
+                    opacity="0.6"
+                  >
+                    <animate
+                      attributeName="r"
+                      values="3;6;3"
+                      dur="2s"
+                      begin={`${i * 0.4}s`}
+                      repeatCount="indefinite"
+                    />
+                    <animate
+                      attributeName="opacity"
+                      values="0.6;1;0.6"
+                      dur="2s"
+                      begin={`${i * 0.4}s`}
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                ))}
               </svg>
 
               <div className="flex flex-col items-center gap-8 relative" style={{ zIndex: 1 }}>
@@ -270,6 +314,47 @@ export default function Home() {
                 ))}
               </div>
             </div>
+
+            {/* Liquid Glass Effect Card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="mt-8 relative overflow-hidden rounded-3xl"
+            >
+              {/* Gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#7c57ff]/30 via-[#60a5fa]/20 to-[#00c6ff]/30" />
+              
+              {/* Glassmorphism layer */}
+              <div className="relative backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-white font-bold text-lg">Weekly Progress</h3>
+                    <p className="text-white/60 text-sm">Keep up the great work!</p>
+                  </div>
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#00c6ff] flex items-center justify-center">
+                    <TrendingUp className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="backdrop-blur-sm bg-white/5 rounded-xl p-3 border border-white/10">
+                    <p className="text-white/60 text-xs mb-1">Workouts</p>
+                    <p className="text-white text-xl font-bold">5/5</p>
+                  </div>
+                  <div className="backdrop-blur-sm bg-white/5 rounded-xl p-3 border border-white/10">
+                    <p className="text-white/60 text-xs mb-1">Streak</p>
+                    <p className="text-white text-xl font-bold flex items-center gap-1">
+                      12 <Flame className="w-4 h-4 text-orange-500" />
+                    </p>
+                  </div>
+                  <div className="backdrop-blur-sm bg-white/5 rounded-xl p-3 border border-white/10">
+                    <p className="text-white/60 text-xs mb-1">XP</p>
+                    <p className="text-white text-xl font-bold">2,840</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </>
       )}
