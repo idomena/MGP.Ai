@@ -227,7 +227,7 @@ export default function Home() {
 
             {/* Timeline */}
             <div className="relative py-8">
-              <svg className="absolute left-0 top-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }} viewBox="0 0 400 600" preserveAspectRatio="xMidYMid meet">
+              <svg className="absolute left-0 top-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }} viewBox="0 0 400 600" preserveAspectRatio="none">
                 <defs>
                   <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="0%" stopColor="#7c57ff" stopOpacity="0.8" />
@@ -242,9 +242,9 @@ export default function Home() {
                     </feMerge>
                   </filter>
                 </defs>
-                {/* Glow effect path - connects through circles */}
+                {/* Glow effect path - zigzag through alternating circle positions */}
                 <path
-                  d="M 280 50 Q 160 90, 280 130 Q 360 170, 280 210 Q 160 250, 280 290 Q 360 330, 280 370"
+                  d="M 280 70 Q 180 110, 120 150 Q 180 190, 280 230 Q 180 270, 120 310 Q 180 350, 280 390"
                   stroke="url(#pathGradient)"
                   strokeWidth="12"
                   fill="none"
@@ -252,9 +252,9 @@ export default function Home() {
                   filter="url(#glow)"
                   strokeLinecap="round"
                 />
-                {/* Main path - connects through circles */}
+                {/* Main path - zigzag through alternating circle positions */}
                 <path
-                  d="M 280 50 Q 160 90, 280 130 Q 360 170, 280 210 Q 160 250, 280 290 Q 360 330, 280 370"
+                  d="M 280 70 Q 180 110, 120 150 Q 180 190, 280 230 Q 180 270, 120 310 Q 180 350, 280 390"
                   stroke="url(#pathGradient)"
                   strokeWidth="5"
                   fill="none"
@@ -272,7 +272,7 @@ export default function Home() {
                   >
                     <button onClick={() => handleDayClick(day)}>
                       <div className={`relative ${idx % 2 === 0 ? 'ml-16' : 'mr-16'}`}>
-                        <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-[#60a5fa] to-[#7c57ff] flex items-center justify-center text-white text-2xl font-bold shadow-[0_0_30px_rgba(124,87,255,0.5)] hover:scale-110 transition-transform ${day === 16 ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
+                        <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-[#60a5fa] to-[#7c57ff] flex items-center justify-center text-white text-2xl font-bold shadow-[0_0_30px_rgba(124,87,255,0.5)] hover:scale-110 transition-transform border-4 border-background ${day === 16 ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
                           {day}
                           <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#aaf163] flex items-center justify-center shadow-lg">
                             <CheckCircle2 className="w-5 h-5 text-background" />
