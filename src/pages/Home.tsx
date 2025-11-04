@@ -193,17 +193,25 @@ export default function Home() {
                 <BarChart3 className="w-5 h-5" />
                 Your Program
               </h3>
-              <button className="text-muted-foreground text-sm flex items-center gap-1 hover:text-white transition-colors">
+              <button 
+                onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+                className="text-muted-foreground text-sm flex items-center gap-1 hover:text-white transition-colors hover:gap-2"
+              >
                 View Stats →
               </button>
             </div>
 
-            {/* Post-Workout Meal Card */}
+            {/* Post-Workout Meal Card with Personalized Offer */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-muted rounded-2xl p-4 mb-6"
+              className="bg-muted rounded-2xl p-4 mb-6 relative overflow-hidden"
             >
+              {/* Special Offer Badge */}
+              <div className="absolute top-3 right-3 bg-gradient-to-r from-[#aaf163] to-[#7c57ff] text-background text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse">
+                Just for you!
+              </div>
+              
               <div className="h-1 rounded-full bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#aaf163] mb-4"></div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -211,6 +219,7 @@ export default function Home() {
                   <div>
                     <h4 className="text-white font-semibold">Post-Workout Meal</h4>
                     <p className="text-muted-foreground text-sm">Perfect for your Back + Front hand</p>
+                    <span className="text-[#aaf163] text-xs font-semibold">Personalized recommendation</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -227,66 +236,72 @@ export default function Home() {
 
             {/* Timeline */}
             <div className="relative py-8">
-              <svg className="absolute left-0 top-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }} viewBox="0 0 400 600" preserveAspectRatio="none">
+              <svg className="absolute left-0 top-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }} viewBox="0 0 400 500" preserveAspectRatio="none">
                 <defs>
                   <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#7c57ff" stopOpacity="0.8" />
-                    <stop offset="50%" stopColor="#60a5fa" stopOpacity="0.9" />
-                    <stop offset="100%" stopColor="#00c6ff" stopOpacity="0.8" />
+                    <stop offset="0%" stopColor="#60a5fa" stopOpacity="1" />
+                    <stop offset="50%" stopColor="#7c57ff" stopOpacity="1" />
+                    <stop offset="100%" stopColor="#a855f7" stopOpacity="1" />
                   </linearGradient>
                   <filter id="glow">
-                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                    <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
                     <feMerge>
                       <feMergeNode in="coloredBlur"/>
                       <feMergeNode in="SourceGraphic"/>
                     </feMerge>
                   </filter>
                 </defs>
-                {/* Glow effect path - zigzag through alternating circle positions */}
+                {/* Glow background path */}
                 <path
-                  d="M 280 70 Q 180 110, 120 150 Q 180 190, 280 230 Q 180 270, 120 310 Q 180 350, 280 390"
+                  d="M 290 60 L 110 130 L 290 200 L 110 270 L 200 340"
                   stroke="url(#pathGradient)"
-                  strokeWidth="12"
+                  strokeWidth="20"
                   fill="none"
-                  opacity="0.4"
+                  opacity="0.3"
                   filter="url(#glow)"
                   strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
-                {/* Main path - zigzag through alternating circle positions */}
+                {/* Main bright path */}
                 <path
-                  d="M 280 70 Q 180 110, 120 150 Q 180 190, 280 230 Q 180 270, 120 310 Q 180 350, 280 390"
+                  d="M 290 60 L 110 130 L 290 200 L 110 270 L 200 340"
                   stroke="url(#pathGradient)"
-                  strokeWidth="5"
+                  strokeWidth="6"
                   fill="none"
                   strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               </svg>
 
-              <div className="flex flex-col items-center gap-8 relative" style={{ zIndex: 1 }}>
-                {[12, 13, 14, 15, 16].map((day, idx) => (
-                  <motion.div
-                    key={day}
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: idx * 0.1 }}
-                  >
-                    <button onClick={() => handleDayClick(day)}>
-                      <div className={`relative ${idx % 2 === 0 ? 'ml-16' : 'mr-16'}`}>
-                        <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-[#60a5fa] to-[#7c57ff] flex items-center justify-center text-white text-2xl font-bold shadow-[0_0_30px_rgba(124,87,255,0.5)] hover:scale-110 transition-transform border-4 border-background ${day === 16 ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
-                          {day}
-                          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#aaf163] flex items-center justify-center shadow-lg">
-                            <CheckCircle2 className="w-5 h-5 text-background" />
+              <div className="flex flex-col items-center gap-6 relative" style={{ zIndex: 1 }}>
+                {[12, 13, 14, 15, 16].map((day, idx) => {
+                  const isEven = idx % 2 === 0;
+                  const isLast = idx === 4;
+                  return (
+                    <motion.div
+                      key={day}
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.1 }}
+                    >
+                      <button onClick={() => handleDayClick(day)}>
+                        <div className={`relative ${isLast ? '' : isEven ? 'mr-20' : 'ml-20'}`}>
+                          <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-[#60a5fa] to-[#7c57ff] flex items-center justify-center text-white text-2xl font-bold shadow-[0_0_30px_rgba(124,87,255,0.5)] hover:scale-110 transition-transform border-4 border-background ${day === 16 ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
+                            {day}
+                            <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#aaf163] flex items-center justify-center shadow-lg">
+                              <CheckCircle2 className="w-5 h-5 text-background" />
+                            </div>
                           </div>
+                          {day === 16 && (
+                            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-[#aaf163] text-background text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                              TODAY
+                            </div>
+                          )}
                         </div>
-                        {day === 16 && (
-                          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-[#aaf163] text-background text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
-                            TODAY
-                          </div>
-                        )}
-                      </div>
-                    </button>
-                  </motion.div>
-                ))}
+                      </button>
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
 
