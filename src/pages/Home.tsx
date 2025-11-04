@@ -226,8 +226,8 @@ export default function Home() {
             </motion.div>
 
             {/* Timeline */}
-            <div className="relative">
-              <svg className="absolute left-1/2 top-0 -translate-x-1/2 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
+            <div className="relative py-8">
+              <svg className="absolute left-0 top-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }} viewBox="0 0 400 600" preserveAspectRatio="xMidYMid meet">
                 <defs>
                   <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="0%" stopColor="#7c57ff" stopOpacity="0.8" />
@@ -235,56 +235,31 @@ export default function Home() {
                     <stop offset="100%" stopColor="#00c6ff" stopOpacity="0.8" />
                   </linearGradient>
                   <filter id="glow">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
                     <feMerge>
                       <feMergeNode in="coloredBlur"/>
                       <feMergeNode in="SourceGraphic"/>
                     </feMerge>
                   </filter>
                 </defs>
-                {/* Glow effect path */}
+                {/* Glow effect path - connects through circles */}
                 <path
-                  d="M 200 60 Q 150 120, 200 180 Q 250 240, 200 300 Q 150 360, 200 420 Q 250 480, 200 540"
+                  d="M 280 50 Q 160 90, 280 130 Q 360 170, 280 210 Q 160 250, 280 290 Q 360 330, 280 370"
                   stroke="url(#pathGradient)"
-                  strokeWidth="8"
+                  strokeWidth="12"
                   fill="none"
-                  opacity="0.3"
+                  opacity="0.4"
                   filter="url(#glow)"
+                  strokeLinecap="round"
                 />
-                {/* Main path */}
+                {/* Main path - connects through circles */}
                 <path
-                  d="M 200 60 Q 150 120, 200 180 Q 250 240, 200 300 Q 150 360, 200 420 Q 250 480, 200 540"
+                  d="M 280 50 Q 160 90, 280 130 Q 360 170, 280 210 Q 160 250, 280 290 Q 360 330, 280 370"
                   stroke="url(#pathGradient)"
-                  strokeWidth="4"
+                  strokeWidth="5"
                   fill="none"
                   strokeLinecap="round"
                 />
-                {/* Animated dots */}
-                {[60, 180, 300, 420, 540].map((y, i) => (
-                  <circle
-                    key={i}
-                    cx="200"
-                    cy={y}
-                    r="4"
-                    fill="url(#pathGradient)"
-                    opacity="0.6"
-                  >
-                    <animate
-                      attributeName="r"
-                      values="3;6;3"
-                      dur="2s"
-                      begin={`${i * 0.4}s`}
-                      repeatCount="indefinite"
-                    />
-                    <animate
-                      attributeName="opacity"
-                      values="0.6;1;0.6"
-                      dur="2s"
-                      begin={`${i * 0.4}s`}
-                      repeatCount="indefinite"
-                    />
-                  </circle>
-                ))}
               </svg>
 
               <div className="flex flex-col items-center gap-8 relative" style={{ zIndex: 1 }}>
@@ -296,10 +271,10 @@ export default function Home() {
                     transition={{ delay: idx * 0.1 }}
                   >
                     <button onClick={() => handleDayClick(day)}>
-                      <div className={`relative ${idx % 2 === 0 ? 'ml-32' : 'mr-32'}`}>
-                        <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-[#60a5fa] to-[#7c57ff] flex items-center justify-center text-white text-2xl font-bold shadow-lg hover:scale-110 transition-transform ${day === 16 ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
+                      <div className={`relative ${idx % 2 === 0 ? 'ml-16' : 'mr-16'}`}>
+                        <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-[#60a5fa] to-[#7c57ff] flex items-center justify-center text-white text-2xl font-bold shadow-[0_0_30px_rgba(124,87,255,0.5)] hover:scale-110 transition-transform ${day === 16 ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
                           {day}
-                          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#aaf163] flex items-center justify-center">
+                          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#aaf163] flex items-center justify-center shadow-lg">
                             <CheckCircle2 className="w-5 h-5 text-background" />
                           </div>
                         </div>
