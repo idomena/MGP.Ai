@@ -74,6 +74,8 @@ export default function WorkoutPage() {
       {isWorkoutActive ? (
         <WorkoutSession
           exercises={workout.exercisesList}
+          dayNumber={16}
+          workoutName={workout.shortName}
           onComplete={handleWorkoutComplete}
           onExit={handleWorkoutExit}
         />

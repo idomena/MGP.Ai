@@ -1,12 +1,13 @@
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BarChart3, CheckCircle, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, CheckCircle2, Users, Clock, Play, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Home() {
   const { user } = useAuth();
@@ -14,6 +15,7 @@ export default function Home() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
+  const [completedDays, setCompletedDays] = useState<Set<number>>(new Set());
 
   const workoutDetails = {
     12: { name: "Chest & Triceps", muscles: "Chest, Triceps", time: "35 min", exercises: 5 },
@@ -41,6 +43,49 @@ export default function Home() {
   const handleStartWorkout = (day: number) => {
     navigate(`/workout/${day}`);
   };
+
+  // Fetch completed workouts
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchCompletions = async () => {
+      const { data, error } = await supabase
+        .from('workout_completions')
+        .select('day_number')
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error fetching completions:', error);
+        return;
+      }
+
+      const completed = new Set(data.map(c => c.day_number));
+      setCompletedDays(completed);
+    };
+
+    fetchCompletions();
+
+    // Subscribe to realtime updates
+    const channel = supabase
+      .channel('workout_completions_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'workout_completions',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          fetchCompletions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-background pb-20 px-4">
@@ -277,6 +322,7 @@ export default function Home() {
                 {[12, 13, 14, 15, 16].map((day, idx) => {
                   const isEven = idx % 2 === 0;
                   const isLast = idx === 4;
+                  const isCompleted = completedDays.has(day);
                   return (
                     <motion.div
                       key={day}
@@ -286,11 +332,13 @@ export default function Home() {
                     >
                       <button onClick={() => handleDayClick(day)}>
                         <div className={`relative ${isLast ? '' : isEven ? 'mr-20' : 'ml-20'}`}>
-                          <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-[#60a5fa] to-[#7c57ff] flex items-center justify-center text-white text-2xl font-bold shadow-[0_0_30px_rgba(124,87,255,0.5)] hover:scale-110 transition-transform border-4 border-background ${day === 16 ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
+                          <div className={`w-20 h-20 rounded-full ${isCompleted ? 'bg-gradient-to-br from-[#aaf163] to-[#10b981]' : 'bg-gradient-to-br from-[#60a5fa] to-[#7c57ff]'} flex items-center justify-center text-white text-2xl font-bold shadow-[0_0_30px_rgba(124,87,255,0.5)] hover:scale-110 transition-transform border-4 border-background ${day === 16 ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
                             {day}
-                            <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#aaf163] flex items-center justify-center shadow-lg">
-                              <CheckCircle2 className="w-5 h-5 text-background" />
-                            </div>
+                            {isCompleted && (
+                              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#aaf163] flex items-center justify-center shadow-lg ring-2 ring-background">
+                                <CheckCircle2 className="w-5 h-5 text-background" />
+                              </div>
+                            )}
                           </div>
                           {day === 16 && (
                             <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-[#aaf163] text-background text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">

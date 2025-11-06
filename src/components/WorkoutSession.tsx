@@ -3,6 +3,8 @@ import { X, Check, Timer, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Exercise {
   id: number;
@@ -16,11 +18,15 @@ interface Exercise {
 
 interface WorkoutSessionProps {
   exercises: Exercise[];
+  dayNumber: number;
+  workoutName: string;
   onComplete: () => void;
   onExit: () => void;
 }
 
-export default function WorkoutSession({ exercises, onComplete, onExit }: WorkoutSessionProps) {
+export default function WorkoutSession({ exercises, dayNumber, workoutName, onComplete, onExit }: WorkoutSessionProps) {
+  const { user } = useAuth();
+  const [startTime] = useState(Date.now());
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [currentSet, setCurrentSet] = useState(1);
   const [isResting, setIsResting] = useState(false);
@@ -43,7 +49,7 @@ export default function WorkoutSession({ exercises, onComplete, onExit }: Workou
     }
   }, [isResting, restTimer]);
 
-  const handleCompleteSet = () => {
+  const handleCompleteSet = async () => {
     const setKey = `${currentExerciseIndex}-${currentSet}`;
     setCompletedSets(prev => new Set([...prev, setKey]));
     
@@ -58,8 +64,31 @@ export default function WorkoutSession({ exercises, onComplete, onExit }: Workou
       setIsResting(true);
       toast.success("Exercise complete! Moving to next one");
     } else {
+      // Calculate workout duration and estimated calories
+      const durationMinutes = Math.round((Date.now() - startTime) / 60000);
+      const estimatedCalories = Math.round(durationMinutes * 8); // Rough estimate: 8 cal/min
+      
+      // Save workout completion to database
+      if (user) {
+        const { error } = await supabase
+          .from('workout_completions')
+          .insert({
+            user_id: user.id,
+            day_number: dayNumber,
+            workout_name: workoutName,
+            duration_minutes: durationMinutes,
+            calories_burned: estimatedCalories
+          });
+        
+        if (error) {
+          console.error('Error saving workout completion:', error);
+          toast.error("Workout completed but couldn't save progress");
+        } else {
+          toast.success("Workout complete! Amazing job! 🎉");
+        }
+      }
+      
       onComplete();
-      toast.success("Workout complete! Amazing job! 🎉");
     }
   };
 
