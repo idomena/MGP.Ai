@@ -74,6 +74,42 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_schedule: {
+        Row: {
+          created_at: string
+          day_number: number
+          duration: string
+          exercises: number
+          focus: string
+          id: string
+          updated_at: string
+          user_id: string
+          workout_name: string
+        }
+        Insert: {
+          created_at?: string
+          day_number: number
+          duration: string
+          exercises: number
+          focus: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          workout_name: string
+        }
+        Update: {
+          created_at?: string
+          day_number?: number
+          duration?: string
+          exercises?: number
+          focus?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          workout_name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

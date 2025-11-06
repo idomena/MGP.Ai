@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function Home() {
   const { user } = useAuth();
@@ -16,14 +17,19 @@ export default function Home() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [completedDays, setCompletedDays] = useState<Set<number>>(new Set());
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [customSchedule, setCustomSchedule] = useState<Record<number, any>>({});
 
-  const workoutDetails = {
-    12: { name: "Chest & Triceps", muscles: "Chest, Triceps", time: "35 min", exercises: 5 },
-    13: { name: "Back & Biceps", muscles: "Back, Biceps", time: "40 min", exercises: 4 },
-    14: { name: "Legs", muscles: "Quads, Hamstrings", time: "45 min", exercises: 6 },
-    15: { name: "Shoulders & Core", muscles: "Shoulders, Abs", time: "30 min", exercises: 4 },
-    16: { name: "Back + Front hand", muscles: "Back, Biceps, Forearms", time: "28 min", exercises: 3 },
+  const defaultWorkoutDetails = {
+    12: { name: "Chest & Triceps", muscles: "Chest, Triceps", time: "35 min", exercises: 5, focus: "Chest" },
+    13: { name: "Back & Biceps", muscles: "Back, Biceps", time: "40 min", exercises: 4, focus: "Back" },
+    14: { name: "Legs", muscles: "Quads, Hamstrings", time: "45 min", exercises: 6, focus: "Legs" },
+    15: { name: "Shoulders & Core", muscles: "Shoulders, Abs", time: "30 min", exercises: 4, focus: "Shoulders" },
+    16: { name: "Back + Front hand", muscles: "Back, Biceps, Forearms", time: "28 min", exercises: 3, focus: "Back" },
   };
+
+  // Merge default schedule with custom schedule
+  const workoutDetails = { ...defaultWorkoutDetails, ...customSchedule };
 
   const handleViewChange = async (view: "weekly" | "quarterly") => {
     if (view === activeView || isTransitioning) return;
@@ -44,30 +50,87 @@ export default function Home() {
     navigate(`/workout/${day}`);
   };
 
-  // Fetch completed workouts
+  const handleRescheduleWorkout = async (fromDay: number, toDay: number) => {
+    if (!user || fromDay === toDay) return;
+
+    const workoutToMove = workoutDetails[fromDay as keyof typeof workoutDetails];
+    if (!workoutToMove) return;
+
+    try {
+      // Save the moved workout to the new day
+      const { error } = await supabase
+        .from('workout_schedule')
+        .upsert({
+          user_id: user.id,
+          day_number: toDay,
+          workout_name: workoutToMove.name,
+          exercises: workoutToMove.exercises,
+          duration: workoutToMove.time,
+          focus: workoutToMove.focus
+        }, {
+          onConflict: 'user_id,day_number'
+        });
+
+      if (error) {
+        console.error('Error rescheduling workout:', error);
+        toast.error("Failed to reschedule workout");
+      } else {
+        toast.success(`Workout moved from Day ${fromDay} to Day ${toDay}!`);
+        setShowRescheduleModal(false);
+        setShowWorkoutModal(false);
+      }
+    } catch (error) {
+      console.error('Error rescheduling:', error);
+      toast.error("Failed to reschedule workout");
+    }
+  };
+
+  // Fetch completed workouts and custom schedule
   useEffect(() => {
     if (!user) return;
 
-    const fetchCompletions = async () => {
-      const { data, error } = await supabase
+    const fetchData = async () => {
+      // Fetch completions
+      const { data: completionsData, error: completionsError } = await supabase
         .from('workout_completions')
         .select('day_number')
         .eq('user_id', user.id);
 
-      if (error) {
-        console.error('Error fetching completions:', error);
-        return;
+      if (completionsError) {
+        console.error('Error fetching completions:', completionsError);
+      } else {
+        const completed = new Set(completionsData.map(c => c.day_number));
+        setCompletedDays(completed);
       }
 
-      const completed = new Set(data.map(c => c.day_number));
-      setCompletedDays(completed);
+      // Fetch custom schedule
+      const { data: scheduleData, error: scheduleError } = await supabase
+        .from('workout_schedule')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (scheduleError) {
+        console.error('Error fetching schedule:', scheduleError);
+      } else {
+        const schedule: Record<number, any> = {};
+        scheduleData.forEach(item => {
+          schedule[item.day_number] = {
+            name: item.workout_name,
+            muscles: defaultWorkoutDetails[item.day_number as keyof typeof defaultWorkoutDetails]?.muscles || "Various",
+            time: item.duration,
+            exercises: item.exercises,
+            focus: item.focus
+          };
+        });
+        setCustomSchedule(schedule);
+      }
     };
 
-    fetchCompletions();
+    fetchData();
 
     // Subscribe to realtime updates
     const channel = supabase
-      .channel('workout_completions_changes')
+      .channel('workout_data_changes')
       .on(
         'postgres_changes',
         {
@@ -77,7 +140,19 @@ export default function Home() {
           filter: `user_id=eq.${user.id}`
         },
         () => {
-          fetchCompletions();
+          fetchData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'workout_schedule',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          fetchData();
         }
       )
       .subscribe();
@@ -456,11 +531,71 @@ export default function Home() {
                   handleStartWorkout(selectedDay);
                 }
               }}
-              className="w-full bg-white text-[#7c57ff] py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:scale-105 transition-transform"
+              className="w-full bg-white text-[#7c57ff] py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:scale-105 transition-transform mb-3"
             >
               <Play className="w-5 h-5 fill-current" />
               Start Workout
             </button>
+
+            <button 
+              onClick={() => {
+                setShowWorkoutModal(false);
+                setShowRescheduleModal(true);
+              }}
+              className="w-full bg-[#2a2a2a] text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-[#3a3a3a] transition-colors"
+            >
+              📅 Reschedule Workout
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reschedule Modal */}
+      <Dialog open={showRescheduleModal} onOpenChange={setShowRescheduleModal}>
+        <DialogContent className="bg-gradient-to-br from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] border-none p-0 max-w-md">
+          <div className="p-6">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h2 className="text-white text-2xl font-bold">Reschedule Workout</h2>
+                <p className="text-white/80 text-sm mt-1">
+                  Move Day {selectedDay} to a new day
+                </p>
+              </div>
+              <button 
+                onClick={() => setShowRescheduleModal(false)}
+                className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
+
+            <div className="bg-[#2a2a2a] rounded-xl p-4 mb-6">
+              <h3 className="text-white font-semibold mb-3">Select Target Day</h3>
+              <div className="grid grid-cols-5 gap-3">
+                {[12, 13, 14, 15, 16].map((day) => (
+                  <button
+                    key={day}
+                    disabled={day === selectedDay}
+                    onClick={() => {
+                      if (selectedDay) {
+                        handleRescheduleWorkout(selectedDay, day);
+                      }
+                    }}
+                    className={`w-full aspect-square rounded-xl flex items-center justify-center font-bold text-lg transition-all ${
+                      day === selectedDay
+                        ? 'bg-[#1a1a1a] text-muted-foreground cursor-not-allowed'
+                        : 'bg-white/10 text-white hover:bg-white/20 hover:scale-105'
+                    }`}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-white/60 text-sm text-center">
+              Click on a day to move this workout
+            </p>
           </div>
         </DialogContent>
       </Dialog>
