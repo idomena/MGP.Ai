@@ -13,7 +13,7 @@ import { DndContext, DragEndEvent, DragOverlay, useDraggable, useDroppable } fro
 import { format, startOfWeek, addDays } from 'date-fns';
 import { Button } from "@/components/ui/button";
 
-const DraggableWorkoutCard = ({ day, workout, isCompleted }: any) => {
+const DraggableWorkoutCard = ({ day, workout, isCompleted, children }: any) => {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `workout-${day}`,
     data: { day, workout }
@@ -26,25 +26,7 @@ const DraggableWorkoutCard = ({ day, workout, isCompleted }: any) => {
       {...attributes}
       className={`cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-50' : ''}`}
     >
-      <div className={`bg-muted rounded-xl p-4 ${isCompleted ? 'ring-2 ring-green-500' : ''} hover:ring-2 hover:ring-primary transition-all`}>
-        {isCompleted && (
-          <div className="flex items-center gap-2 text-green-500 text-sm mb-2">
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Completed</span>
-          </div>
-        )}
-        <h4 className="text-white font-semibold">{workout?.name || 'Rest Day'}</h4>
-        <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {workout?.time || '0 min'}
-          </span>
-          <span>{workout?.exercises || 0} exercises</span>
-        </div>
-        <div className="mt-2">
-          <span className="text-xs text-primary">{workout?.focus || 'Recovery'}</span>
-        </div>
-      </div>
+      {children}
     </div>
   );
 };
@@ -275,140 +257,129 @@ export default function Home() {
         </>
       ) : (
         <>
-          {/* Weekly Program View */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-                <BarChart3 className="w-5 h-5" />
-                Week {currentWeekOffset + 1}
-              </h3>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCurrentWeekOffset(Math.max(0, currentWeekOffset - 1))}
-                  disabled={currentWeekOffset === 0}
-                  className="h-8 w-8"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
-                  className="h-8 w-8"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Week Date Range */}
-            <div className="text-center mb-4">
-              <p className="text-muted-foreground text-sm">
-                {format(weekStart, 'MMM d')} - {format(addDays(weekStart, 6), 'MMM d, yyyy')}
-              </p>
-            </div>
-
-            {/* Drag and Drop Weekly Schedule */}
-            <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-              <div className="space-y-3">
-                {weekDays.map((day, idx) => {
-                  const workout = workouts[day];
-                  const isCompleted = completedDays.has(day);
-                  const dayOfWeek = daysOfWeek[idx];
-                  const date = addDays(weekStart, idx);
-
-                  return (
-                    <div key={day} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-white font-semibold">{dayOfWeek}</h4>
-                          <p className="text-xs text-muted-foreground">{format(date, 'MMM d')}</p>
-                        </div>
-                        <span className="text-xs text-muted-foreground">Day {day}</span>
-                      </div>
-                      
-                      <DroppableDay day={day}>
-                        <div onClick={() => handleDayClick(day)}>
-                          <DraggableWorkoutCard
-                            day={day}
-                            workout={workout}
-                            isCompleted={isCompleted}
-                          />
-                        </div>
-                      </DroppableDay>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <DragOverlay>
-                {draggedWorkout ? (
-                  <div className="bg-muted rounded-xl p-4 opacity-90 shadow-xl">
-                    <h4 className="text-white font-semibold">{draggedWorkout.workout?.name}</h4>
-                    <p className="text-sm text-muted-foreground">{draggedWorkout.workout?.time}</p>
-                  </div>
-                ) : null}
-              </DragOverlay>
-            </DndContext>
-
-            {/* Extend Program Button */}
-            <Button
-              onClick={() => setShowExtendModal(true)}
-              className="w-full mt-6 bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] text-white"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Extend Program
-            </Button>
-
-            {/* Weekly Stats */}
-            <div className="mt-8">
-              <h3 className="text-white font-semibold text-lg mb-4 flex items-center gap-2">
-                <BarChart className="w-5 h-5" />
-                Weekly Progress
-              </h3>
-              
-              <div className="bg-muted rounded-2xl p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-[#60a5fa]/20 flex items-center justify-center">
-                      <CheckCircle className="w-6 h-6 text-[#60a5fa]" />
-                    </div>
-                    <div>
-                      <p className="text-white font-bold text-xl">{Array.from(completedDays).filter(d => weekDays.includes(d)).length}</p>
-                      <p className="text-muted-foreground text-sm">Workouts Done</p>
-                    </div>
-                  </div>
-                  <Progress value={(Array.from(completedDays).filter(d => weekDays.includes(d)).length / 7) * 100} className="w-24 h-2" />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
-                      <Flame className="w-6 h-6 text-red-500" />
-                    </div>
-                    <div>
-                      <p className="text-white font-bold text-xl">2,340</p>
-                      <p className="text-muted-foreground text-sm">Calories Burned</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-[#aaf163]/20 flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6 text-[#aaf163]" />
-                    </div>
-                    <div>
-                      <p className="text-white font-bold text-xl">4</p>
-                      <p className="text-muted-foreground text-sm">Day Streak</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          {/* Weekly Navigation Header */}
+          <div className="mt-6 flex items-center justify-between mb-4">
+            <h3 className="text-white font-semibold text-lg">Week {currentWeekOffset + 1}</h3>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentWeekOffset(Math.max(0, currentWeekOffset - 1))}
+                disabled={currentWeekOffset === 0}
+                className="h-8 w-8"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <span className="text-muted-foreground text-sm">
+                {format(weekStart, 'MMM d')} - {format(addDays(weekStart, 6), 'MMM d')}
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
+                className="h-8 w-8"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
             </div>
           </div>
+
+          {/* Vertical Circles Timeline with Drag and Drop */}
+          <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+            <div className="relative mt-6 pb-6">
+              {/* Vertical connecting line */}
+              <div className="absolute left-8 top-8 bottom-8 w-0.5 bg-gradient-to-b from-[#00c6ff] via-[#60a5fa] to-[#7c57ff]" />
+              
+              {weekDays.map((day, idx) => {
+                const workout = workouts[day];
+                const isCompleted = completedDays.has(day);
+                const dayOfWeek = daysOfWeek[idx];
+                const date = addDays(weekStart, idx);
+
+                return (
+                  <DroppableDay key={day} day={day}>
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="relative mb-6 flex items-start gap-4"
+                    >
+                      {/* Circle */}
+                      <div className={`relative z-10 w-16 h-16 rounded-full flex items-center justify-center ${
+                        isCompleted 
+                          ? 'bg-gradient-to-br from-green-400 to-green-600' 
+                          : 'bg-gradient-to-br from-[#00c6ff] to-[#7c57ff]'
+                      } shadow-lg`}>
+                        {isCompleted ? (
+                          <CheckCircle2 className="w-8 h-8 text-white" />
+                        ) : (
+                          <span className="text-white font-bold text-lg">{idx + 1}</span>
+                        )}
+                      </div>
+
+                      {/* Workout Card - Draggable */}
+                      <div className="flex-1">
+                        <DraggableWorkoutCard day={day} workout={workout} isCompleted={isCompleted}>
+                          <div
+                            onClick={() => handleDayClick(day)}
+                            className="bg-muted rounded-2xl p-4 hover:ring-2 hover:ring-primary transition-all cursor-pointer"
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h4 className="text-white font-bold text-lg">{workout?.name || 'Rest Day'}</h4>
+                                <p className="text-muted-foreground text-sm">{dayOfWeek}, {format(date, 'MMM d')}</p>
+                              </div>
+                              <span className="text-xs text-muted-foreground">Day {day}</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-4 mt-3">
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                <Clock className="w-4 h-4" />
+                                <span>{workout?.time || '0 min'}</span>
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {workout?.exercises || 0} exercises
+                              </div>
+                              <div className="ml-auto">
+                                <span className="text-xs px-2 py-1 rounded-full bg-primary/20 text-primary">
+                                  {workout?.focus || 'Rest'}
+                                </span>
+                              </div>
+                            </div>
+
+                            {isCompleted && (
+                              <div className="mt-3 pt-3 border-t border-border flex items-center gap-2 text-green-500 text-sm">
+                                <CheckCircle2 className="w-4 h-4" />
+                                <span>Completed</span>
+                              </div>
+                            )}
+                          </div>
+                        </DraggableWorkoutCard>
+                      </div>
+                    </motion.div>
+                  </DroppableDay>
+                );
+              })}
+            </div>
+
+            <DragOverlay>
+              {draggedWorkout ? (
+                <div className="bg-muted rounded-2xl p-4 opacity-90 shadow-2xl w-64">
+                  <h4 className="text-white font-semibold">{draggedWorkout.workout?.name}</h4>
+                  <p className="text-sm text-muted-foreground">{draggedWorkout.workout?.time}</p>
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+
+          {/* Extend Program Button */}
+          <Button
+            onClick={() => setShowExtendModal(true)}
+            className="w-full mt-4 bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Extend Program
+          </Button>
         </>
       )}
 
