@@ -13,8 +13,12 @@ serve(async (req) => {
   try {
     const { image } = await req.json();
     
-    if (!image) {
-      throw new Error('No image provided');
+    if (!image || typeof image !== 'string') {
+      throw new Error('Invalid image data');
+    }
+    
+    if (image.length > 5000000) {
+      throw new Error('Image too large (max 3.75MB)');
     }
 
     console.log('Processing OCR request...');

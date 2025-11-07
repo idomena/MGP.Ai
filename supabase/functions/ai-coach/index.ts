@@ -13,8 +13,12 @@ serve(async (req) => {
   try {
     const { message } = await req.json();
     
-    if (!message) {
-      throw new Error('No message provided');
+    if (!message || typeof message !== 'string') {
+      throw new Error('Invalid message');
+    }
+    
+    if (message.length > 5000) {
+      throw new Error('Message too long (max 5000 characters)');
     }
 
     console.log('Processing AI coach request...');
