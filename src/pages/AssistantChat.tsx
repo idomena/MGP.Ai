@@ -4,6 +4,7 @@ import { Send, Loader2, ArrowLeft } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 interface Message {
@@ -13,13 +14,14 @@ interface Message {
 }
 
 export default function AssistantChatPage() {
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const initialPrompt = searchParams.get("prompt");
   
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hello! How can I help you with your fitness journey today?",
+      content: "Hello! How can I help you with your fitness journey today? I can also help you manage your workout schedule - just ask me to move workouts or extend your program!",
       timestamp: new Date(),
     },
   ]);
@@ -56,19 +58,34 @@ export default function AssistantChatPage() {
     setIsTyping(true);
 
     try {
+      // Prepare conversation history (last 6 messages)
+      const conversationHistory = messages.slice(-6).map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
       const { data, error } = await supabase.functions.invoke("ai-coach", {
-        body: { message: messageText },
+        body: { 
+          message: messageText,
+          userId: user?.id,
+          conversationHistory
+        },
       });
 
       if (error) throw error;
 
       const assistantMessage: Message = {
         role: "assistant",
-        content: data.advice || "I'm here to help with your fitness goals!",
+        content: data.response || data.advice || "I'm here to help with your fitness goals!",
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+
+      // Show additional feedback if workout command was executed
+      if (data.workoutCommandResult?.success) {
+        toast.success("Workout schedule updated!");
+      }
     } catch (error) {
       console.error("Error getting AI response:", error);
       toast.error("Failed to get response. Please try again.");
