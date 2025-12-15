@@ -343,35 +343,30 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Post-Workout Meal Card with Personalized Offer */}
+            {/* Weekly Progress Card - Compact */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-muted rounded-2xl p-4 mb-6 relative overflow-hidden"
+              className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-4 mb-6"
             >
-              {/* Special Offer Badge */}
-              <div className="absolute top-3 right-3 bg-gradient-to-r from-[#aaf163] to-[#7c57ff] text-background text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse">
-                Just for you!
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-white font-semibold text-sm">Weekly Progress</h4>
+                <TrendingUp className="w-4 h-4 text-[#7c57ff]" />
               </div>
-              
-              <div className="h-1 rounded-full bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#aaf163] mb-4"></div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl">🥗</div>
-                  <div>
-                    <h4 className="text-white font-semibold">Post-Workout Meal</h4>
-                    <p className="text-muted-foreground text-sm">Perfect for your Back + Front hand</p>
-                    <span className="text-[#aaf163] text-xs font-semibold">Personalized recommendation</span>
-                  </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
+                  <p className="text-white/60 text-xs">Workouts</p>
+                  <p className="text-white text-sm font-bold">5/5</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[#7c57ff] text-sm font-semibold flex items-center gap-1">
-                    <Flame className="w-4 h-4" />
-                    320 kcal
-                  </span>
-                  <button className="hover:rotate-180 transition-transform duration-300">
-                    <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                  </button>
+                <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
+                  <p className="text-white/60 text-xs">Streak</p>
+                  <p className="text-white text-sm font-bold flex items-center gap-1">
+                    12 <Flame className="w-3 h-3 text-orange-500" />
+                  </p>
+                </div>
+                <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
+                  <p className="text-white/60 text-xs">XP</p>
+                  <p className="text-white text-sm font-bold">2,840</p>
                 </div>
               </div>
             </motion.div>
@@ -489,46 +484,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Liquid Glass Effect Card */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="mt-8 relative overflow-hidden rounded-3xl"
-            >
-              {/* Gradient background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#7c57ff]/30 via-[#60a5fa]/20 to-[#00c6ff]/30" />
-              
-              {/* Glassmorphism layer */}
-              <div className="relative backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-white font-bold text-lg">Weekly Progress</h3>
-                    <p className="text-white/60 text-sm">Keep up the great work!</p>
-                  </div>
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#00c6ff] flex items-center justify-center">
-                    <TrendingUp className="w-8 h-8 text-white" />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="backdrop-blur-sm bg-white/5 rounded-xl p-3 border border-white/10">
-                    <p className="text-white/60 text-xs mb-1">Workouts</p>
-                    <p className="text-white text-xl font-bold">5/5</p>
-                  </div>
-                  <div className="backdrop-blur-sm bg-white/5 rounded-xl p-3 border border-white/10">
-                    <p className="text-white/60 text-xs mb-1">Streak</p>
-                    <p className="text-white text-xl font-bold flex items-center gap-1">
-                      12 <Flame className="w-4 h-4 text-orange-500" />
-                    </p>
-                  </div>
-                  <div className="backdrop-blur-sm bg-white/5 rounded-xl p-3 border border-white/10">
-                    <p className="text-white/60 text-xs mb-1">XP</p>
-                    <p className="text-white text-xl font-bold">2,840</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
           </div>
         </>
       )}
