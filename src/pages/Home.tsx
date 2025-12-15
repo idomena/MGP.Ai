@@ -29,6 +29,22 @@ export default function Home() {
   const [currentDay, setCurrentDay] = useState<number | null>(null);
   const [isLoadingProgress, setIsLoadingProgress] = useState(true);
 
+  // Workout rotation for 90 days (repeating 6-day cycle with rest)
+  const workoutRotation = [
+    { name: "Chest", shortName: "Chest", muscles: "Chest, Triceps", time: "35 min", exercises: 5, focus: "Chest" },
+    { name: "Back", shortName: "Back", muscles: "Back, Biceps", time: "40 min", exercises: 5, focus: "Back" },
+    { name: "Legs", shortName: "Legs", muscles: "Quads, Hamstrings, Glutes", time: "45 min", exercises: 6, focus: "Legs" },
+    { name: "Shoulders", shortName: "Shoulders", muscles: "Shoulders, Traps", time: "30 min", exercises: 4, focus: "Shoulders" },
+    { name: "Arms", shortName: "Arms", muscles: "Biceps, Triceps, Forearms", time: "35 min", exercises: 5, focus: "Arms" },
+    { name: "Core", shortName: "Core", muscles: "Abs, Obliques, Lower Back", time: "25 min", exercises: 4, focus: "Core" },
+    { name: "Rest Day", shortName: "Rest", muscles: "", time: "0 min", exercises: 0, focus: "Recovery" },
+  ];
+
+  const getWorkoutForDay = (day: number) => {
+    const index = (day - 1) % workoutRotation.length;
+    return workoutRotation[index];
+  };
+
   const defaultWorkoutDetails = {
     12: { name: "Chest & Triceps", muscles: "Chest, Triceps", time: "35 min", exercises: 5, focus: "Chest" },
     13: { name: "Back & Biceps", muscles: "Back, Biceps", time: "40 min", exercises: 4, focus: "Back" },
@@ -421,7 +437,7 @@ export default function Home() {
                     const isLast = idx === dayStatuses.length - 1;
                     const isActive = dayInfo.status === "active";
                     const isLocked = dayInfo.status === "locked";
-                    const isPreview = dayInfo.status === "preview";
+                    const workout = getWorkoutForDay(dayInfo.day);
                     
                     const getCircleStyle = () => {
                       if (dayInfo.isCompleted) {
@@ -447,28 +463,27 @@ export default function Home() {
                           onClick={() => handleDayClick(dayInfo.day)}
                           disabled={isLocked}
                           className={isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
+                          data-testid={`button-day-${dayInfo.day}`}
                         >
                           <div className={`relative ${isLast ? '' : isEven ? 'mr-20' : 'ml-20'}`}>
-                            <div className={`w-20 h-20 rounded-full ${getCircleStyle()} flex items-center justify-center text-white text-2xl font-bold shadow-[0_0_30px_rgba(124,87,255,0.5)] ${!isLocked ? 'hover:scale-110' : ''} transition-transform border-4 border-background ${isActive && !dayInfo.isCompleted ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
+                            <div className={`w-20 h-20 rounded-full ${getCircleStyle()} flex flex-col items-center justify-center text-white shadow-[0_0_30px_rgba(124,87,255,0.5)] ${!isLocked ? 'hover:scale-110' : ''} transition-transform border-4 border-background ${isActive && !dayInfo.isCompleted ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
                               {isLocked ? (
-                                <Lock className="w-8 h-8 text-white/70" />
+                                <Lock className="w-6 h-6 text-white/70" />
                               ) : (
-                                dayInfo.day
+                                <>
+                                  <span className="text-[10px] font-medium opacity-70">Day {dayInfo.day}</span>
+                                  <span className="text-xs font-bold leading-tight text-center px-1">{workout.shortName}</span>
+                                </>
                               )}
                               {dayInfo.isCompleted && (
-                                <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#aaf163] flex items-center justify-center shadow-lg ring-2 ring-background">
-                                  <CheckCircle2 className="w-5 h-5 text-background" />
+                                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#aaf163] flex items-center justify-center shadow-lg ring-2 ring-background">
+                                  <CheckCircle2 className="w-4 h-4 text-background" />
                                 </div>
                               )}
                             </div>
                             {isActive && (
-                              <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-[#aaf163] text-background text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-[#aaf163] text-background text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
                                 TODAY
-                              </div>
-                            )}
-                            {isPreview && (
-                              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-muted-foreground text-xs whitespace-nowrap">
-                                Day {dayInfo.day}
                               </div>
                             )}
                           </div>
