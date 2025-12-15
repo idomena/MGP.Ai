@@ -3,7 +3,6 @@ import { X, Check, Timer, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Exercise {
@@ -32,6 +31,7 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
   const [isResting, setIsResting] = useState(false);
   const [restTimer, setRestTimer] = useState(60);
   const [completedSets, setCompletedSets] = useState<Set<string>>(new Set());
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentExercise = exercises[currentExerciseIndex];
   const totalSets = exercises.reduce((sum, ex) => sum + ex.sets, 0);
@@ -64,27 +64,45 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
       setIsResting(true);
       toast.success("Exercise complete! Moving to next one");
     } else {
-      // Calculate workout duration and estimated calories
       const durationMinutes = Math.round((Date.now() - startTime) / 60000);
-      const estimatedCalories = Math.round(durationMinutes * 8); // Rough estimate: 8 cal/min
+      const estimatedCalories = Math.round(durationMinutes * 8);
       
-      // Save workout completion to database
       if (user) {
-        const { error } = await supabase
-          .from('workout_completions')
-          .insert({
-            user_id: user.id,
-            day_number: dayNumber,
-            workout_name: workoutName,
-            duration_minutes: durationMinutes,
-            calories_burned: estimatedCalories
+        setIsSubmitting(true);
+        try {
+          const response = await fetch('/api/progress/complete', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: user.id,
+              dayNumber,
+              workoutName,
+              durationMinutes,
+              caloriesBurned: estimatedCalories,
+            }),
           });
-        
-        if (error) {
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            console.error('Error saving workout completion:', data.error || data.message);
+            if (data.message === "Workout already completed") {
+              toast.info("This workout was already completed!");
+            } else if (response.status === 403) {
+              toast.error(data.message || "Cannot complete this workout");
+            } else {
+              toast.error("Workout completed but couldn't save progress");
+            }
+          } else {
+            toast.success("Workout complete! Amazing job!");
+          }
+        } catch (error) {
           console.error('Error saving workout completion:', error);
           toast.error("Workout completed but couldn't save progress");
-        } else {
-          toast.success("Workout complete! Amazing job! 🎉");
+        } finally {
+          setIsSubmitting(false);
         }
       }
       
@@ -99,12 +117,12 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col">
-      {/* Header */}
       <div className="bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] p-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between gap-4 mb-4">
           <button
             onClick={onExit}
             className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all"
+            data-testid="button-exit-workout"
           >
             <X className="w-5 h-5 text-white" />
           </button>
@@ -113,7 +131,7 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
         </div>
         
         <div className="mb-2">
-          <div className="flex items-center justify-between text-white/90 text-sm mb-1">
+          <div className="flex items-center justify-between gap-2 text-white/90 text-sm mb-1">
             <span>Overall Progress</span>
             <span>{completedSetsCount} / {totalSets} sets</span>
           </div>
@@ -121,7 +139,6 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
         </div>
       </div>
 
-      {/* Current Exercise */}
       <div className="flex-1 overflow-y-auto p-6">
         <AnimatePresence mode="wait">
           {isResting ? (
@@ -143,6 +160,7 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
               <button
                 onClick={handleSkipRest}
                 className="px-8 py-3 bg-muted text-white rounded-full font-semibold hover:bg-muted/80 transition-all"
+                data-testid="button-skip-rest"
               >
                 Skip Rest
               </button>
@@ -160,7 +178,7 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
                     {currentExerciseIndex + 1}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-white text-2xl font-bold">{currentExercise.name}</h3>
+                    <h3 className="text-white text-2xl font-bold" data-testid="text-current-exercise">{currentExercise.name}</h3>
                     <p className="text-[#7c57ff] text-sm">{currentExercise.muscles}</p>
                   </div>
                   <div className="bg-[#aaf163] text-background text-xs font-bold px-3 py-1 rounded-full">
@@ -169,11 +187,10 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
                 </div>
               </div>
 
-              {/* Set Info */}
               <div className="bg-muted rounded-2xl p-6 mb-6">
                 <div className="text-center mb-4">
                   <p className="text-muted-foreground text-sm mb-2">Current Set</p>
-                  <p className="text-white text-5xl font-bold">{currentSet} / {currentExercise.sets}</p>
+                  <p className="text-white text-5xl font-bold" data-testid="text-current-set">{currentSet} / {currentExercise.sets}</p>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -188,7 +205,6 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
                 </div>
               </div>
 
-              {/* Sets Progress */}
               <div className="bg-muted rounded-2xl p-4 mb-6">
                 <h4 className="text-white font-semibold mb-3">Sets Progress</h4>
                 <div className="flex gap-2">
@@ -213,9 +229,8 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
                 </div>
               </div>
 
-              {/* Next Exercise Preview */}
               {currentExerciseIndex < exercises.length - 1 && currentSet === currentExercise.sets && (
-                <div className="bg-muted/50 rounded-xl p-4 flex items-center justify-between">
+                <div className="bg-muted/50 rounded-xl p-4 flex items-center justify-between gap-2">
                   <div>
                     <p className="text-muted-foreground text-xs mb-1">Next Exercise</p>
                     <p className="text-white font-semibold">{exercises[currentExerciseIndex + 1].name}</p>
@@ -228,15 +243,16 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
         </AnimatePresence>
       </div>
 
-      {/* Complete Set Button */}
       {!isResting && (
         <div className="p-6 bg-background border-t border-border">
           <button
             onClick={handleCompleteSet}
-            className="w-full bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-transform"
+            disabled={isSubmitting}
+            className="w-full bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-transform disabled:opacity-70"
+            data-testid="button-complete-set"
           >
             <Check className="w-6 h-6" />
-            Complete Set {currentSet}
+            {isSubmitting ? "Saving..." : `Complete Set ${currentSet}`}
           </button>
         </div>
       )}

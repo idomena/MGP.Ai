@@ -1,11 +1,23 @@
 import type { Express } from "express";
 import { generateContent, generateCoachResponse, extractTextFromImage } from "./gemini";
 import { generateRequestSchema, ocrRequestSchema, completeWorkoutRequestSchema } from "../shared/schema";
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
+
+let supabase: SupabaseClient | null = null;
+
+function getSupabase(): SupabaseClient | null {
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn('Supabase not configured: missing URL or key');
+    return null;
+  }
+  if (!supabase) {
+    supabase = createClient(supabaseUrl, supabaseKey);
+  }
+  return supabase;
+}
 
 const TOTAL_PROGRAM_DAYS = 90;
 
@@ -151,9 +163,17 @@ export function registerRoutes(app: Express): void {
         });
       }
 
+      const sb = getSupabase();
+      if (!sb) {
+        return res.status(503).json({
+          success: false,
+          error: "Database not configured",
+        });
+      }
+
       const serverNow = new Date();
       
-      const { data: programData, error: programError } = await supabase
+      const { data: programData, error: programError } = await sb
         .from('user_programs')
         .select('start_date, total_days')
         .eq('user_id', userId)
@@ -163,7 +183,7 @@ export function registerRoutes(app: Express): void {
       let totalDays = TOTAL_PROGRAM_DAYS;
 
       if (programError || !programData) {
-        const { error: insertError } = await supabase
+        const { error: insertError } = await sb
           .from('user_programs')
           .upsert({
             user_id: userId,
@@ -182,7 +202,7 @@ export function registerRoutes(app: Express): void {
 
       const currentDay = calculateCurrentDay(programStartDate, serverNow);
 
-      const { data: completionsData, error: completionsError } = await supabase
+      const { data: completionsData, error: completionsError } = await sb
         .from('workout_completions')
         .select('day_number')
         .eq('user_id', userId);
@@ -236,11 +256,20 @@ export function registerRoutes(app: Express): void {
         });
       }
 
+      const sb = getSupabase();
+      if (!sb) {
+        return res.status(503).json({
+          success: false,
+          message: "Database not configured",
+          error: "Database not configured",
+        });
+      }
+
       const { userId, dayNumber, workoutName, durationMinutes, caloriesBurned } = validation.data;
 
       const serverNow = new Date();
 
-      const { data: programData, error: programError } = await supabase
+      const { data: programData, error: programError } = await sb
         .from('user_programs')
         .select('start_date')
         .eq('user_id', userId)
@@ -267,7 +296,7 @@ export function registerRoutes(app: Express): void {
         });
       }
 
-      const { data: existingCompletion } = await supabase
+      const { data: existingCompletion } = await sb
         .from('workout_completions')
         .select('id')
         .eq('user_id', userId)
@@ -282,7 +311,7 @@ export function registerRoutes(app: Express): void {
         });
       }
 
-      const { error: insertError } = await supabase
+      const { error: insertError } = await sb
         .from('workout_completions')
         .insert({
           user_id: userId,
@@ -329,9 +358,18 @@ export function registerRoutes(app: Express): void {
         });
       }
 
+      const sb = getSupabase();
+      if (!sb) {
+        return res.status(503).json({
+          success: false,
+          canStart: false,
+          error: "Database not configured",
+        });
+      }
+
       const serverNow = new Date();
 
-      const { data: programData, error: programError } = await supabase
+      const { data: programData, error: programError } = await sb
         .from('user_programs')
         .select('start_date')
         .eq('user_id', userId)
