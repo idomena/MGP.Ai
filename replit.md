@@ -1,0 +1,68 @@
+# MGP.AI - Fitness & Nutrition Application
+
+## Overview
+
+MGP.AI is an AI-powered fitness and nutrition mobile web application built with React, TypeScript, and Vite. The app provides personalized fitness coaching, workout tracking, nutrition scanning via OCR, and an AI assistant powered by Google Gemini. It features a dark-themed mobile-first design with glassmorphism UI elements and uses Supabase for authentication and data storage.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React 18 with TypeScript, using Vite as the build tool
+- **Styling**: Tailwind CSS with custom design tokens (dark theme with purple/blue accent gradients)
+- **UI Components**: shadcn/ui component library built on Radix UI primitives
+- **State Management**: React Query for server state, React Context for auth state
+- **Routing**: React Router DOM with protected and public route handling
+- **Animation**: Framer Motion for transitions and micro-interactions
+
+### Backend Architecture
+- **Server**: Express.js running on port 3001 with TypeScript (tsx for execution)
+- **API Endpoints**:
+  - `POST /api/generate` - General AI content generation (prompt, systemPrompt)
+  - `POST /api/ai-coach` - Fitness coaching responses (message)
+  - `POST /api/ocr-extract` - Image text extraction for nutrition labels (image base64, mimeType)
+  - `GET /api/health` - Health check endpoint
+- **AI Integration**: Google Gemini API (@google/genai SDK, gemini-2.5-flash model) for all AI features
+- **Validation**: Zod schemas in shared/schema.ts for request/response validation
+- **Key Files**: server/index.ts (entry), server/routes.ts (endpoints), server/gemini.ts (AI functions)
+
+### Data Layer
+- **Authentication**: Supabase Auth with email/password
+- **Database**: Drizzle ORM configured for PostgreSQL (requires DATABASE_URL)
+- **Schema Location**: `shared/schema.ts` for API contracts, `server/db.ts` for database connection
+
+### Development Setup
+- **Concurrent Servers**: Frontend (Vite on port 5000) and backend (Express on port 3001) run simultaneously
+- **API Proxy**: Vite proxies `/api` requests to the backend server
+- **Run Command**: `npm run dev` starts both servers via concurrently
+
+### Key Design Patterns
+- Protected routes redirect unauthenticated users to `/auth`
+- API calls use fetch with JSON payloads through `src/lib/api.ts` helper functions
+- Environment secrets: `GEMINI_API_KEY` or `GEMINI_KEY_API` for AI features, `DATABASE_URL` for database
+
+## External Dependencies
+
+### Third-Party Services
+- **Google Gemini AI**: Powers the AI coach, content generation, and OCR text extraction
+- **Supabase**: Provides authentication and database services (configured via `@/integrations/supabase/client`)
+
+### Key NPM Packages
+- `@google/genai` - Google Gemini API client
+- `@supabase/supabase-js` - Supabase client for auth and database
+- `@tanstack/react-query` - Data fetching and caching
+- `drizzle-orm` with `pg` - PostgreSQL ORM and driver
+- `express` with `cors` - Backend API server
+- `zod` - Runtime type validation
+- `framer-motion` - Animation library
+- `react-day-picker` - Calendar component
+- `vaul` - Drawer component
+- `embla-carousel-react` - Carousel functionality
+
+### Environment Variables Required
+- `GEMINI_KEY_API` or `GEMINI_API_KEY` - Google AI API key (used by server/gemini.ts)
+- `DATABASE_URL` - PostgreSQL connection string
+- Supabase credentials (configured in integration files for auth only)
