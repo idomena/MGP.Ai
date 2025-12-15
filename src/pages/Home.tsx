@@ -1,7 +1,7 @@
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
 import { useState } from "react";
-import { BarChart3, CheckCircle, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, CheckCircle2, Clock, Play, X, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { BarChart3, CheckCircle, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, CheckCircle2, Clock, Play, X, ChevronLeft, ChevronRight, Plus, Zap, Trophy, Utensils } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,7 +10,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useWorkoutSchedule } from "@/hooks/useWorkoutSchedule";
 import { DndContext, DragEndEvent, DragOverlay, useDraggable, useDroppable } from '@dnd-kit/core';
-import { format, startOfWeek, addDays } from 'date-fns';
+import { format, startOfWeek, addDays, isToday } from 'date-fns';
 import { Button } from "@/components/ui/button";
 
 const DraggableWorkoutCard = ({ day, workout, isCompleted, children }: any) => {
@@ -40,12 +40,36 @@ const DroppableDay = ({ day, children }: any) => {
   return (
     <div
       ref={setNodeRef}
-      className={`p-2 rounded-lg transition-colors ${isOver ? 'bg-primary/10 ring-2 ring-primary' : ''}`}
+      className={`transition-colors ${isOver ? 'bg-primary/10 ring-2 ring-primary rounded-2xl' : ''}`}
     >
       {children}
     </div>
   );
 };
+
+// Floating Nutrition Widget Component
+const NutritionWidget = () => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.5 }}
+    className="fixed bottom-24 right-4 z-40"
+  >
+    <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-4 shadow-2xl max-w-[200px]">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-8 h-8 rounded-full bg-accent-green/20 flex items-center justify-center">
+          <Utensils className="w-4 h-4 text-accent-green" />
+        </div>
+        <span className="text-xs text-muted-foreground">Post-Workout Meal</span>
+      </div>
+      <p className="text-foreground font-semibold text-sm">Grilled Chicken Salad</p>
+      <div className="flex items-center gap-2 mt-2">
+        <span className="text-accent-green font-bold text-lg">320 kcal</span>
+        <span className="text-xs text-muted-foreground">Perfect for your Back</span>
+      </div>
+    </div>
+  </motion.div>
+);
 
 export default function Home() {
   const { user } = useAuth();
@@ -116,6 +140,12 @@ export default function Home() {
   const weekDays = getCurrentWeekDays();
   const weekStart = startOfWeek(addDays(new Date(), currentWeekOffset * 7));
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Helper to check if a day is a milestone (every 7 days)
+  const isMilestone = (day: number) => day % 7 === 0;
+  
+  // Helper to check if this is today's workout
+  const isTodayWorkout = (date: Date) => isToday(date);
 
   return (
     <div className="min-h-screen bg-background pb-20 px-4">
@@ -284,36 +314,96 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Vertical Circles Timeline with Drag and Drop */}
+          {/* S-Curved Vertical Circles Timeline with Drag and Drop */}
           <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             <div className="relative mt-6 pb-6">
-              {/* Vertical connecting line */}
-              <div className="absolute left-8 top-8 bottom-8 w-0.5 bg-gradient-to-b from-[#00c6ff] via-[#60a5fa] to-[#7c57ff]" />
+              {/* S-Curved connecting path */}
+              <svg 
+                className="absolute left-0 top-0 w-20 h-full pointer-events-none" 
+                preserveAspectRatio="none"
+                style={{ minHeight: `${weekDays.length * 120}px` }}
+              >
+                <defs>
+                  <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#00c6ff" />
+                    <stop offset="50%" stopColor="#60a5fa" />
+                    <stop offset="100%" stopColor="#7c57ff" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d={`M 40 40 ${weekDays.map((_, idx) => {
+                    const y = 40 + idx * 120;
+                    const curve = idx % 2 === 0 ? 'C 60' : 'C 20';
+                    const nextY = 40 + (idx + 1) * 120;
+                    return `${curve} ${y + 30}, ${idx % 2 === 0 ? '20' : '60'} ${y + 90}, 40 ${nextY}`;
+                  }).join(' ')}`}
+                  fill="none"
+                  stroke="url(#pathGradient)"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  className="opacity-60"
+                />
+              </svg>
               
               {weekDays.map((day, idx) => {
                 const workout = workouts[day];
                 const isCompleted = completedDays.has(day);
                 const dayOfWeek = daysOfWeek[idx];
                 const date = addDays(weekStart, idx);
+                const isToday = isTodayWorkout(date);
+                const milestone = isMilestone(day);
 
                 return (
                   <DroppableDay key={day} day={day}>
                     <motion.div
-                      initial={{ opacity: 0, x: -20 }}
+                      initial={{ opacity: 0, x: idx % 2 === 0 ? -30 : 30 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.1 }}
-                      className="relative mb-6 flex items-start gap-4"
+                      transition={{ delay: idx * 0.08, type: "spring", stiffness: 100 }}
+                      className={`relative mb-8 flex items-start gap-4 ${idx % 2 === 1 ? 'flex-row-reverse' : ''}`}
                     >
-                      {/* Circle */}
-                      <div className={`relative z-10 w-16 h-16 rounded-full flex items-center justify-center ${
-                        isCompleted 
-                          ? 'bg-gradient-to-br from-green-400 to-green-600' 
-                          : 'bg-gradient-to-br from-[#00c6ff] to-[#7c57ff]'
-                      } shadow-lg`}>
-                        {isCompleted ? (
-                          <CheckCircle2 className="w-8 h-8 text-white" />
-                        ) : (
-                          <span className="text-white font-bold text-lg">{idx + 1}</span>
+                      {/* Node Circle with States */}
+                      <div className="relative z-10 flex-shrink-0">
+                        {/* Glow effect for today */}
+                        {isToday && (
+                          <div className="absolute inset-0 w-16 h-16 rounded-full bg-gradient-to-br from-[#00c6ff] to-[#7c57ff] animate-pulse blur-md opacity-60" />
+                        )}
+                        
+                        <div className={`relative w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
+                          isCompleted 
+                            ? 'bg-gradient-to-br from-accent-green to-green-600' 
+                            : isToday
+                              ? 'bg-gradient-to-br from-[#00c6ff] to-[#7c57ff] ring-4 ring-[#00c6ff]/30 scale-110'
+                              : milestone
+                                ? 'bg-gradient-to-br from-yellow-400 to-amber-600'
+                                : 'bg-card border-2 border-border'
+                        }`}>
+                          {isCompleted ? (
+                            <CheckCircle2 className="w-8 h-8 text-white" />
+                          ) : isToday ? (
+                            <Zap className="w-8 h-8 text-white" />
+                          ) : milestone ? (
+                            <Trophy className="w-7 h-7 text-white" />
+                          ) : (
+                            <span className="text-muted-foreground font-bold text-lg">{day}</span>
+                          )}
+                        </div>
+                        
+                        {/* Today label */}
+                        {isToday && (
+                          <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute -top-2 -right-2 bg-accent-green text-background text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          >
+                            TODAY
+                          </motion.div>
+                        )}
+                        
+                        {/* Milestone label */}
+                        {milestone && !isCompleted && !isToday && (
+                          <div className="absolute -top-2 -right-2 bg-yellow-500 text-background text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            WEEK {Math.floor(day / 7)}
+                          </div>
                         )}
                       </div>
 
@@ -322,14 +412,20 @@ export default function Home() {
                         <DraggableWorkoutCard day={day} workout={workout} isCompleted={isCompleted}>
                           <div
                             onClick={() => handleDayClick(day)}
-                            className="bg-muted rounded-2xl p-4 hover:ring-2 hover:ring-primary transition-all cursor-pointer"
+                            className={`bg-card rounded-2xl p-4 hover:ring-2 hover:ring-primary transition-all cursor-pointer ${
+                              isToday ? 'ring-2 ring-[#00c6ff]/50 shadow-lg shadow-[#00c6ff]/20' : ''
+                            } ${isCompleted ? 'opacity-75' : ''}`}
                           >
                             <div className="flex items-start justify-between mb-2">
                               <div>
-                                <h4 className="text-white font-bold text-lg">{workout?.name || 'Rest Day'}</h4>
+                                <h4 className="text-foreground font-bold text-lg">{workout?.name || 'Rest Day'}</h4>
                                 <p className="text-muted-foreground text-sm">{dayOfWeek}, {format(date, 'MMM d')}</p>
                               </div>
-                              <span className="text-xs text-muted-foreground">Day {day}</span>
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                isToday ? 'bg-accent-green/20 text-accent-green' : 'text-muted-foreground'
+                              }`}>
+                                Day {day}
+                              </span>
                             </div>
                             
                             <div className="flex items-center gap-4 mt-3">
@@ -348,10 +444,25 @@ export default function Home() {
                             </div>
 
                             {isCompleted && (
-                              <div className="mt-3 pt-3 border-t border-border flex items-center gap-2 text-green-500 text-sm">
+                              <div className="mt-3 pt-3 border-t border-border flex items-center gap-2 text-accent-green text-sm">
                                 <CheckCircle2 className="w-4 h-4" />
                                 <span>Completed</span>
                               </div>
+                            )}
+
+                            {isToday && !isCompleted && (
+                              <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStartWorkout(day);
+                                }}
+                                className="mt-3 w-full bg-gradient-to-r from-accent-green to-green-500 text-background py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2"
+                              >
+                                <Play className="w-4 h-4" />
+                                Start Workout
+                              </motion.button>
                             )}
                           </div>
                         </DraggableWorkoutCard>
@@ -364,8 +475,8 @@ export default function Home() {
 
             <DragOverlay>
               {draggedWorkout ? (
-                <div className="bg-muted rounded-2xl p-4 opacity-90 shadow-2xl w-64">
-                  <h4 className="text-white font-semibold">{draggedWorkout.workout?.name}</h4>
+                <div className="bg-card rounded-2xl p-4 opacity-90 shadow-2xl w-64 border border-primary">
+                  <h4 className="text-foreground font-semibold">{draggedWorkout.workout?.name}</h4>
                   <p className="text-sm text-muted-foreground">{draggedWorkout.workout?.time}</p>
                 </div>
               ) : null}
@@ -375,11 +486,14 @@ export default function Home() {
           {/* Extend Program Button */}
           <Button
             onClick={() => setShowExtendModal(true)}
-            className="w-full mt-4 bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] text-white"
+            className="w-full mt-4 bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] text-foreground hover:opacity-90"
           >
             <Plus className="w-4 h-4 mr-2" />
             Extend Program
           </Button>
+
+          {/* Floating Nutrition Widget */}
+          <NutritionWidget />
         </>
       )}
 
