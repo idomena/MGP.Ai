@@ -1,7 +1,7 @@
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
 import { useState, useEffect } from "react";
-import { BarChart3, CheckCircle, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, CheckCircle2, Users, Clock, Play, X } from "lucide-react";
+import { BarChart3, CheckCircle, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, CheckCircle2, Users, Clock, Play, X, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,6 +9,12 @@ import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+interface DayStatus {
+  day: number;
+  status: "locked" | "active" | "preview";
+  isCompleted: boolean;
+}
 
 export default function Home() {
   const { user } = useAuth();
@@ -19,6 +25,9 @@ export default function Home() {
   const [completedDays, setCompletedDays] = useState<Set<number>>(new Set());
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [customSchedule, setCustomSchedule] = useState<Record<number, any>>({});
+  const [dayStatuses, setDayStatuses] = useState<DayStatus[]>([]);
+  const [currentDay, setCurrentDay] = useState<number>(1);
+  const [isLoadingProgress, setIsLoadingProgress] = useState(true);
 
   const defaultWorkoutDetails = {
     12: { name: "Chest & Triceps", muscles: "Chest, Triceps", time: "35 min", exercises: 5, focus: "Chest" },
@@ -85,23 +94,36 @@ export default function Home() {
     }
   };
 
+  // Fetch progress from server API
+  const fetchProgress = async () => {
+    if (!user) return;
+    
+    try {
+      setIsLoadingProgress(true);
+      const response = await fetch(`/api/progress/${user.id}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setCurrentDay(data.currentDay);
+        setDayStatuses(data.dayStatuses);
+        setCompletedDays(new Set(data.completedDays));
+      } else {
+        console.error('Error fetching progress:', data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching progress:', error);
+    } finally {
+      setIsLoadingProgress(false);
+    }
+  };
+
   // Fetch completed workouts and custom schedule
   useEffect(() => {
     if (!user) return;
 
     const fetchData = async () => {
-      // Fetch completions
-      const { data: completionsData, error: completionsError } = await supabase
-        .from('workout_completions')
-        .select('day_number')
-        .eq('user_id', user.id);
-
-      if (completionsError) {
-        console.error('Error fetching completions:', completionsError);
-      } else {
-        const completed = new Set(completionsData.map(c => c.day_number));
-        setCompletedDays(completed);
-      }
+      // Fetch progress from server API (source of truth for day progression)
+      await fetchProgress();
 
       // Fetch custom schedule
       const { data: scheduleData, error: scheduleError } = await supabase
@@ -140,7 +162,7 @@ export default function Home() {
           filter: `user_id=eq.${user.id}`
         },
         () => {
-          fetchData();
+          fetchProgress();
         }
       )
       .on(
@@ -394,37 +416,76 @@ export default function Home() {
               </svg>
 
               <div className="flex flex-col items-center gap-6 relative" style={{ zIndex: 1 }}>
-                {[12, 13, 14, 15, 16].map((day, idx) => {
-                  const isEven = idx % 2 === 0;
-                  const isLast = idx === 4;
-                  const isCompleted = completedDays.has(day);
-                  return (
-                    <motion.div
-                      key={day}
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: idx * 0.1 }}
-                    >
-                      <button onClick={() => handleDayClick(day)}>
-                        <div className={`relative ${isLast ? '' : isEven ? 'mr-20' : 'ml-20'}`}>
-                          <div className={`w-20 h-20 rounded-full ${isCompleted ? 'bg-gradient-to-br from-[#aaf163] to-[#10b981]' : 'bg-gradient-to-br from-[#60a5fa] to-[#7c57ff]'} flex items-center justify-center text-white text-2xl font-bold shadow-[0_0_30px_rgba(124,87,255,0.5)] hover:scale-110 transition-transform border-4 border-background ${day === 16 ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
-                            {day}
-                            {isCompleted && (
-                              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#aaf163] flex items-center justify-center shadow-lg ring-2 ring-background">
-                                <CheckCircle2 className="w-5 h-5 text-background" />
+                {isLoadingProgress ? (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="w-8 h-8 border-2 border-[#7c57ff] border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : dayStatuses.length > 0 ? (
+                  dayStatuses.map((dayInfo, idx) => {
+                    const isEven = idx % 2 === 0;
+                    const isLast = idx === dayStatuses.length - 1;
+                    const isActive = dayInfo.status === "active";
+                    const isLocked = dayInfo.status === "locked";
+                    const isPreview = dayInfo.status === "preview";
+                    
+                    const getCircleStyle = () => {
+                      if (dayInfo.isCompleted) {
+                        return 'bg-gradient-to-br from-[#aaf163] to-[#10b981]';
+                      }
+                      if (isLocked) {
+                        return 'bg-gradient-to-br from-gray-500 to-gray-600 opacity-60';
+                      }
+                      if (isActive) {
+                        return 'bg-gradient-to-br from-[#60a5fa] to-[#7c57ff]';
+                      }
+                      return 'bg-gradient-to-br from-[#60a5fa]/50 to-[#7c57ff]/50 opacity-70';
+                    };
+                    
+                    return (
+                      <motion.div
+                        key={dayInfo.day}
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: idx * 0.1 }}
+                      >
+                        <button 
+                          onClick={() => handleDayClick(dayInfo.day)}
+                          disabled={isLocked}
+                          className={isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
+                        >
+                          <div className={`relative ${isLast ? '' : isEven ? 'mr-20' : 'ml-20'}`}>
+                            <div className={`w-20 h-20 rounded-full ${getCircleStyle()} flex items-center justify-center text-white text-2xl font-bold shadow-[0_0_30px_rgba(124,87,255,0.5)] ${!isLocked ? 'hover:scale-110' : ''} transition-transform border-4 border-background ${isActive && !dayInfo.isCompleted ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
+                              {isLocked ? (
+                                <Lock className="w-8 h-8 text-white/70" />
+                              ) : (
+                                dayInfo.day
+                              )}
+                              {dayInfo.isCompleted && (
+                                <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#aaf163] flex items-center justify-center shadow-lg ring-2 ring-background">
+                                  <CheckCircle2 className="w-5 h-5 text-background" />
+                                </div>
+                              )}
+                            </div>
+                            {isActive && (
+                              <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-[#aaf163] text-background text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                                TODAY
+                              </div>
+                            )}
+                            {isPreview && (
+                              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-muted-foreground text-xs whitespace-nowrap">
+                                Day {dayInfo.day}
                               </div>
                             )}
                           </div>
-                          {day === 16 && (
-                            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-[#aaf163] text-background text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
-                              TODAY
-                            </div>
-                          )}
-                        </div>
-                      </button>
-                    </motion.div>
-                  );
-                })}
+                        </button>
+                      </motion.div>
+                    );
+                  })
+                ) : (
+                  <div className="text-muted-foreground text-center py-10">
+                    Loading your program...
+                  </div>
+                )}
               </div>
             </div>
 
@@ -525,17 +586,49 @@ export default function Home() {
               </p>
             </div>
 
-            <button 
-              onClick={() => {
-                if (selectedDay) {
-                  handleStartWorkout(selectedDay);
-                }
-              }}
-              className="w-full bg-white text-[#7c57ff] py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:scale-105 transition-transform mb-3"
-            >
-              <Play className="w-5 h-5 fill-current" />
-              Start Workout
-            </button>
+            {(() => {
+              const selectedDayStatus = dayStatuses.find(d => d.day === selectedDay);
+              const isActiveDay = selectedDayStatus?.status === "active";
+              const isAlreadyCompleted = selectedDayStatus?.isCompleted;
+              const canStart = isActiveDay && !isAlreadyCompleted;
+              
+              return (
+                <button 
+                  onClick={() => {
+                    if (selectedDay && canStart) {
+                      handleStartWorkout(selectedDay);
+                    } else if (isAlreadyCompleted) {
+                      toast.info("You've already completed today's workout!");
+                    } else if (!isActiveDay) {
+                      toast.error("You can only start today's workout");
+                    }
+                  }}
+                  disabled={!canStart}
+                  className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg transition-transform mb-3 ${
+                    canStart 
+                      ? 'bg-white text-[#7c57ff] hover:scale-105' 
+                      : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  }`}
+                >
+                  {isAlreadyCompleted ? (
+                    <>
+                      <CheckCircle2 className="w-5 h-5" />
+                      Already Completed
+                    </>
+                  ) : !isActiveDay ? (
+                    <>
+                      <Lock className="w-5 h-5" />
+                      {selectedDayStatus?.status === "locked" ? "Past Workout" : "Future Workout"}
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5 fill-current" />
+                      Start Workout
+                    </>
+                  )}
+                </button>
+              );
+            })()}
 
             <button 
               onClick={() => {
