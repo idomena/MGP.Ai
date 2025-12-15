@@ -4,6 +4,7 @@ import { Send, Loader2, ArrowLeft } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 interface Message {
@@ -13,6 +14,7 @@ interface Message {
 }
 
 export default function AssistantChatPage() {
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const initialPrompt = searchParams.get("prompt");
   
@@ -65,6 +67,7 @@ export default function AssistantChatPage() {
       const { data, error } = await supabase.functions.invoke("ai-coach", {
         body: { 
           message: messageText,
+          userId: user?.id,
           conversationHistory
         },
       });
