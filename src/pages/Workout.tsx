@@ -1,15 +1,12 @@
 import NavigationBar from "@/components/NavigationBar";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Users, Clock, Target, Eye, Play, X, ChevronDown, Lock, AlertCircle, Loader2, ArrowLeft, Dumbbell, Flame } from "lucide-react";
+import { Users, Clock, Target, Eye, Play, X, ChevronDown, Lock, AlertCircle, Loader2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import WorkoutSession from "@/components/WorkoutSession";
 import { useAuth } from "@/contexts/AuthContext";
-import { ExerciseCard } from "@/components/ExerciseCard";
-import { getWorkoutForDay, getExercisesForDay } from "@/data/exercises";
-import { Badge } from "@/components/ui/badge";
 
 interface ValidationResult {
   success: boolean;
@@ -36,22 +33,45 @@ export default function WorkoutPage() {
   const [serverDate, setServerDate] = useState<string>("Loading...");
 
   const dayNumber = id ? parseInt(id, 10) : 1;
-  
-  // Get workout data from exercise database
-  const workoutData = getWorkoutForDay(dayNumber);
-  const exercises = getExercisesForDay(dayNumber);
 
   const workout = {
     id: dayNumber.toString(),
-    name: workoutData.name,
-    shortName: workoutData.shortName,
+    name: "Back training + Front hand",
+    shortName: "Back + Front hand",
     date: serverDate || "Loading...",
     day: `Day ${dayNumber}`,
-    exercises: exercises.length,
-    duration: workoutData.duration,
-    focus: workoutData.focus,
-    previewGif: workoutData.previewGif,
-    exercisesList: exercises,
+    exercises: 3,
+    duration: "28 min",
+    focus: "Back",
+    exercisesList: [
+      {
+        id: 1,
+        name: "Machine T-bar Row",
+        muscles: "Back, Lats",
+        sets: 3,
+        reps: "12, 10, 8",
+        time: "10 min",
+        difficulty: "Intermediate",
+      },
+      {
+        id: 2,
+        name: "Lat Pull Down",
+        muscles: "Back, Shoulders",
+        sets: 3,
+        reps: "12, 10, 8",
+        time: "8 min",
+        difficulty: "Beginner",
+      },
+      {
+        id: 3,
+        name: "Hammers",
+        muscles: "Biceps, Forearms",
+        sets: 4,
+        reps: "12, 10, 8, 8",
+        time: "10 min",
+        difficulty: "Intermediate",
+      },
+    ],
   };
 
   useEffect(() => {
@@ -254,23 +274,54 @@ export default function WorkoutPage() {
               </div>
             </div>
 
-            {/* Visual Exercise Cards */}
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white font-semibold text-lg">Exercises</h3>
-                <Badge variant="outline" className="border-white/20 text-white/60">
-                  {workout.exercises} total
-                </Badge>
-              </div>
-              <div className="space-y-4">
-                {exercises.map((exercise, index) => (
-                  <ExerciseCard
-                    key={exercise.id}
-                    exercise={exercise}
-                    index={index}
-                  />
-                ))}
-              </div>
+            <div className="mt-6 space-y-4">
+              {workout.exercisesList.map((exercise, index) => (
+                <motion.div 
+                  key={exercise.id} 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-muted rounded-2xl overflow-hidden"
+                  data-testid={`card-exercise-${exercise.id}`}
+                >
+                  <div className="bg-gradient-to-r from-muted to-muted/50 p-4">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-full bg-background flex items-center justify-center text-white font-bold text-xl">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-white font-bold text-lg">{exercise.name}</h3>
+                        <p className="text-[#7c57ff] text-sm">{exercise.muscles}</p>
+                      </div>
+                      <div className="bg-[#aaf163] text-background text-xs font-bold px-3 py-1 rounded-full">
+                        {exercise.difficulty}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="bg-background/50 rounded-xl p-3 text-center">
+                        <p className="text-muted-foreground text-xs mb-1">Sets</p>
+                        <p className="text-white font-bold text-lg">{exercise.sets}</p>
+                      </div>
+                      <div className="bg-background/50 rounded-xl p-3 text-center">
+                        <p className="text-muted-foreground text-xs mb-1">Reps</p>
+                        <p className="text-white font-bold text-lg">{exercise.reps}</p>
+                      </div>
+                      <div className="bg-background/50 rounded-xl p-3 text-center">
+                        <p className="text-muted-foreground text-xs mb-1">Time</p>
+                        <p className="text-white font-bold text-lg">{exercise.time}</p>
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={() => handleViewDetails(exercise.name)}
+                      className="w-full mt-4 bg-muted/50 text-muted-foreground py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-muted/70 transition-all hover:text-white"
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
 
