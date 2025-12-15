@@ -15,6 +15,7 @@ interface ValidationResult {
   currentDay: number;
   requestedDay: number;
   serverDate?: string;
+  formattedDate?: string;
   error?: string;
 }
 
@@ -29,6 +30,7 @@ export default function WorkoutPage() {
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [accessBlocked, setAccessBlocked] = useState(false);
   const [blockReason, setBlockReason] = useState<string>("");
+  const [serverDate, setServerDate] = useState<string>("Loading...");
 
   const dayNumber = id ? parseInt(id, 10) : 1;
 
@@ -36,7 +38,7 @@ export default function WorkoutPage() {
     id: dayNumber.toString(),
     name: "Back training + Front hand",
     shortName: "Back + Front hand",
-    date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+    date: serverDate || "Loading...",
     day: `Day ${dayNumber}`,
     exercises: 3,
     duration: "28 min",
@@ -87,6 +89,10 @@ export default function WorkoutPage() {
         const data: ValidationResult = await response.json();
 
         setValidationResult(data);
+        
+        if (data.formattedDate) {
+          setServerDate(data.formattedDate);
+        }
 
         if (!data.success || !data.canStart) {
           setAccessBlocked(true);

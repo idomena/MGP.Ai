@@ -26,7 +26,7 @@ export default function Home() {
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [customSchedule, setCustomSchedule] = useState<Record<number, any>>({});
   const [dayStatuses, setDayStatuses] = useState<DayStatus[]>([]);
-  const [currentDay, setCurrentDay] = useState<number>(1);
+  const [currentDay, setCurrentDay] = useState<number | null>(null);
   const [isLoadingProgress, setIsLoadingProgress] = useState(true);
 
   const defaultWorkoutDetails = {

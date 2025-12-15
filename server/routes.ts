@@ -137,6 +137,18 @@ export function registerRoutes(app: Express): void {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
+  app.get("/api/time", (_req, res) => {
+    const serverNow = new Date();
+    const dateStr = serverNow.toISOString().split('T')[0];
+    
+    res.json({
+      serverTime: serverNow.toISOString(),
+      date: dateStr,
+      dayOfWeek: serverNow.getDay(),
+      timestamp: serverNow.getTime(),
+    });
+  });
+
   app.get("/api/progress/:userId", async (req, res) => {
     try {
       const { userId } = req.params;
@@ -179,7 +191,7 @@ export function registerRoutes(app: Express): void {
 
       const completedDays = completionsData.map(c => c.dayNumber);
 
-      const displayDays = [];
+      const displayDays: { day: number; status: "locked" | "active" | "preview"; isCompleted: boolean }[] = [];
       const startDay = Math.max(1, currentDay - 4);
       const endDay = Math.min(totalDays, startDay + 4);
       
@@ -348,6 +360,12 @@ export function registerRoutes(app: Express): void {
       const canStart = day === currentDay;
       const status = calculateDayStatus(day, currentDay, []);
 
+      const formattedDate = serverNow.toLocaleDateString('en-US', { 
+        month: 'long', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
+
       res.json({
         success: true,
         canStart,
@@ -355,6 +373,7 @@ export function registerRoutes(app: Express): void {
         currentDay,
         requestedDay: day,
         serverDate: serverNow.toISOString(),
+        formattedDate,
       });
     } catch (error) {
       console.error("Error validating workout access:", error);

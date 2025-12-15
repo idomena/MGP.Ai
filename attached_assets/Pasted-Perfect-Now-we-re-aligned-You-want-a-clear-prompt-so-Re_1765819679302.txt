@@ -1,0 +1,94 @@
+Perfect. Now we’re aligned 👍
+You want a clear prompt so Replit will create server time as the single source of truth for the entire app.
+
+Below is a copy-paste prompt written exactly for a Replit Agent, no extra thinking required.
+
+⸻
+
+Replit Agent – System Prompt (Server Time = Source of Truth)
+
+Objective:
+Implement a server-based time system that acts as the only authoritative source of date and time for the entire application.
+
+This is a production requirement, not a demo or mock.
+
+⸻
+
+Core Requirement
+	•	The app must never rely on client/device time.
+	•	All date logic must come from the server’s current time.
+	•	Server time must be used to determine:
+	•	Today’s day number
+	•	Active workout
+	•	Map position on the homepage
+	•	Locked past content
+	•	Preview-only future content
+
+⸻
+
+Implementation Rules
+	1.	Create a server-side time service that:
+	•	Uses server system time (UTC preferred)
+	•	Normalizes to the app’s timezone
+	2.	Expose a secure endpoint:
+
+GET /api/time
+
+returning:
+
+{
+  "serverTime": "ISO_8601",
+  "date": "YYYY-MM-DD",
+  "dayIndex": 16
+}
+
+
+	3.	All frontend logic must request server time and never calculate the date locally.
+
+⸻
+
+Homepage Map Logic
+	•	On app load:
+	•	Fetch /api/time
+	•	Use dayIndex to:
+	•	Highlight today’s location
+	•	Lock all previous days
+	•	Show future days as preview-only
+	•	The map must update automatically when the server date changes.
+
+⸻
+
+Security & Integrity
+	•	Changing device date/time must not affect the app.
+	•	Deep links, URL params, or local overrides must not alter day logic.
+	•	Server time must be revalidated:
+	•	On app open
+	•	On refresh
+	•	On any critical interaction
+
+⸻
+
+Non-Negotiable
+
+If any part of the app uses:
+	•	new Date() on the client
+	•	Browser/device time
+	•	Manual date selection
+
+→ The implementation is incorrect.
+
+⸻
+
+Final Requirement
+
+The application must behave like a live real-world service, governed entirely by server time.
+
+⸻
+
+If you want, next I can:
+	•	Add daily rollover logic
+	•	Add timezone-safe day calculation
+	•	Combine this with Google Calendar sync
+	•	Write actual server code for Node / Python
+
+Just tell me which one.
