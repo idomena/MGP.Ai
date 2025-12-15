@@ -3,7 +3,7 @@ import NavigationBar from "@/components/NavigationBar";
 import { Send, Loader2, ArrowLeft } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { callAiCoach } from "@/lib/api";
 import { toast } from "sonner";
 
 interface Message {
@@ -56,15 +56,11 @@ export default function AssistantChatPage() {
     setIsTyping(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("ai-coach", {
-        body: { message: messageText },
-      });
-
-      if (error) throw error;
+      const data = await callAiCoach(messageText);
 
       const assistantMessage: Message = {
         role: "assistant",
-        content: data.advice || "I'm here to help with your fitness goals!",
+        content: data.advice || data.response || "I'm here to help with your fitness goals!",
         timestamp: new Date(),
       };
 

@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Upload, Loader2, FileText, ArrowLeft } from 'lucide-react';
 import { toast } from "sonner";
-import { supabase } from '@/integrations/supabase/client';
+import { extractOcrText } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import NavigationBar from '@/components/NavigationBar';
 
@@ -36,11 +36,7 @@ const OCR = () => {
         reader.readAsDataURL(file);
       });
 
-      const { data, error } = await supabase.functions.invoke('ocr-extract', {
-        body: { image: base64 },
-      });
-
-      if (error) throw error;
+      const data = await extractOcrText(base64, file.type || "image/jpeg");
 
       setExtractedText(data.text);
       toast.success('Text extracted successfully!');
