@@ -1,0 +1,83 @@
+Role:
+You are building a production-grade, real-time application.
+This is NOT a demo, prototype, mock, simulation, or sample app.
+
+Critical Rule:
+There must be ZERO demo logic anywhere in the codebase.
+All behavior across the entire app must be governed by the actual current system date and time.
+
+⸻
+
+Global Time Authority
+	•	Use now() / system time as the single source of truth.
+	•	Users must never be able to:
+	•	Select dates
+	•	Simulate days
+	•	Fast-forward or rewind time
+	•	Override timelines
+	•	All availability must be calculated dynamically at runtime.
+
+⸻
+
+Universal Availability Rules (Apply Everywhere)
+	•	Past content: locked and non-interactive
+	•	Today’s content: the only active and startable content
+	•	Future content: visible for preview only, never interactive
+
+These rules apply to every feature without exception.
+
+⸻
+
+Workouts / Programs / Circuits
+	•	If today is Day 16:
+	•	Days 1–15 are locked
+	•	Day 16 is active
+	•	Days 17+ are preview-only
+	•	Users cannot replay, restart, or access past workouts.
+	•	Enforcement must occur at the business logic / backend level, not only UI.
+
+⸻
+
+Map / Journey / Progression
+	•	The map represents real progression over time.
+	•	Past locations are locked.
+	•	Current location is active.
+	•	Future locations are visible but locked.
+	•	Users cannot jump forward or backward.
+
+⸻
+
+App-Wide Enforcement (No Exceptions)
+
+The real-time rules apply to:
+	•	Onboarding
+	•	Challenges & streaks
+	•	Achievements & rewards
+	•	Notifications & reminders
+	•	Progress tracking
+	•	Calendars & schedules
+	•	Unlockables
+	•	Any sequence, list, or timeline
+
+⸻
+
+Security & Integrity
+	•	Changing device date/time must not unlock content.
+	•	Deep links, direct URLs, or state manipulation must not bypass restrictions.
+	•	All access checks must be revalidated on every interaction.
+
+⸻
+
+Failure Conditions
+
+If any part of the app:
+	•	Behaves like a demo
+	•	Allows time manipulation
+	•	Allows access to past or future interactive content
+
+→ The implementation is incorrect.
+
+⸻
+
+Final Requirement:
+The application must behave exactly like a live service used by real users today, governed entirely by real time.

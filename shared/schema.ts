@@ -26,3 +26,37 @@ export const ocrResponseSchema = z.object({
 });
 
 export type OcrResponse = z.infer<typeof ocrResponseSchema>;
+
+export const progressResponseSchema = z.object({
+  success: z.boolean(),
+  serverDate: z.string(),
+  currentDay: z.number(),
+  totalDays: z.number(),
+  programStartDate: z.string(),
+  completedDays: z.array(z.number()),
+  dayStatuses: z.array(z.object({
+    day: z.number(),
+    status: z.enum(["locked", "active", "preview"]),
+    isCompleted: z.boolean(),
+  })),
+});
+
+export type ProgressResponse = z.infer<typeof progressResponseSchema>;
+
+export const completeWorkoutRequestSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
+  dayNumber: z.number().int().min(1, "Day number must be positive"),
+  workoutName: z.string().optional(),
+  durationMinutes: z.number().optional(),
+  caloriesBurned: z.number().optional(),
+});
+
+export type CompleteWorkoutRequest = z.infer<typeof completeWorkoutRequestSchema>;
+
+export const completeWorkoutResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+  error: z.string().optional(),
+});
+
+export type CompleteWorkoutResponse = z.infer<typeof completeWorkoutResponseSchema>;
