@@ -1,4 +1,34 @@
 import { z } from "zod";
+import { pgTable, serial, text, integer, date, timestamp, varchar, uniqueIndex } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+
+export const userPrograms = pgTable("user_programs", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull().unique(),
+  startDate: date("start_date").notNull(),
+  totalDays: integer("total_days").notNull().default(90),
+});
+
+export const workoutCompletions = pgTable("workout_completions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  dayNumber: integer("day_number").notNull(),
+  workoutName: text("workout_name"),
+  durationMinutes: integer("duration_minutes"),
+  caloriesBurned: integer("calories_burned"),
+  completedAt: timestamp("completed_at").defaultNow(),
+}, (table) => ({
+  userDayUnique: uniqueIndex("workout_completions_user_day_unique").on(table.userId, table.dayNumber),
+}));
+
+export const insertUserProgramSchema = createInsertSchema(userPrograms).omit({ id: true });
+export const insertWorkoutCompletionSchema = createInsertSchema(workoutCompletions).omit({ id: true, completedAt: true });
+
+export type UserProgram = typeof userPrograms.$inferSelect;
+export type InsertUserProgram = z.infer<typeof insertUserProgramSchema>;
+
+export type WorkoutCompletion = typeof workoutCompletions.$inferSelect;
+export type InsertWorkoutCompletion = z.infer<typeof insertWorkoutCompletionSchema>;
 
 export const generateRequestSchema = z.object({
   prompt: z.string().min(1, "Prompt is required").max(10000, "Prompt too long"),

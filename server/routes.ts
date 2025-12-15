@@ -1,23 +1,8 @@
 import type { Express } from "express";
 import { generateContent, generateCoachResponse, extractTextFromImage } from "./gemini";
-import { generateRequestSchema, ocrRequestSchema, completeWorkoutRequestSchema } from "../shared/schema";
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || '';
-
-let supabase: SupabaseClient | null = null;
-
-function getSupabase(): SupabaseClient | null {
-  if (!supabaseUrl || !supabaseKey) {
-    console.warn('Supabase not configured: missing URL or key');
-    return null;
-  }
-  if (!supabase) {
-    supabase = createClient(supabaseUrl, supabaseKey);
-  }
-  return supabase;
-}
+import { generateRequestSchema, ocrRequestSchema, completeWorkoutRequestSchema, userPrograms, workoutCompletions } from "../shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 
 const TOTAL_PROGRAM_DAYS = 90;
 
@@ -163,55 +148,36 @@ export function registerRoutes(app: Express): void {
         });
       }
 
-      const sb = getSupabase();
-      if (!sb) {
-        return res.status(503).json({
-          success: false,
-          error: "Database not configured",
-        });
-      }
-
       const serverNow = new Date();
       
-      const { data: programData, error: programError } = await sb
-        .from('user_programs')
-        .select('start_date, total_days')
-        .eq('user_id', userId)
-        .single();
+      const existingProgram = await db.select()
+        .from(userPrograms)
+        .where(eq(userPrograms.userId, userId))
+        .limit(1);
 
       let programStartDate: Date;
       let totalDays = TOTAL_PROGRAM_DAYS;
 
-      if (programError || !programData) {
-        const { error: insertError } = await sb
-          .from('user_programs')
-          .upsert({
-            user_id: userId,
-            start_date: serverNow.toISOString().split('T')[0],
-            total_days: TOTAL_PROGRAM_DAYS
-          }, { onConflict: 'user_id' });
-
-        if (insertError) {
-          console.error('Error creating user program:', insertError);
-        }
+      if (existingProgram.length === 0) {
+        const todayStr = serverNow.toISOString().split('T')[0];
+        await db.insert(userPrograms).values({
+          userId,
+          startDate: todayStr,
+          totalDays: TOTAL_PROGRAM_DAYS,
+        }).onConflictDoNothing();
         programStartDate = serverNow;
       } else {
-        programStartDate = new Date(programData.start_date);
-        totalDays = programData.total_days || TOTAL_PROGRAM_DAYS;
+        programStartDate = new Date(existingProgram[0].startDate);
+        totalDays = existingProgram[0].totalDays || TOTAL_PROGRAM_DAYS;
       }
 
       const currentDay = calculateCurrentDay(programStartDate, serverNow);
 
-      const { data: completionsData, error: completionsError } = await sb
-        .from('workout_completions')
-        .select('day_number')
-        .eq('user_id', userId);
+      const completionsData = await db.select({ dayNumber: workoutCompletions.dayNumber })
+        .from(workoutCompletions)
+        .where(eq(workoutCompletions.userId, userId));
 
-      if (completionsError) {
-        console.error('Error fetching completions:', completionsError);
-      }
-
-      const completedDays = completionsData?.map(c => c.day_number) || [];
+      const completedDays = completionsData.map(c => c.dayNumber);
 
       const displayDays = [];
       const startDay = Math.max(1, currentDay - 4);
@@ -256,26 +222,16 @@ export function registerRoutes(app: Express): void {
         });
       }
 
-      const sb = getSupabase();
-      if (!sb) {
-        return res.status(503).json({
-          success: false,
-          message: "Database not configured",
-          error: "Database not configured",
-        });
-      }
-
       const { userId, dayNumber, workoutName, durationMinutes, caloriesBurned } = validation.data;
 
       const serverNow = new Date();
 
-      const { data: programData, error: programError } = await sb
-        .from('user_programs')
-        .select('start_date')
-        .eq('user_id', userId)
-        .single();
+      const existingProgram = await db.select()
+        .from(userPrograms)
+        .where(eq(userPrograms.userId, userId))
+        .limit(1);
 
-      if (programError || !programData) {
+      if (existingProgram.length === 0) {
         return res.status(400).json({
           success: false,
           message: "Program not found",
@@ -283,7 +239,7 @@ export function registerRoutes(app: Express): void {
         });
       }
 
-      const programStartDate = new Date(programData.start_date);
+      const programStartDate = new Date(existingProgram[0].startDate);
       const currentDay = calculateCurrentDay(programStartDate, serverNow);
 
       if (dayNumber !== currentDay) {
@@ -296,14 +252,15 @@ export function registerRoutes(app: Express): void {
         });
       }
 
-      const { data: existingCompletion } = await sb
-        .from('workout_completions')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('day_number', dayNumber)
-        .single();
+      const existingCompletion = await db.select({ id: workoutCompletions.id })
+        .from(workoutCompletions)
+        .where(and(
+          eq(workoutCompletions.userId, userId),
+          eq(workoutCompletions.dayNumber, dayNumber)
+        ))
+        .limit(1);
 
-      if (existingCompletion) {
+      if (existingCompletion.length > 0) {
         return res.status(400).json({
           success: false,
           message: "Workout already completed",
@@ -311,31 +268,29 @@ export function registerRoutes(app: Express): void {
         });
       }
 
-      const { error: insertError } = await sb
-        .from('workout_completions')
-        .insert({
-          user_id: userId,
-          day_number: dayNumber,
-          workout_name: workoutName || `Day ${dayNumber} Workout`,
-          duration_minutes: durationMinutes || 0,
-          calories_burned: caloriesBurned || 0,
-        });
-
-      if (insertError) {
-        console.error('Error saving completion:', insertError);
-        return res.status(500).json({
-          success: false,
-          message: "Failed to save workout completion",
-          error: insertError.message,
-        });
-      }
+      await db.insert(workoutCompletions).values({
+        userId,
+        dayNumber,
+        workoutName: workoutName || `Day ${dayNumber} Workout`,
+        durationMinutes: durationMinutes || 0,
+        caloriesBurned: caloriesBurned || 0,
+      });
 
       res.json({
         success: true,
         message: `Day ${dayNumber} workout completed successfully!`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error completing workout:", error);
+      
+      if (error?.code === '23505' || error?.message?.includes('unique constraint')) {
+        return res.status(400).json({
+          success: false,
+          message: "Workout already completed",
+          error: "This workout has already been marked as complete",
+        });
+      }
+      
       const message = error instanceof Error ? error.message : "Unknown error";
       res.status(500).json({
         success: false,
@@ -358,32 +313,36 @@ export function registerRoutes(app: Express): void {
         });
       }
 
-      const sb = getSupabase();
-      if (!sb) {
-        return res.status(503).json({
-          success: false,
-          canStart: false,
-          error: "Database not configured",
-        });
-      }
-
       const serverNow = new Date();
 
-      const { data: programData, error: programError } = await sb
-        .from('user_programs')
-        .select('start_date')
-        .eq('user_id', userId)
-        .single();
+      let existingProgram = await db.select()
+        .from(userPrograms)
+        .where(eq(userPrograms.userId, userId))
+        .limit(1);
 
-      if (programError || !programData) {
-        return res.status(400).json({
+      if (existingProgram.length === 0) {
+        const todayStr = serverNow.toISOString().split('T')[0];
+        await db.insert(userPrograms).values({
+          userId,
+          startDate: todayStr,
+          totalDays: TOTAL_PROGRAM_DAYS,
+        }).onConflictDoNothing();
+        
+        existingProgram = await db.select()
+          .from(userPrograms)
+          .where(eq(userPrograms.userId, userId))
+          .limit(1);
+      }
+
+      if (existingProgram.length === 0) {
+        return res.status(500).json({
           success: false,
           canStart: false,
-          error: "Program not found",
+          error: "Failed to initialize program",
         });
       }
 
-      const programStartDate = new Date(programData.start_date);
+      const programStartDate = new Date(existingProgram[0].startDate);
       const currentDay = calculateCurrentDay(programStartDate, serverNow);
 
       const canStart = day === currentDay;
