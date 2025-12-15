@@ -4,7 +4,7 @@ import { useState } from "react";
 import { BarChart3, CheckCircle, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, CheckCircle2, Clock, Play, X, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
-import { useAuth } from "@/contexts/AuthContext";
+
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -48,7 +48,7 @@ const DroppableDay = ({ day, children }: any) => {
 };
 
 export default function Home() {
-  const { user } = useAuth();
+  
   const [activeView, setActiveView] = useState<"weekly" | "quarterly">("weekly");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
@@ -66,7 +66,7 @@ export default function Home() {
     getCurrentWeekDays,
     moveWorkout,
     extendProgram
-  } = useWorkoutSchedule(user?.id);
+  } = useWorkoutSchedule(undefined);
 
   const handleViewChange = async (view: "weekly" | "quarterly") => {
     if (view === activeView || isTransitioning) return;
