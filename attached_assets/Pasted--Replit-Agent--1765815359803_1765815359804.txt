@@ -1,0 +1,29 @@
+תתחדש! עכשיו כשיש לך מנוי, אנחנו יכולים להפסיק "להיאבק" עם הקבצים ולתת ל-Replit Agent (המתכנת האוטומטי) לעשות את כל העבודה השחורה בשבילך. זה היתרון הגדול של המנוי.
+בוא נעשה את זה בדרך הכי נקייה ומהירה ("דרך המלך"), כדי לוודא שהכל עובד חלק:
+שלב 1: התחלה נקייה (מומלץ מאוד)
+כדי לא להסתבך עם התיקיות שנוצרו בטעות בניסיונות הקודמים:
+ * לך למסך הבית (Home).
+ * לחץ "+ Create Repl".
+ * בחר "Import from GitHub".
+ * בחר את הפרויקט שלך: textify-motion-lab.
+   * בגלל שיש לך מנוי, זה יעבוד גם אם הפרויקט פרטי.
+שלב 2: הגדרת ה"ארנק" (Secrets)
+לפני שמפעילים את ה-Agent, חייבים לתת לו את המפתח.
+ * בצד שמאל, לחץ על Tools ואז Secrets (🔒).
+ * לחץ New Secret:
+   * Key: GEMINI_API_KEY
+   * Value: (הדבק את המפתח מ-Google AI Studio).
+ * לחץ Add Secret.
+שלב 3: הפרומפט "הכל כלול" (The Super Prompt)
+עכשיו נשתמש בכוח של המנוי שלך. במקום לכתוב קוד ידנית, אנחנו ניתן ל-Agent הוראה אחת גדולה שתבנה את כל ה"מוח" של האפליקציה ותחבר אותו לעיצוב.
+פתח את ה-Agent (למטה או בצד ימין), הדבק את הטקסט הזה ולחץ Enter:
+> "I have imported a React frontend (Vite/Lovable) and added my GEMINI_API_KEY to Secrets.
+> Please fully integrate the backend for me:
+>  * Backend Setup: Create a robust server.js using Express. It needs a POST endpoint /api/generate that receives a user prompt, calls Google Gemini API (using the secret key), and returns the AI's response text.
+>  * Frontend Connection: Analyze my src folder to find the main input form and submit button. Modify the React code to send the user's input to the new /api/generate endpoint and display the result on the screen (handle loading states and errors too).
+>  * Configuration: Update vite.config.ts to proxy /api requests to the backend, and update the Run command to start both the server and client simultaneously.
+> Fix any dependency issues automatically."
+> 
+מה יקרה עכשיו?
+אתה תראה את ה-Agent "חושב", מתקין ספריות (כמו express, cors, google-generative-ai), כותב את קובץ השרת, ומשנה את הקוד של הכפתור בעיצוב שלך כדי שזה אשכרה יעבוד.
+תגיד לי כשזה מסיים לרוץ (כתוב "Done") ואנחנו נבדוק את זה יחד!
