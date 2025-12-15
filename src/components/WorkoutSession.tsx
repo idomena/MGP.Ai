@@ -4,16 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-
-interface Exercise {
-  id: number;
-  name: string;
-  muscles: string;
-  sets: number;
-  reps: string;
-  time: string;
-  difficulty: string;
-}
+import { Exercise } from "@/data/exercises";
 
 interface WorkoutSessionProps {
   exercises: Exercise[];
@@ -179,10 +170,10 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
                   </div>
                   <div className="flex-1">
                     <h3 className="text-white text-2xl font-bold" data-testid="text-current-exercise">{currentExercise.name}</h3>
-                    <p className="text-[#7c57ff] text-sm">{currentExercise.muscles}</p>
+                    <p className="text-[#7c57ff] text-sm">{currentExercise.muscleGroup}</p>
                   </div>
                   <div className="bg-[#aaf163] text-background text-xs font-bold px-3 py-1 rounded-full">
-                    {currentExercise.difficulty}
+                    {currentExercise.equipment}
                   </div>
                 </div>
               </div>
@@ -200,7 +191,7 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
                   </div>
                   <div className="bg-background/50 rounded-xl p-4 text-center">
                     <p className="text-muted-foreground text-xs mb-1">Time</p>
-                    <p className="text-white font-bold text-2xl">{currentExercise.time}</p>
+                    <p className="text-white font-bold text-2xl">{currentExercise.duration}</p>
                   </div>
                 </div>
               </div>
