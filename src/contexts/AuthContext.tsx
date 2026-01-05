@@ -1,11 +1,15 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { createContext, useContext, ReactNode } from 'react';
+
+// Mock user for development - no authentication required
+const mockUser = {
+  id: 'demo-user-001',
+  email: 'demo@mgp.ai',
+  user_metadata: { full_name: 'Demo User' },
+};
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: typeof mockUser;
+  session: null;
   signOut: () => Promise<void>;
   loading: boolean;
 }
@@ -13,38 +17,12 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
   const signOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/auth');
+    // No-op for now since we don't have auth
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, signOut, loading }}>
+    <AuthContext.Provider value={{ user: mockUser, session: null, signOut, loading: false }}>
       {children}
     </AuthContext.Provider>
   );
