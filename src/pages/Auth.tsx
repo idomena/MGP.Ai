@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,97 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Dumbbell, Loader2 } from 'lucide-react';
-
-// Fireworks Component
-const Fireworks = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const particles: Array<{
-      x: number; y: number; vx: number; vy: number;
-      life: number; color: string; size: number;
-    }> = [];
-
-    const colors = ['#7c57ff', '#60a5fa', '#aaf163', '#f472b6', '#fbbf24'];
-
-    const createFirework = () => {
-      const x = Math.random() * canvas.width;
-      const y = Math.random() * canvas.height * 0.5;
-      const particleCount = 30 + Math.random() * 20;
-      const color = colors[Math.floor(Math.random() * colors.length)];
-
-      for (let i = 0; i < particleCount; i++) {
-        const angle = (Math.PI * 2 * i) / particleCount;
-        const speed = 2 + Math.random() * 3;
-        particles.push({
-          x, y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          life: 1,
-          color,
-          size: 2 + Math.random() * 2
-        });
-      }
-    };
-
-    const animate = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.05;
-        p.life -= 0.015;
-
-        if (p.life <= 0) {
-          particles.splice(i, 1);
-          continue;
-        }
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.life;
-        ctx.fill();
-        ctx.globalAlpha = 1;
-      }
-
-      requestAnimationFrame(animate);
-    };
-
-    animate();
-    const interval = setInterval(createFirework, 800);
-
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0"
-      style={{ background: 'transparent' }}
-    />
-  );
-};
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -165,9 +74,8 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 gradient-secondary relative overflow-hidden">
-      <Fireworks />
-      <Card className="w-full max-w-md glass shadow-glow relative z-10">
+    <div className="min-h-screen flex items-center justify-center p-4 gradient-secondary">
+      <Card className="w-full max-w-md glass shadow-glow">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="p-3 rounded-full gradient-primary">
