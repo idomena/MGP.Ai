@@ -21,14 +21,14 @@ export default function AssistantPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-20 px-4">
+    <div className="min-h-screen bg-background pb-24 px-4 overflow-y-auto" role="main" aria-label="AI Assistant page">
       <MobileHeader />
 
       <div className="mt-6">
         <h1 className="text-2xl font-bold">
           <span className="flex items-center gap-2 text-white">
-            <MessageCircle className="w-6 h-6" />
-            Hello <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00c6ff] to-[#7c57ff]">Ido Mena</span>
+            <MessageCircle className="w-6 h-6" aria-hidden="true" />
+            Hello <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00c6ff] to-[#7c57ff]">User</span>
           </span>
         </h1>
         <h2 className="text-2xl font-bold mt-2 text-white">How Can I Help You Today?</h2>
@@ -36,17 +36,22 @@ export default function AssistantPage() {
 
       {/* Main Chat Button */}
       <div className="mt-6">
-        <Link to="/assistant/chat">
+        <Link 
+          to="/assistant/chat" 
+          className="block focus:outline-none focus:ring-2 focus:ring-[#7c57ff] rounded-2xl"
+          aria-label="Start a conversation with AI assistant"
+          data-testid="button-start-chat"
+        >
           <div className="relative bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] rounded-2xl p-0.5 shadow-lg hover:shadow-[0_0_20px_rgba(124,87,255,0.5)] transition-all duration-300">
             <div className="bg-[#2a2a2a] rounded-[15px] p-5 flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-inner">
+              <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-inner" aria-hidden="true">
                 <MessageCircle className="w-7 h-7 text-[#7c57ff]" />
               </div>
               <div className="flex-1">
                 <h3 className="text-white font-semibold text-base">Start a conversation</h3>
                 <p className="text-white/60 text-sm">Ask me anything about fitness</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-[#aaf163]/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-[#aaf163]/20 flex items-center justify-center" aria-hidden="true">
                 <MessageCircle className="w-5 h-5 text-[#aaf163]" />
               </div>
             </div>
@@ -55,27 +60,30 @@ export default function AssistantPage() {
       </div>
 
       {/* Categories */}
-      <div className="mt-8">
-        <h3 className="text-white font-semibold text-lg mb-4">Categories</h3>
-        <div className="grid grid-cols-3 gap-4">
+      <section className="mt-8" aria-labelledby="categories-heading">
+        <h3 id="categories-heading" className="text-white font-semibold text-lg mb-4">Categories</h3>
+        <ul className="grid grid-cols-3 gap-4 list-none p-0 m-0">
           {categories.map((category, index) => {
             const Icon = category.icon;
             return (
-              <motion.div
-                key={category.id}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
-                onClick={() => handleCategoryClick(category.prompt)}
-                className="bg-muted rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:bg-muted/80 transition-all cursor-pointer active:scale-95 aspect-square"
-              >
-                <Icon className="w-8 h-8 text-white" />
-                <p className="text-white text-sm font-medium">{category.label}</p>
-              </motion.div>
+              <li key={category.id}>
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                  onClick={() => handleCategoryClick(category.prompt)}
+                  className="w-full bg-muted rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:bg-muted/80 transition-all cursor-pointer active:scale-95 aspect-square focus:outline-none focus:ring-2 focus:ring-[#7c57ff]"
+                  aria-label={`Ask about ${category.label}`}
+                  data-testid={`button-category-${category.label.toLowerCase()}`}
+                >
+                  <Icon className="w-8 h-8 text-white" aria-hidden="true" />
+                  <p className="text-white text-sm font-medium">{category.label}</p>
+                </motion.button>
+              </li>
             );
           })}
-        </div>
-      </div>
+        </ul>
+      </section>
 
       <NavigationBar />
     </div>

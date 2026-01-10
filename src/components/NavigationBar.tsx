@@ -14,29 +14,34 @@ export default function NavigationBar() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50">
+    <nav className="fixed bottom-0 left-0 right-0 z-50" role="navigation" aria-label="Main navigation">
       {/* Liquid Glass Effect Container */}
       <div className="relative">
         {/* Gradient background blur layer */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#7c57ff]/40 via-[#60a5fa]/40 to-[#00c6ff]/40 backdrop-blur-2xl" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#7c57ff]/40 via-[#60a5fa]/40 to-[#00c6ff]/40 backdrop-blur-2xl" aria-hidden="true" />
         
         {/* Glass border */}
-        <div className="absolute inset-0 border-t border-white/20" />
+        <div className="absolute inset-0 border-t border-white/20" aria-hidden="true" />
         
         {/* Content */}
         <div className="relative flex justify-around items-center h-20 backdrop-blur-xl bg-white/5">
           {/* Center floating button */}
           <div className="absolute left-1/2 -translate-x-1/2 -top-6">
-            <Link to="/assistant/chat">
+            <Link 
+              to="/assistant/chat" 
+              aria-label="Open AI Assistant chat"
+              data-testid="button-assistant-chat"
+              className="block focus:outline-none focus:ring-2 focus:ring-[#7c57ff] rounded-full"
+            >
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center shadow-[0_0_30px_rgba(124,87,255,0.6)] backdrop-blur-xl border-2 border-white/20">
-                <MessageCircle className="w-8 h-8 text-white" />
+                <MessageCircle className="w-8 h-8 text-white" aria-hidden="true" />
               </div>
             </Link>
           </div>
 
           {navItems.map((item, index) => {
             // Skip the middle item (index 2) since we have a centered floating button
-            if (index === 2) return <div key={item.name} className="flex-1" />;
+            if (index === 2) return <div key={item.name} className="flex-1" aria-hidden="true" />;
             
             const isActive = currentPath === item.path || 
                             (item.path === "/workout" && currentPath.startsWith("/workout"));
@@ -46,12 +51,16 @@ export default function NavigationBar() {
               <Link
                 key={item.name}
                 to={item.path}
-                className="flex flex-col items-center justify-center flex-1 h-full"
+                className="flex flex-col items-center justify-center flex-1 h-full focus:outline-none focus:ring-2 focus:ring-[#7c57ff] focus:ring-inset"
+                aria-label={`Go to ${item.name}`}
+                aria-current={isActive ? "page" : undefined}
+                data-testid={`nav-${item.name.toLowerCase()}`}
               >
                 <Icon
                   className={`w-6 h-6 transition-colors ${
                     isActive ? "text-[#aaf163] drop-shadow-[0_0_8px_rgba(170,241,99,0.5)]" : "text-white/70"
                   }`}
+                  aria-hidden="true"
                 />
                 <span
                   className={`text-xs mt-1 transition-colors ${

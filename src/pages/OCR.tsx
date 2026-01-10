@@ -53,19 +53,24 @@ const OCR = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-24 overflow-y-auto" role="main" aria-label="OCR Food Scanner">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Link to="/nutrition" className="flex items-center text-gray-400 mb-6 hover:text-white transition-colors">
-          <ArrowLeft className="w-4 h-4 mr-2" />
+        <Link 
+          to="/nutrition" 
+          className="flex items-center text-gray-400 mb-6 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#7c57ff] rounded-lg p-1"
+          aria-label="Go back to Nutrition"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
           Back to Nutrition
         </Link>
 
-        <div className="mb-8">
+        <header className="mb-8">
           <h1 className="text-4xl font-bold mb-2 text-white">OCR Food Scanner</h1>
           <p className="text-muted-foreground text-lg">
             Upload images to extract text from nutrition labels, meal plans, or food packaging
           </p>
-        </div>
+        </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="glass">

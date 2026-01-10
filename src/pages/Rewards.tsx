@@ -61,7 +61,7 @@ export default function RewardsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20 px-4">
+    <div className="min-h-screen bg-background pb-24 px-4 overflow-y-auto" role="main" aria-label="Rewards page">
       <MobileHeader />
 
       <div className="mt-6">
@@ -70,57 +70,67 @@ export default function RewardsPage() {
       </div>
 
       {/* Points Display */}
-      <div className="mt-6 bg-gradient-to-r from-[#7c57ff] to-[#00c6ff] rounded-xl p-0.5">
+      <section className="mt-6 bg-gradient-to-r from-[#7c57ff] to-[#00c6ff] rounded-xl p-0.5" aria-labelledby="points-heading">
         <div className="bg-[#1a1a1a] rounded-[10px] p-6 text-center">
-          <p className="text-gray-400 mb-2">Your Points</p>
-          <p className="text-5xl font-bold text-white">{totalPoints}</p>
+          <p id="points-heading" className="text-gray-400 mb-2">Your Points</p>
+          <p className="text-5xl font-bold text-white" data-testid="text-total-points" aria-live="polite">{totalPoints}</p>
           <p className="text-gray-400 mt-2 text-sm">50 points needed for next reward</p>
         </div>
-      </div>
+      </section>
 
       {/* Tabs */}
-      <div className="mt-6 flex gap-2">
+      <nav className="mt-6 flex gap-2" role="tablist" aria-label="Rewards navigation">
         <button
+          role="tab"
+          aria-selected={activeTab === "rewards"}
+          aria-controls="rewards-panel"
           onClick={() => setActiveTab("rewards")}
-          className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all ${
+          className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-[#7c57ff] ${
             activeTab === "rewards"
               ? "bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] text-white"
               : "bg-[#3f3f3f] text-gray-400"
           }`}
+          data-testid="tab-rewards"
         >
           Rewards
         </button>
         <button
+          role="tab"
+          aria-selected={activeTab === "history"}
+          aria-controls="history-panel"
           onClick={() => setActiveTab("history")}
-          className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all ${
+          className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-[#7c57ff] ${
             activeTab === "history"
               ? "bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] text-white"
               : "bg-[#3f3f3f] text-gray-400"
           }`}
+          data-testid="tab-history"
         >
           History
         </button>
-      </div>
+      </nav>
 
       {/* Content */}
       {activeTab === "rewards" && (
-        <div className="mt-6 space-y-4">
+        <section id="rewards-panel" role="tabpanel" aria-labelledby="tab-rewards" className="mt-6 space-y-4">
           {rewards.map((reward, index) => {
             const Icon = reward.icon;
             const canAfford = totalPoints >= reward.pointsCost;
 
             return (
-              <motion.div
+              <motion.article
                 key={reward.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 className={`bg-[#3f3f3f] rounded-xl p-6 ${canAfford ? "opacity-100" : "opacity-60"}`}
+                data-testid={`card-reward-${reward.id}`}
               >
                 <div className="flex items-start">
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center mr-4"
                     style={{ backgroundColor: `${reward.color}20` }}
+                    aria-hidden="true"
                   >
                     <Icon className="w-6 h-6" style={{ color: reward.color }} />
                   </div>
@@ -132,7 +142,9 @@ export default function RewardsPage() {
                       {canAfford && (
                         <button 
                           onClick={() => handleRedeem(reward.name, reward.pointsCost)}
-                          className="px-4 py-2 bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] text-white rounded-full text-sm font-semibold hover:scale-105 transition-transform"
+                          className="px-4 py-2 bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] text-white rounded-full text-sm font-semibold hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-white/50"
+                          aria-label={`Redeem ${reward.name} for ${reward.pointsCost} points`}
+                          data-testid={`button-redeem-${reward.id}`}
                         >
                           Redeem
                         </button>
@@ -140,27 +152,29 @@ export default function RewardsPage() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </motion.article>
             );
           })}
-        </div>
+        </section>
       )}
 
       {activeTab === "history" && (
-        <div className="mt-6 space-y-4">
+        <section id="history-panel" role="tabpanel" aria-labelledby="tab-history" className="mt-6 space-y-4">
           {history.map((item, index) => {
             const Icon = item.icon;
             return (
-              <motion.div
+              <motion.article
                 key={item.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 className="bg-[#3f3f3f] rounded-xl p-4 flex items-center"
+                data-testid={`card-history-${item.id}`}
               >
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center mr-4"
                   style={{ backgroundColor: `${item.color}20` }}
+                  aria-hidden="true"
                 >
                   <Icon className="w-5 h-5" style={{ color: item.color }} />
                 </div>
@@ -168,13 +182,16 @@ export default function RewardsPage() {
                   <h4 className="text-white font-semibold">{item.action}</h4>
                   <p className="text-gray-400 text-sm">{item.date}</p>
                 </div>
-                <span className={`font-bold ${item.points.startsWith("+") ? "text-green-400" : "text-red-400"}`}>
+                <span 
+                  className={`font-bold ${item.points.startsWith("+") ? "text-green-400" : "text-red-400"}`}
+                  aria-label={`${item.points.startsWith("+") ? "Earned" : "Spent"} ${item.points.replace(/[+-]/, "")} points`}
+                >
                   {item.points}
                 </span>
-              </motion.div>
+              </motion.article>
             );
           })}
-        </div>
+        </section>
       )}
 
       <NavigationBar />

@@ -7,7 +7,6 @@ import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface DayStatus {
@@ -81,33 +80,17 @@ export default function Home() {
     const workoutToMove = workoutDetails[fromDay as keyof typeof workoutDetails];
     if (!workoutToMove) return;
 
-    try {
-      // Save the moved workout to the new day
-      const { error } = await supabase
-        .from('workout_schedule')
-        .upsert({
-          user_id: user.id,
-          day_number: toDay,
-          workout_name: workoutToMove.name,
-          exercises: workoutToMove.exercises,
-          duration: workoutToMove.time,
-          focus: workoutToMove.focus
-        }, {
-          onConflict: 'user_id,day_number'
-        });
-
-      if (error) {
-        console.error('Error rescheduling workout:', error);
-        toast.error("Failed to reschedule workout");
-      } else {
-        toast.success(`Workout moved from Day ${fromDay} to Day ${toDay}!`);
-        setShowRescheduleModal(false);
-        setShowWorkoutModal(false);
-      }
-    } catch (error) {
-      console.error('Error rescheduling:', error);
-      toast.error("Failed to reschedule workout");
-    }
+    // Update local schedule state
+    setCustomSchedule(prev => {
+      const updated = { ...prev };
+      updated[toDay] = workoutToMove;
+      delete updated[fromDay];
+      return updated;
+    });
+    
+    toast.success(`Workout moved from Day ${fromDay} to Day ${toDay}!`);
+    setShowRescheduleModal(false);
+    setShowWorkoutModal(false);
   };
 
   // Fetch progress from server API
@@ -133,98 +116,45 @@ export default function Home() {
     }
   };
 
-  // Fetch completed workouts and custom schedule
+  // Fetch progress from server API on mount
   useEffect(() => {
     if (!user) return;
-
-    const fetchData = async () => {
-      // Fetch progress from server API (source of truth for day progression)
-      await fetchProgress();
-
-      // Fetch custom schedule
-      const { data: scheduleData, error: scheduleError } = await supabase
-        .from('workout_schedule')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (scheduleError) {
-        console.error('Error fetching schedule:', scheduleError);
-      } else {
-        const schedule: Record<number, any> = {};
-        scheduleData.forEach(item => {
-          schedule[item.day_number] = {
-            name: item.workout_name,
-            muscles: defaultWorkoutDetails[item.day_number as keyof typeof defaultWorkoutDetails]?.muscles || "Various",
-            time: item.duration,
-            exercises: item.exercises,
-            focus: item.focus
-          };
-        });
-        setCustomSchedule(schedule);
-      }
-    };
-
-    fetchData();
-
-    // Subscribe to realtime updates
-    const channel = supabase
-      .channel('workout_data_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'workout_completions',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          fetchProgress();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'workout_schedule',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          fetchData();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    fetchProgress();
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-background pb-20 px-4">
+    <div className="min-h-screen bg-background pb-24 px-4 overflow-y-auto" role="main" aria-label="Home page">
       <MobileHeader />
 
       {/* Toggle Buttons */}
-      <div className="mt-6">
+      <nav className="mt-6" role="tablist" aria-label="Program view selector">
         <div className="bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] rounded-full p-1">
           <div className="flex">
             <button
-              className={`flex-1 ${activeView === "weekly" ? "bg-background" : "bg-transparent"} text-white py-3 px-6 rounded-full text-center font-semibold transition-all duration-300 disabled:opacity-50`}
+              role="tab"
+              aria-selected={activeView === "weekly"}
+              aria-controls="weekly-panel"
+              className={`flex-1 ${activeView === "weekly" ? "bg-background" : "bg-transparent"} text-white py-3 px-6 rounded-full text-center font-semibold transition-all duration-300 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-white/50`}
               onClick={() => handleViewChange("weekly")}
               disabled={isTransitioning}
+              data-testid="tab-weekly"
             >
               Weekly Program
             </button>
             <button
-              className={`flex-1 ${activeView === "quarterly" ? "bg-background" : "bg-transparent"} text-white py-3 px-6 rounded-full text-center font-semibold transition-all duration-300 disabled:opacity-50`}
+              role="tab"
+              aria-selected={activeView === "quarterly"}
+              aria-controls="quarterly-panel"
+              className={`flex-1 ${activeView === "quarterly" ? "bg-background" : "bg-transparent"} text-white py-3 px-6 rounded-full text-center font-semibold transition-all duration-300 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-white/50`}
               onClick={() => handleViewChange("quarterly")}
               disabled={isTransitioning}
+              data-testid="tab-quarterly"
             >
               Quarterly Plan
             </button>
           </div>
         </div>
-      </div>
+      </nav>
 
       {activeView === "quarterly" ? (
         <>

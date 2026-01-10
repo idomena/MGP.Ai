@@ -88,24 +88,36 @@ export default function AssistantChatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pb-20">
+    <div className="min-h-screen bg-background flex flex-col pb-24" role="main" aria-label="AI Assistant Chat">
       <div className="px-4">
         <MobileHeader />
         
         <div className="mt-4">
-          <Link to="/assistant" className="flex items-center text-gray-400">
-            <ArrowLeft className="w-4 h-4 mr-2" />
+          <Link 
+            to="/assistant" 
+            className="flex items-center text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#7c57ff] rounded-lg p-1"
+            aria-label="Go back to Assistant"
+            data-testid="button-back"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
             Back to Assistant
           </Link>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+      <div 
+        className="flex-1 overflow-y-auto px-4 py-6 space-y-4" 
+        role="log" 
+        aria-label="Chat messages"
+        aria-live="polite"
+      >
         {messages.map((message, index) => (
           <div
             key={index}
             className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+            role="article"
+            aria-label={`${message.role === "user" ? "You" : "Assistant"} said`}
           >
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-3 ${
@@ -115,7 +127,7 @@ export default function AssistantChatPage() {
               }`}
             >
               <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-              <p className="text-xs opacity-70 mt-1">
+              <p className="text-xs opacity-70 mt-1" aria-label={`Sent at ${message.timestamp.toLocaleTimeString()}`}>
                 {message.timestamp.toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -126,13 +138,14 @@ export default function AssistantChatPage() {
         ))}
 
         {isTyping && (
-          <div className="flex justify-start">
+          <div className="flex justify-start" role="status" aria-label="Assistant is typing">
             <div className="bg-[#3f3f3f] rounded-2xl px-4 py-3">
-              <div className="flex space-x-2">
+              <div className="flex space-x-2" aria-hidden="true">
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }} />
               </div>
+              <span className="sr-only">Assistant is typing...</span>
             </div>
           </div>
         )}
@@ -142,28 +155,38 @@ export default function AssistantChatPage() {
 
       {/* Input */}
       <div className="px-4 pb-4 bg-background">
-        <div className="flex items-center gap-2 bg-[#3f3f3f] rounded-full px-4 py-2">
+        <form 
+          className="flex items-center gap-2 bg-[#3f3f3f] rounded-full px-4 py-2"
+          onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+        >
+          <label htmlFor="chat-input" className="sr-only">Type your message</label>
           <input
+            id="chat-input"
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
             disabled={isTyping}
-            className="flex-1 bg-transparent text-white placeholder-gray-400 outline-none"
+            className="flex-1 bg-transparent text-white placeholder-gray-400 outline-none focus:ring-0"
+            data-testid="input-message"
+            aria-describedby="send-hint"
           />
+          <span id="send-hint" className="sr-only">Press Enter to send</span>
           <button
-            onClick={() => handleSend()}
+            type="submit"
             disabled={!inputValue.trim() || isTyping}
-            className="w-10 h-10 rounded-full bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-10 h-10 rounded-full bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-white/50"
+            aria-label={isTyping ? "Sending message" : "Send message"}
+            data-testid="button-send"
           >
             {isTyping ? (
-              <Loader2 className="w-5 h-5 text-white animate-spin" />
+              <Loader2 className="w-5 h-5 text-white animate-spin" aria-hidden="true" />
             ) : (
-              <Send className="w-5 h-5 text-white" />
+              <Send className="w-5 h-5 text-white" aria-hidden="true" />
             )}
           </button>
-        </div>
+        </form>
       </div>
 
       <NavigationBar />

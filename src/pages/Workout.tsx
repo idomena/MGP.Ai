@@ -215,7 +215,7 @@ export default function WorkoutPage() {
           onExit={handleWorkoutExit}
         />
       ) : (
-        <div className="min-h-screen bg-background pb-20 px-4">
+        <div className="min-h-screen bg-background pb-24 px-4 overflow-y-auto" role="main" aria-label="Workout page">
           <div className="pt-6">
             <h1 className="text-white text-2xl font-bold text-center mb-6" data-testid="text-workout-name">
               {workout.name}
@@ -258,18 +258,20 @@ export default function WorkoutPage() {
               <div className="flex gap-3">
                 <button 
                   onClick={handleStartWorkout}
-                  className="flex-1 bg-white text-[#7c57ff] py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:bg-white/90 transition-all hover:scale-105"
+                  className="flex-1 bg-white text-[#7c57ff] py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:bg-white/90 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/50"
                   data-testid="button-start-workout"
+                  aria-label="Start workout session"
                 >
-                  <Play className="w-5 h-5 fill-current" />
+                  <Play className="w-5 h-5 fill-current" aria-hidden="true" />
                   Start Workout
                 </button>
                 <button 
                   onClick={() => setShowDetails(true)}
-                  className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center hover:bg-white/30 transition-all hover:scale-105"
+                  className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center hover:bg-white/30 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/50"
                   data-testid="button-view-details"
+                  aria-label="View workout details"
                 >
-                  <Eye className="w-6 h-6 text-white" />
+                  <Eye className="w-6 h-6 text-white" aria-hidden="true" />
                 </button>
               </div>
             </div>
