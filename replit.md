@@ -2,7 +2,14 @@
 
 ## Overview
 
-MGP.AI is an AI-powered fitness and nutrition mobile web application built with React, TypeScript, and Vite. The app provides personalized fitness coaching, workout tracking, nutrition scanning via OCR, and an AI assistant powered by Google Gemini. It features a dark-themed mobile-first design with glassmorphism UI elements and uses Supabase for authentication and data storage.
+MGP.AI is an AI-powered fitness and nutrition mobile web application built with React, TypeScript, and Vite. The app provides personalized fitness coaching, workout tracking, nutrition scanning via OCR, and an AI assistant powered by Google Gemini. It features a dark-themed mobile-first design with glassmorphism UI elements. The app is publicly accessible without authentication, using a mock user for all functionality.
+
+## Recent Changes
+
+### January 2026
+- **Authentication Removal**: App now uses mock user (demo-user-001) - no login required
+- **Accessibility Improvements**: Added ARIA labels, roles, focus states, and semantic HTML across all pages
+- **Scrolling Enhancement**: All pages now have `overflow-y-auto` with `pb-24` for proper scrolling
 
 ## User Preferences
 
@@ -30,9 +37,16 @@ Preferred communication style: Simple, everyday language.
 - **Key Files**: server/index.ts (entry), server/routes.ts (endpoints), server/gemini.ts (AI functions)
 
 ### Data Layer
-- **Authentication**: Supabase Auth with email/password
+- **Authentication**: Mock user system (AuthContext provides demo-user-001) - no login required
 - **Database**: Drizzle ORM configured for PostgreSQL (requires DATABASE_URL)
 - **Schema Location**: `shared/schema.ts` for API contracts, `server/db.ts` for database connection
+
+### Accessibility Features
+- **ARIA Labels**: All interactive elements have descriptive labels
+- **Focus States**: Visible focus rings (`focus:ring-2 focus:ring-[#7c57ff]`) on all controls
+- **Semantic HTML**: Proper use of header, nav, section, article, and main elements
+- **Screen Reader Support**: sr-only classes and aria-hidden for decorative elements
+- **Tab Panel Pattern**: Proper tablist/tabpanel structure on tabbed interfaces
 
 ### Development Setup
 - **Concurrent Servers**: Frontend (Vite on port 5000) and backend (Express on port 3001) run simultaneously
