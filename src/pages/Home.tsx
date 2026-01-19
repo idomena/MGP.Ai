@@ -1,13 +1,15 @@
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
+import JourneyPath from "@/components/JourneyPath";
 import { useState, useEffect } from "react";
-import { BarChart3, CheckCircle, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, CheckCircle2, Users, Clock, Play, X, Lock } from "lucide-react";
+import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface DayStatus {
   day: number;
@@ -317,117 +319,13 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Timeline */}
-            <div className="relative py-8">
-              <svg className="absolute left-0 top-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }} viewBox="0 0 400 500" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#60a5fa" stopOpacity="1" />
-                    <stop offset="50%" stopColor="#7c57ff" stopOpacity="1" />
-                    <stop offset="100%" stopColor="#a855f7" stopOpacity="1" />
-                  </linearGradient>
-                  <filter id="glow">
-                    <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
-                {/* Glow background path */}
-                <path
-                  d="M 290 60 L 110 130 L 290 200 L 110 270 L 200 340"
-                  stroke="url(#pathGradient)"
-                  strokeWidth="20"
-                  fill="none"
-                  opacity="0.3"
-                  filter="url(#glow)"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                {/* Main bright path */}
-                <path
-                  d="M 290 60 L 110 130 L 290 200 L 110 270 L 200 340"
-                  stroke="url(#pathGradient)"
-                  strokeWidth="6"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-
-              <div className="flex flex-col items-center gap-6 relative" style={{ zIndex: 1 }}>
-                {isLoadingProgress ? (
-                  <div className="flex items-center justify-center py-20">
-                    <div className="w-8 h-8 border-2 border-[#7c57ff] border-t-transparent rounded-full animate-spin" />
-                  </div>
-                ) : dayStatuses.length > 0 ? (
-                  dayStatuses.map((dayInfo, idx) => {
-                    const isEven = idx % 2 === 0;
-                    const isLast = idx === dayStatuses.length - 1;
-                    const isActive = dayInfo.status === "active";
-                    const isLocked = dayInfo.status === "locked";
-                    const workout = getWorkoutForDay(dayInfo.day);
-                    
-                    const getCircleStyle = () => {
-                      if (dayInfo.isCompleted) {
-                        return 'bg-gradient-to-br from-[#aaf163] to-[#10b981]';
-                      }
-                      if (isLocked) {
-                        return 'bg-gradient-to-br from-gray-500 to-gray-600 opacity-60';
-                      }
-                      if (isActive) {
-                        return 'bg-gradient-to-br from-[#60a5fa] to-[#7c57ff]';
-                      }
-                      return 'bg-gradient-to-br from-[#60a5fa]/50 to-[#7c57ff]/50 opacity-70';
-                    };
-                    
-                    return (
-                      <motion.div
-                        key={dayInfo.day}
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: idx * 0.1 }}
-                      >
-                        <button 
-                          onClick={() => handleDayClick(dayInfo.day)}
-                          disabled={isLocked}
-                          className={isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
-                          data-testid={`button-day-${dayInfo.day}`}
-                        >
-                          <div className={`relative ${isLast ? '' : isEven ? 'mr-20' : 'ml-20'}`}>
-                            <div className={`w-20 h-20 rounded-full ${getCircleStyle()} flex flex-col items-center justify-center text-white shadow-[0_0_30px_rgba(124,87,255,0.5)] ${!isLocked ? 'hover:scale-110' : ''} transition-transform border-4 border-background ${isActive && !dayInfo.isCompleted ? 'ring-4 ring-[#7c57ff]/50 animate-pulse' : ''}`}>
-                              {isLocked ? (
-                                <Lock className="w-6 h-6 text-white/70" />
-                              ) : (
-                                <>
-                                  <span className="text-[10px] font-medium opacity-70">Day {dayInfo.day}</span>
-                                  <span className="text-xs font-bold leading-tight text-center px-1">{workout.shortName}</span>
-                                </>
-                              )}
-                              {dayInfo.isCompleted && (
-                                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#aaf163] flex items-center justify-center shadow-lg ring-2 ring-background">
-                                  <CheckCircle2 className="w-4 h-4 text-background" />
-                                </div>
-                              )}
-                            </div>
-                            {isActive && (
-                              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-[#aaf163] text-background text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
-                                TODAY
-                              </div>
-                            )}
-                          </div>
-                        </button>
-                      </motion.div>
-                    );
-                  })
-                ) : (
-                  <div className="text-muted-foreground text-center py-10">
-                    Loading your program...
-                  </div>
-                )}
-              </div>
-            </div>
+            {/* Journey Path */}
+            <JourneyPath
+              dayStatuses={dayStatuses}
+              onDayClick={handleDayClick}
+              getWorkoutForDay={getWorkoutForDay}
+              isLoading={isLoadingProgress}
+            />
 
           </div>
         </>
@@ -436,6 +334,9 @@ export default function Home() {
       {/* Workout Details Modal */}
       <Dialog open={showWorkoutModal} onOpenChange={setShowWorkoutModal}>
         <DialogContent className="bg-gradient-to-br from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] border-none p-0 max-w-md">
+          <VisuallyHidden>
+            <DialogTitle>Workout Details</DialogTitle>
+          </VisuallyHidden>
           <div className="p-6">
             <div className="flex items-start justify-between mb-6">
               <div>
