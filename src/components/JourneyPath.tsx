@@ -45,28 +45,28 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
     );
   }
 
-  const nodeSpacing = 120;
-  const containerWidth = 320;
-  const nodeSize = 80;
+  const nodeSpacing = 100;
+  const viewBoxWidth = 300;
+  const nodeRadius = 32;
   const padding = 50;
 
   const getNodePosition = (index: number): NodePosition => {
     const patterns = [
       { xPercent: 50 },
-      { xPercent: 25 },
-      { xPercent: 75 },
-      { xPercent: 30 },
-      { xPercent: 70 },
+      { xPercent: 28 },
+      { xPercent: 72 },
+      { xPercent: 35 },
+      { xPercent: 65 },
     ];
     const pattern = patterns[index % patterns.length];
     return {
-      x: (containerWidth * pattern.xPercent) / 100,
+      x: (viewBoxWidth * pattern.xPercent) / 100,
       y: padding + index * nodeSpacing,
     };
   };
 
   const nodePositions = dayStatuses.map((_, idx) => getNodePosition(idx));
-  const containerHeight = padding * 2 + (dayStatuses.length - 1) * nodeSpacing + nodeSize;
+  const viewBoxHeight = padding * 2 + (dayStatuses.length - 1) * nodeSpacing;
 
   const generatePath = (): string => {
     if (nodePositions.length < 2) return '';
@@ -86,17 +86,15 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
 
   const pathD = generatePath();
 
+  const aspectRatio = viewBoxWidth / viewBoxHeight;
+  const containerHeight = `${viewBoxHeight * 1.2}px`;
+
   return (
-    <div 
-      className="relative w-full overflow-hidden"
-      style={{ height: containerHeight }}
-    >
-      {/* SVG Path connecting the nodes */}
+    <div className="relative w-full" style={{ height: containerHeight }}>
       <svg 
-        className="absolute inset-0 w-full h-full pointer-events-none" 
-        viewBox={`0 0 ${containerWidth} ${containerHeight}`}
-        preserveAspectRatio="xMidYMid meet"
-        style={{ zIndex: 0 }}
+        className="w-full h-full" 
+        viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
+        preserveAspectRatio="xMidYMin meet"
       >
         <defs>
           <linearGradient id="journeyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -105,7 +103,14 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
             <stop offset="100%" stopColor="#a855f7" />
           </linearGradient>
           <filter id="pathGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id="nodeGlow" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -113,160 +118,201 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
           </filter>
         </defs>
         
+        {/* Background glow path */}
         {pathD && (
-          <>
-            {/* Background glow path */}
-            <motion.path
-              d={pathD}
-              stroke="url(#journeyGradient)"
-              strokeWidth="12"
-              fill="none"
-              opacity="0.3"
-              filter="url(#pathGlow)"
-              strokeLinecap="round"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 2, ease: "easeInOut" }}
-            />
-            
-            {/* Main path */}
-            <motion.path
-              d={pathD}
-              stroke="url(#journeyGradient)"
-              strokeWidth="4"
-              fill="none"
-              strokeLinecap="round"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
-            />
-          </>
+          <motion.path
+            d={pathD}
+            stroke="url(#journeyGradient)"
+            strokeWidth="12"
+            fill="none"
+            opacity="0.4"
+            filter="url(#pathGlow)"
+            strokeLinecap="round"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 2, ease: "easeInOut" }}
+          />
         )}
-      </svg>
+        
+        {/* Main path */}
+        {pathD && (
+          <motion.path
+            d={pathD}
+            stroke="url(#journeyGradient)"
+            strokeWidth="5"
+            fill="none"
+            strokeLinecap="round"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+          />
+        )}
 
-      {/* Workout Nodes */}
-      {dayStatuses.map((dayInfo, idx) => {
-        const position = nodePositions[idx];
-        const isActive = dayInfo.status === "active";
-        const isLocked = dayInfo.status === "locked";
-        const isCompleted = dayInfo.isCompleted;
-        const workout = getWorkoutForDay(dayInfo.day);
+        {/* Workout Nodes - rendered inside SVG */}
+        {dayStatuses.map((dayInfo, idx) => {
+          const position = nodePositions[idx];
+          const isActive = dayInfo.status === "active";
+          const isLocked = dayInfo.status === "locked";
+          const isCompleted = dayInfo.isCompleted;
+          const workout = getWorkoutForDay(dayInfo.day);
 
-        return (
-          <motion.div
-            key={dayInfo.day}
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ 
-              delay: idx * 0.1,
-              type: "spring",
-              stiffness: 200,
-              damping: 20
-            }}
-            className="absolute"
-            style={{ 
-              left: `calc(${(position.x / containerWidth) * 100}% - ${nodeSize / 2}px)`,
-              top: position.y - nodeSize / 2,
-              width: nodeSize,
-              height: nodeSize,
-              zIndex: 1,
-            }}
-          >
-            <motion.button
+          const bgColor = isCompleted 
+            ? "#10b981" 
+            : isActive 
+              ? "#7c57ff"
+              : isLocked
+                ? "#3f3f46"
+                : "#6b5fb8";
+
+          const glowColor = isCompleted 
+            ? "rgba(16,185,129,0.6)" 
+            : isActive 
+              ? "rgba(124,87,255,0.7)"
+              : "transparent";
+
+          return (
+            <motion.g
+              key={dayInfo.day}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ 
+                delay: idx * 0.08,
+                type: "spring",
+                stiffness: 200,
+                damping: 20
+              }}
+              style={{ cursor: isLocked ? 'not-allowed' : 'pointer' }}
               onClick={() => !isLocked && onDayClick(dayInfo.day)}
-              disabled={isLocked}
-              className={`relative w-full h-full group ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-              whileHover={!isLocked ? { scale: 1.15 } : {}}
-              whileTap={!isLocked ? { scale: 0.95 } : {}}
               data-testid={`journey-node-${dayInfo.day}`}
             >
               {/* Pulse ring for active day */}
               {isActive && !isCompleted && (
-                <motion.div
-                  className="absolute inset-0 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa]"
-                  style={{ margin: '-6px' }}
-                  animate={{ 
-                    scale: [1, 1.3, 1],
-                    opacity: [0.6, 0, 0.6]
-                  }}
-                  transition={{ 
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
+                <>
+                  <circle
+                    cx={position.x}
+                    cy={position.y}
+                    r={nodeRadius + 10}
+                    fill="none"
+                    stroke="#7c57ff"
+                    strokeWidth="2"
+                    opacity="0.3"
+                  >
+                    <animate
+                      attributeName="r"
+                      values={`${nodeRadius + 10};${nodeRadius + 22};${nodeRadius + 10}`}
+                      dur="2s"
+                      repeatCount="indefinite"
+                    />
+                    <animate
+                      attributeName="opacity"
+                      values="0.5;0;0.5"
+                      dur="2s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                </>
+              )}
+
+              {/* Glow effect circle */}
+              {(isActive || isCompleted) && (
+                <circle
+                  cx={position.x}
+                  cy={position.y}
+                  r={nodeRadius + 4}
+                  fill={glowColor}
+                  filter="url(#nodeGlow)"
                 />
               )}
 
+              {/* Background circle with gradient */}
+              <defs>
+                <linearGradient id={`nodeGrad-${dayInfo.day}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                  {isCompleted ? (
+                    <>
+                      <stop offset="0%" stopColor="#10b981" />
+                      <stop offset="100%" stopColor="#059669" />
+                    </>
+                  ) : isActive ? (
+                    <>
+                      <stop offset="0%" stopColor="#7c57ff" />
+                      <stop offset="100%" stopColor="#60a5fa" />
+                    </>
+                  ) : isLocked ? (
+                    <>
+                      <stop offset="0%" stopColor="#52525b" />
+                      <stop offset="100%" stopColor="#3f3f46" />
+                    </>
+                  ) : (
+                    <>
+                      <stop offset="0%" stopColor="rgba(124,87,255,0.7)" />
+                      <stop offset="100%" stopColor="rgba(96,165,250,0.7)" />
+                    </>
+                  )}
+                </linearGradient>
+              </defs>
+
               {/* Main circle */}
-              <div 
-                className={`
-                  w-full h-full rounded-full flex flex-col items-center justify-center
-                  transition-all duration-300 border-4 border-background shadow-lg
-                  ${isCompleted 
-                    ? 'bg-gradient-to-br from-[#10b981] to-[#059669] shadow-[0_0_20px_rgba(16,185,129,0.4)]' 
-                    : isActive 
-                      ? 'bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] shadow-[0_0_25px_rgba(124,87,255,0.5)]'
-                      : isLocked
-                        ? 'bg-zinc-700/90'
-                        : 'bg-gradient-to-br from-[#7c57ff]/70 to-[#60a5fa]/70'
-                  }
-                `}
-              >
+              <circle
+                cx={position.x}
+                cy={position.y}
+                r={nodeRadius}
+                fill={`url(#nodeGrad-${dayInfo.day})`}
+                stroke="#18181b"
+                strokeWidth="3"
+              />
+
+              {/* Icon */}
+              <g transform={`translate(${position.x - 12}, ${position.y - 12})`}>
                 {isLocked ? (
-                  <Lock className="w-7 h-7 text-zinc-400" />
+                  <Lock className="w-6 h-6 text-zinc-400" width={24} height={24} color="#a1a1aa" />
                 ) : isCompleted ? (
-                  <CheckCircle2 className="w-8 h-8 text-white" />
+                  <CheckCircle2 className="w-6 h-6 text-white" width={24} height={24} color="white" />
                 ) : isActive ? (
-                  <Play className="w-8 h-8 text-white fill-white ml-1" />
+                  <Play className="w-6 h-6 text-white" width={24} height={24} color="white" fill="white" style={{ marginLeft: 2 }} />
                 ) : (
-                  <Dumbbell className="w-7 h-7 text-white/90" />
+                  <Dumbbell className="w-6 h-6 text-white/90" width={24} height={24} color="rgba(255,255,255,0.9)" />
                 )}
-              </div>
+              </g>
 
               {/* Day label */}
-              <div 
-                className={`
-                  absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap
-                  text-xs font-semibold
-                  ${isActive ? 'text-white' : 'text-zinc-500'}
-                `}
+              <text
+                x={position.x}
+                y={position.y + nodeRadius + 18}
+                textAnchor="middle"
+                fill={isActive ? "white" : "#71717a"}
+                fontSize="11"
+                fontWeight="600"
               >
                 Day {dayInfo.day}
-              </div>
-
-              {/* Workout name tooltip on hover */}
-              {!isLocked && (
-                <div 
-                  className={`
-                    absolute left-1/2 -translate-x-1/2 -top-10
-                    bg-zinc-800 text-white text-xs font-medium
-                    px-3 py-1.5 rounded-lg whitespace-nowrap
-                    opacity-0 group-hover:opacity-100 transition-opacity
-                    pointer-events-none shadow-lg z-10
-                  `}
-                >
-                  {workout.shortName}
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full">
-                    <div className="border-4 border-transparent border-t-zinc-800" />
-                  </div>
-                </div>
-              )}
+              </text>
 
               {/* TODAY badge */}
               {isActive && !isCompleted && (
-                <motion.div 
-                  className="absolute -right-1 -top-1 bg-[#aaf163] text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: idx * 0.1 + 0.3, type: "spring" }}
-                >
-                  TODAY
-                </motion.div>
+                <g transform={`translate(${position.x + nodeRadius - 8}, ${position.y - nodeRadius - 4})`}>
+                  <rect
+                    x={-16}
+                    y={-8}
+                    width={32}
+                    height={16}
+                    rx={8}
+                    fill="#aaf163"
+                  />
+                  <text
+                    x={0}
+                    y={4}
+                    textAnchor="middle"
+                    fill="black"
+                    fontSize="8"
+                    fontWeight="700"
+                  >
+                    TODAY
+                  </text>
+                </g>
               )}
-            </motion.button>
-          </motion.div>
-        );
-      })}
+            </motion.g>
+          );
+        })}
+      </svg>
     </div>
   );
 }
