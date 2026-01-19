@@ -159,121 +159,114 @@ export default function Home() {
       </nav>
 
       {activeView === "quarterly" ? (
-        <>
-          {/* Q1 2025 Plan Card */}
-          <div className="mt-6 bg-gradient-to-br from-[#00c6ff] via-[#60a5fa] to-[#7c57ff] rounded-2xl p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h2 className="text-white text-2xl font-bold">Q1 2025 Plan</h2>
-                <p className="text-white/80 text-sm mt-1">January 1, 2025 - March 31, 2025</p>
+        <div className="mt-8 space-y-10">
+          {/* Quarter Header - Clean and Bold */}
+          <div className="text-center">
+            <h1 className="text-white text-4xl font-bold mb-2">Q1 2026</h1>
+            <p className="text-zinc-400 text-lg">90-Day Transformation</p>
+          </div>
+
+          {/* Main Progress Ring */}
+          <div className="flex flex-col items-center">
+            <div className="relative w-48 h-48">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="42"
+                  fill="none"
+                  stroke="#27272a"
+                  strokeWidth="8"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="42"
+                  fill="none"
+                  stroke="url(#progressGradient)"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  strokeDasharray={`${15 * 2.64} ${100 * 2.64}`}
+                />
+                <defs>
+                  <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#7c57ff" />
+                    <stop offset="100%" stopColor="#60a5fa" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-white text-5xl font-bold">15%</span>
+                <span className="text-zinc-500 text-sm mt-1">Complete</span>
               </div>
             </div>
-            
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-white font-medium">Quarter Progress</span>
-                <span className="text-white font-bold">15%</span>
+            <p className="text-zinc-400 mt-6 text-center">
+              Week <span className="text-white font-semibold">3</span> of 12
+            </p>
+          </div>
+
+          {/* Key Stats - Simple Vertical List */}
+          <div className="space-y-4">
+            {/* Workouts */}
+            <div className="flex items-center justify-between py-4 border-b border-zinc-800">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#7c57ff]/20 flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-[#7c57ff]" />
+                </div>
+                <div>
+                  <p className="text-white text-lg font-medium">Workouts</p>
+                  <p className="text-zinc-500 text-sm">This quarter</p>
+                </div>
               </div>
+              <p className="text-white text-3xl font-bold">16<span className="text-zinc-500 text-xl">/48</span></p>
             </div>
 
-            <div className="flex items-center justify-between text-white/90 text-sm">
-              <div className="flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4" />
-                <span>Week 3 of 12</span>
+            {/* Calories */}
+            <div className="flex items-center justify-between py-4 border-b border-zinc-800">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center">
+                  <Flame className="w-6 h-6 text-orange-500" />
+                </div>
+                <div>
+                  <p className="text-white text-lg font-medium">Calories Burned</p>
+                  <p className="text-zinc-500 text-sm">Total this quarter</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Target className="w-4 h-4" />
-                <span>3 Main Goals</span>
+              <p className="text-white text-3xl font-bold">12.4k</p>
+            </div>
+
+            {/* Streak */}
+            <div className="flex items-center justify-between py-4 border-b border-zinc-800">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#aaf163]/20 flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-[#aaf163]" />
+                </div>
+                <div>
+                  <p className="text-white text-lg font-medium">Best Streak</p>
+                  <p className="text-zinc-500 text-sm">Consecutive days</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <ChevronDown className="w-4 h-4" />
-                <span>Tap to view months</span>
+              <p className="text-white text-3xl font-bold">12</p>
+            </div>
+
+            {/* Consistency */}
+            <div className="flex items-center justify-between py-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#60a5fa]/20 flex items-center justify-center">
+                  <Target className="w-6 h-6 text-[#60a5fa]" />
+                </div>
+                <div>
+                  <p className="text-white text-lg font-medium">Consistency</p>
+                  <p className="text-zinc-500 text-sm">Weekly average</p>
+                </div>
               </div>
+              <p className="text-white text-3xl font-bold">85<span className="text-zinc-500 text-xl">%</span></p>
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="mt-6 flex gap-2">
-            <button className="flex-1 bg-muted text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Overview
-            </button>
-            <button className="flex-1 bg-transparent text-muted-foreground py-3 rounded-xl font-semibold flex items-center justify-center gap-2 border border-border">
-              <Target className="w-4 h-4" />
-              Goals
-            </button>
-            <button className="flex-1 bg-transparent text-muted-foreground py-3 rounded-xl font-semibold flex items-center justify-center gap-2 border border-border">
-              <CalendarIcon className="w-4 h-4" />
-              Calendar
-            </button>
-          </div>
-
-          {/* Key Metrics */}
-          <div className="mt-6">
-            <h3 className="text-white font-semibold text-lg mb-4 flex items-center gap-2">
-              <BarChart className="w-5 h-5 text-[#60a5fa]" />
-              Key Metrics
-            </h3>
-            
-            <div className="grid grid-cols-2 gap-4">
-              {/* Workouts Completed */}
-              <div className="bg-muted rounded-2xl p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#60a5fa]/20 flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-[#60a5fa]" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-muted-foreground text-sm">Workouts Completed</p>
-                    <p className="text-white text-2xl font-bold mt-1">16/48</p>
-                    <Progress value={33} className="mt-2 h-1.5" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Calories Burned */}
-              <div className="bg-muted rounded-2xl p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
-                    <Flame className="w-5 h-5 text-red-500" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-muted-foreground text-sm">Calories Burned</p>
-                    <p className="text-white text-2xl font-bold mt-1">12,450</p>
-                    <Progress value={26} className="mt-2 h-1.5 [&>div]:bg-red-500" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Strength Increase */}
-              <div className="bg-muted rounded-2xl p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#aaf163]/20 flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-[#aaf163]" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-muted-foreground text-sm">Strength Increase</p>
-                    <p className="text-white text-2xl font-bold mt-1">+15%</p>
-                    <Progress value={15} className="mt-2 h-1.5 [&>div]:bg-[#aaf163]" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Consistency Score */}
-              <div className="bg-muted rounded-2xl p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                    <BarChart className="w-5 h-5 text-yellow-500" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-muted-foreground text-sm">Consistency Score</p>
-                    <p className="text-white text-2xl font-bold mt-1">8.5/10</p>
-                    <Progress value={85} className="mt-2 h-1.5 [&>div]:bg-yellow-500" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
+          {/* Bottom Spacer */}
+          <div className="h-8" />
+        </div>
       ) : (
         <>
           {/* Weekly Program View */}
