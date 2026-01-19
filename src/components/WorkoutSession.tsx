@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { X, Check } from "lucide-react";
+import { X, Check, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import ExerciseAIAssistant from "./ExerciseAIAssistant";
 
 interface Exercise {
   id: number;
@@ -28,6 +29,7 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [currentSet, setCurrentSet] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAIOpen, setIsAIOpen] = useState(false);
 
   const currentExercise = exercises[currentExerciseIndex];
   const totalExercises = exercises.length;
@@ -165,22 +167,43 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
           </motion.div>
         </AnimatePresence>
 
-        {/* Complete Button - Full Width at Bottom */}
-        <button
-          onClick={handleCompleteSet}
-          disabled={isSubmitting}
-          className="w-full bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white py-5 rounded-2xl font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-transform disabled:opacity-70 mt-6"
-          data-testid="button-complete-set"
-        >
-          <Check className="w-6 h-6" />
-          {isSubmitting 
-            ? "Saving..." 
-            : isLastSet && isLastExercise 
-              ? "Finish Workout" 
-              : "Complete Set"
-          }
-        </button>
+        {/* Button Row - AI Assistant and Complete */}
+        <div className="flex items-center gap-3 mt-6">
+          {/* AI Assistant Button */}
+          <button
+            onClick={() => setIsAIOpen(true)}
+            className="w-14 h-14 rounded-2xl bg-zinc-800 flex items-center justify-center hover:bg-zinc-700 transition-colors shrink-0"
+            data-testid="button-ai-assistant"
+            aria-label="Ask AI for help with this exercise"
+          >
+            <Sparkles className="w-6 h-6 text-[#7c57ff]" />
+          </button>
+
+          {/* Complete Button - Full Width */}
+          <button
+            onClick={handleCompleteSet}
+            disabled={isSubmitting}
+            className="flex-1 bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white py-5 rounded-2xl font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-transform disabled:opacity-70"
+            data-testid="button-complete-set"
+          >
+            <Check className="w-6 h-6" />
+            {isSubmitting 
+              ? "Saving..." 
+              : isLastSet && isLastExercise 
+                ? "Finish Workout" 
+                : "Complete Set"
+            }
+          </button>
+        </div>
       </div>
+
+      {/* AI Assistant Modal */}
+      <ExerciseAIAssistant
+        exerciseName={currentExercise.name}
+        muscleGroups={currentExercise.muscles}
+        isOpen={isAIOpen}
+        onClose={() => setIsAIOpen(false)}
+      />
     </div>
   );
 }
