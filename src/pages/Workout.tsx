@@ -1,10 +1,10 @@
-import NavigationBar from "@/components/NavigationBar";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Play, ArrowLeft, Lock, Loader2, ChevronRight } from "lucide-react";
+import { Play, ArrowLeft, Lock, Loader2, Clock, Dumbbell, ChevronRight, Home, Headphones, MessageCircle, Scan, MoreHorizontal } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import WorkoutSession from "@/components/WorkoutSession";
+import WorkoutAIAssistant from "@/components/WorkoutAIAssistant";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface ValidationResult {
@@ -39,9 +39,12 @@ export default function WorkoutPage() {
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [accessBlocked, setAccessBlocked] = useState(false);
   const [blockReason, setBlockReason] = useState<string>("");
-  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [isAIOpen, setIsAIOpen] = useState(false);
+  const [selectedExerciseForAI, setSelectedExerciseForAI] = useState<string | undefined>(undefined);
 
   const dayNumber = id ? parseInt(id, 10) : 1;
+  const workoutName = "Back training + Front hand";
+  const workoutDate = "16/1/2025";
 
   const exercises: Exercise[] = [
     {
@@ -122,7 +125,14 @@ export default function WorkoutPage() {
       return;
     }
     setIsWorkoutActive(true);
-    toast.success("Workout started! Good luck!");
+  };
+
+  const handlePlayExercise = (exercise: Exercise) => {
+    if (accessBlocked) {
+      toast.error("You cannot start this workout");
+      return;
+    }
+    setIsWorkoutActive(true);
   };
 
   const handleWorkoutComplete = () => {
@@ -132,7 +142,6 @@ export default function WorkoutPage() {
 
   const handleWorkoutExit = () => {
     setIsWorkoutActive(false);
-    toast.info("Workout paused. Come back anytime!");
   };
 
   const handleGoBack = () => {
@@ -147,9 +156,19 @@ export default function WorkoutPage() {
     }
   };
 
+  const openAIForExercise = (exerciseName: string) => {
+    setSelectedExerciseForAI(exerciseName);
+    setIsAIOpen(true);
+  };
+
+  const openGeneralAI = () => {
+    setSelectedExerciseForAI(undefined);
+    setIsAIOpen(true);
+  };
+
   if (isValidating) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-[#1a1a2e] flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-[#7c57ff] animate-spin mx-auto mb-4" />
           <p className="text-white text-lg">Loading workout...</p>
@@ -160,13 +179,13 @@ export default function WorkoutPage() {
 
   if (accessBlocked) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#1a1a2e] flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
-            <Lock className="w-10 h-10 text-muted-foreground" />
+          <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-6">
+            <Lock className="w-10 h-10 text-white/60" />
           </div>
           <h1 className="text-white text-2xl font-bold mb-4">Workout Locked</h1>
-          <p className="text-muted-foreground mb-8">{blockReason}</p>
+          <p className="text-white/60 mb-8">{blockReason}</p>
           <div className="flex flex-col gap-3">
             {validationResult?.currentDay && validationResult.currentDay !== dayNumber && (
               <button
@@ -180,14 +199,13 @@ export default function WorkoutPage() {
             )}
             <button
               onClick={handleGoBack}
-              className="w-full bg-muted text-white py-4 rounded-2xl font-semibold"
+              className="w-full bg-white/10 text-white py-4 rounded-2xl font-semibold"
               data-testid="button-go-back"
             >
               Back to Home
             </button>
           </div>
         </div>
-        <NavigationBar />
       </div>
     );
   }
@@ -197,7 +215,7 @@ export default function WorkoutPage() {
       <WorkoutSession
         exercises={exercises}
         dayNumber={dayNumber}
-        workoutName="Back + Front hand"
+        workoutName={workoutName}
         onComplete={handleWorkoutComplete}
         onExit={handleWorkoutExit}
       />
@@ -205,26 +223,36 @@ export default function WorkoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24 overflow-y-auto" role="main" aria-label="Workout page">
+    <div className="min-h-screen bg-[#1a1a2e] pb-24 overflow-y-auto" role="main" aria-label="Workout list page">
       {/* Header */}
-      <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 px-4 py-4 border-b border-muted">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={handleGoBack}
-            className="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
-            aria-label="Go back"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-5 h-5 text-white" />
-          </button>
-          <div className="flex-1">
-            <h1 className="text-white text-xl font-bold">Day {dayNumber}</h1>
-            <p className="text-muted-foreground text-sm">Back + Front hand</p>
+      <header className="relative px-4 pt-6 pb-4">
+        {/* Back Button */}
+        <button
+          onClick={handleGoBack}
+          className="absolute left-4 top-6 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+          aria-label="Go back"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-5 h-5 text-white" />
+        </button>
+
+        {/* Logo */}
+        <div className="flex justify-center mb-4">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] bg-clip-text text-transparent">
+              MGP·AI
+            </h1>
           </div>
         </div>
-      </div>
 
-      {/* Exercise List */}
+        {/* Date */}
+        <p className="text-center text-white/60 text-sm mb-2">{workoutDate}</p>
+
+        {/* Workout Title */}
+        <h2 className="text-center text-white text-xl font-bold">{workoutName}</h2>
+      </header>
+
+      {/* Exercise Cards */}
       <div className="px-4 py-4 space-y-4">
         {exercises.map((exercise, index) => (
           <motion.div
@@ -232,69 +260,65 @@ export default function WorkoutPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            onClick={() => setSelectedExercise(selectedExercise?.id === exercise.id ? null : exercise)}
-            className="bg-muted rounded-2xl overflow-hidden cursor-pointer"
+            className="relative bg-gradient-to-br from-[#3a3a5c] via-[#4a4a7c] to-[#5a5a9c] rounded-2xl p-4 overflow-hidden"
             data-testid={`card-exercise-${exercise.id}`}
           >
-            {/* GIF and Basic Info */}
-            <div className="flex gap-4 p-4">
-              <div className="w-24 h-24 rounded-xl bg-background overflow-hidden flex-shrink-0">
-                <img
-                  src={exercise.gifUrl}
-                  alt={`${exercise.name} demonstration`}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
+            {/* Subtle shine effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
+            
+            <div className="flex items-center gap-4 relative">
+              {/* Number Circle */}
+              <div className="w-10 h-10 rounded-full bg-[#60a5fa] flex items-center justify-center shrink-0">
+                <span className="text-white font-bold text-lg">{index + 1}</span>
               </div>
-              <div className="flex-1 flex flex-col justify-center">
-                <h3 className="text-white font-semibold text-lg">{exercise.name}</h3>
-                <p className="text-[#7c57ff] text-sm">{exercise.muscles}</p>
-                <p className="text-muted-foreground text-sm mt-1">
-                  {exercise.sets} sets · {exercise.reps}
-                </p>
-              </div>
-              <div className="flex items-center">
-                <ChevronRight 
-                  className={`w-5 h-5 text-muted-foreground transition-transform ${
-                    selectedExercise?.id === exercise.id ? 'rotate-90' : ''
-                  }`} 
-                />
-              </div>
-            </div>
 
-            {/* Expanded Details */}
-            {selectedExercise?.id === exercise.id && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="border-t border-background/50 px-4 pb-4"
-              >
-                <div className="pt-4 grid grid-cols-3 gap-3">
-                  <div className="bg-background/50 rounded-xl p-3 text-center">
-                    <p className="text-muted-foreground text-xs">Sets</p>
-                    <p className="text-white font-bold">{exercise.sets}</p>
+              {/* Exercise Icon & Info */}
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <Dumbbell className="w-4 h-4 text-white/70" />
+                  <h3 className="text-white font-semibold text-base">{exercise.name}</h3>
+                </div>
+                <div className="flex items-center gap-4 text-white/70 text-sm">
+                  <div className="flex items-center gap-1">
+                    <Dumbbell className="w-3 h-3" />
+                    <span>{exercise.sets} Sets</span>
                   </div>
-                  <div className="bg-background/50 rounded-xl p-3 text-center">
-                    <p className="text-muted-foreground text-xs">Reps</p>
-                    <p className="text-white font-bold">{exercise.reps}</p>
-                  </div>
-                  <div className="bg-background/50 rounded-xl p-3 text-center">
-                    <p className="text-muted-foreground text-xs">Time</p>
-                    <p className="text-white font-bold">{exercise.time}</p>
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    <span>{exercise.time}</span>
                   </div>
                 </div>
-              </motion.div>
-            )}
+              </div>
+
+              {/* Play Button */}
+              <button
+                onClick={() => handlePlayExercise(exercise)}
+                className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
+                aria-label={`Start ${exercise.name}`}
+                data-testid={`button-play-${exercise.id}`}
+              >
+                <Play className="w-6 h-6 text-white fill-white" />
+              </button>
+
+              {/* Arrow Icon */}
+              <button
+                onClick={() => openAIForExercise(exercise.name)}
+                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                aria-label={`Get AI help for ${exercise.name}`}
+                data-testid={`button-info-${exercise.id}`}
+              >
+                <ChevronRight className="w-4 h-4 text-white/70" />
+              </button>
+            </div>
           </motion.div>
         ))}
       </div>
 
-      {/* Start Button */}
-      <div className="fixed bottom-20 left-4 right-4">
+      {/* Start All Button */}
+      <div className="px-4 py-4">
         <button
           onClick={handleStartWorkout}
-          className="w-full bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg"
+          className="w-full bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-[#7c57ff]/30"
           data-testid="button-start-workout"
           aria-label="Start workout session"
         >
@@ -303,7 +327,77 @@ export default function WorkoutPage() {
         </button>
       </div>
 
-      <NavigationBar />
+      {/* Bottom Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50" role="navigation" aria-label="Workout navigation">
+        <div className="relative">
+          {/* Gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] rounded-t-3xl" />
+          
+          {/* Content */}
+          <div className="relative flex justify-around items-center h-20 px-4">
+            {/* Home */}
+            <button
+              onClick={() => navigate("/")}
+              className="flex flex-col items-center justify-center p-2"
+              aria-label="Go to Home"
+              data-testid="nav-home-workout"
+            >
+              <Home className="w-6 h-6 text-[#aaf163]" />
+            </button>
+
+            {/* AI Assistant - Headphones */}
+            <button
+              onClick={openGeneralAI}
+              className="flex flex-col items-center justify-center p-2"
+              aria-label="Open AI workout assistant"
+              data-testid="nav-ai-assistant"
+            >
+              <Headphones className="w-6 h-6 text-white" />
+            </button>
+
+            {/* Center Floating Button */}
+            <div className="relative -top-6">
+              <button
+                onClick={openGeneralAI}
+                className="w-16 h-16 rounded-full bg-[#7c57ff] flex items-center justify-center shadow-lg shadow-[#7c57ff]/50 border-4 border-[#1a1a2e]"
+                aria-label="Chat with AI"
+                data-testid="nav-center-chat"
+              >
+                <MessageCircle className="w-7 h-7 text-white" />
+              </button>
+            </div>
+
+            {/* Scan */}
+            <button
+              onClick={() => navigate("/nutrition")}
+              className="flex flex-col items-center justify-center p-2"
+              aria-label="Scan nutrition"
+              data-testid="nav-scan"
+            >
+              <Scan className="w-6 h-6 text-white" />
+            </button>
+
+            {/* More */}
+            <button
+              onClick={() => navigate("/profile")}
+              className="flex flex-col items-center justify-center p-2"
+              aria-label="More options"
+              data-testid="nav-more-workout"
+            >
+              <MoreHorizontal className="w-6 h-6 text-white" />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* AI Assistant Modal */}
+      <WorkoutAIAssistant
+        workoutName={workoutName}
+        exercises={exercises.map(e => ({ name: e.name, muscles: e.muscles, sets: e.sets, time: e.time }))}
+        currentExercise={selectedExerciseForAI}
+        isOpen={isAIOpen}
+        onClose={() => setIsAIOpen(false)}
+      />
     </div>
   );
 }

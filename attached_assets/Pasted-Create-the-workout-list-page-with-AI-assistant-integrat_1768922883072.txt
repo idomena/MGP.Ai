@@ -1,0 +1,159 @@
+Create the workout list page with AI assistant integration matching this exact design:
+
+═══════════════════════════════════════════════════════════════
+
+WORKOUT LIST PAGE DESIGN:
+
+HEADER SECTION:
+- MGP-AI logo at top center (gradient purple/blue colors)
+- Back arrow button (top left corner)
+- Date display: "16/1/2025" (centered)
+- Workout title: "Back training + Front hand" (centered, white text)
+- Dark background (#1a1a2e or similar)
+
+EXERCISE CARDS LAYOUT:
+- Vertical list of exercise cards
+- Each card has light blue/purple gradient background
+- Rounded corners (border-radius: 16px)
+- Spacing between cards: 16px
+- Card padding: 16px
+
+EACH EXERCISE CARD CONTAINS:
+LEFT SIDE:
+- Numbered circle (1, 2, 3, etc.) - blue background, white number
+- Exercise icon (dumbbell/weights icon)
+- Exercise name (e.g., "Machine T-bar Row")
+- Sets indicator with icon: "3 Sets" 
+- Duration with clock icon: "10 min"
+
+RIGHT SIDE:
+- Large play button icon (circle with play symbol)
+- Small arrow icon (bottom right of card)
+
+CARDS TO CREATE:
+1. Machine T-bar Row - 3 Sets - 10 min
+2. Lat pull down - 3 Sets - 8 min
+3. Hammers - 4 Sets - 10 min
+
+BOTTOM NAVIGATION BAR:
+- Fixed at bottom of screen
+- Purple to blue gradient background
+- Rounded top corners
+- 5 navigation items evenly spaced:
+  1. Home icon (green/yellow color)
+  2. Headphones icon (AI Assistant) - WHITE
+  3. Large center button - purple circle with chat/message icon (elevated/floating)
+  4. Square/scan icon - WHITE
+  5. Three dots menu (More) - WHITE
+
+═══════════════════════════════════════════════════════════════
+
+AI ASSISTANT IMPLEMENTATION:
+
+TRIGGER:
+- When user taps the HEADPHONES icon in bottom navigation
+- Opens AI chat interface
+
+AI CHAT INTERFACE:
+- Slides up from bottom as modal/drawer
+- Full screen or 80% of screen height
+- Header:
+  * "AI Workout Assistant" title
+  * If on exercise page, show: "About: [Exercise Name]"
+  * Close button (X) in top right
+- Dark background matching app theme
+- Purple/blue gradient accents
+
+CHAT UI COMPONENTS:
+- Message history area (scrollable)
+- User messages: Right-aligned, purple/blue gradient bubbles
+- AI messages: Left-aligned, dark gray bubbles
+- Input field at bottom:
+  * Placeholder: "Ask me anything about your workout..."
+  * Send button (paper plane icon or arrow)
+  * Purple/blue gradient border when focused
+- Typing indicator when AI is responding
+
+AI CONTEXT & CAPABILITIES:
+- Uses @google/genai (Google Gemini AI)
+- Context-aware of current page:
+  * On workout list: General workout questions
+  * On specific exercise: Questions about that exercise
+- AI knows: exercise name, sets, reps, duration, muscle groups
+
+UNIQUE AI TOOLS:
+1. Form Check Tool - Provides proper form guidelines
+2. Alternative Exercise Tool - Suggests alternatives based on equipment
+3. Injury Modification Tool - Recommends modifications for injuries
+4. Progress Tool - Tips for progression/regression
+
+EXAMPLE USER QUESTIONS AI SHOULD HANDLE:
+- "How do I do Machine T-bar Row correctly?"
+- "What muscles does this work?"
+- "Can I do this at home without equipment?"
+- "What's an alternative for Lat pull down?"
+- "Is this safe for shoulder pain?"
+- "How can I make this harder/easier?"
+
+═══════════════════════════════════════════════════════════════
+
+TECHNICAL REQUIREMENTS:
+
+ROUTING:
+- This is the /workout or /workout/:id page
+- Use React Router for navigation
+- Back button navigates to previous page
+- Play button navigates to active exercise page
+
+STATE MANAGEMENT:
+- Track current workout
+- Track exercise list
+- AI chat history (persists during session, clears on workout end)
+- Current exercise context for AI
+
+STYLING:
+- Use Tailwind CSS (already in project)
+- Use existing shadcn/ui components where possible
+- Framer Motion for animations:
+  * Smooth slide-up for AI modal
+  * Card hover effects
+  * Button press animations
+- Mobile-first, responsive design
+- Match exact colors from design:
+  * Background: Dark (#1a1a2e)
+  * Cards: Light blue/purple gradient
+  * Accent: Purple to blue gradient
+  * Text: White primary, gray secondary
+
+INTERACTIONS:
+- Cards are clickable/tappable
+- Play button starts the exercise
+- Headphones icon opens AI assistant
+- Smooth animations on all interactions
+- Loading states for AI responses
+- Error handling for AI API calls
+
+ACCESSIBILITY:
+- Proper ARIA labels
+- Keyboard navigation support
+- Touch-friendly button sizes (min 44px)
+- High contrast text
+
+PERFORMANCE:
+- Lazy load AI chat component
+- Optimize images/icons
+- Smooth 60fps animations
+- Fast AI response times
+
+═══════════════════════════════════════════════════════════════
+
+DELIVERABLES:
+1. Workout list page matching exact design
+2. Functional AI assistant accessible from headphones icon
+3. Context-aware AI that knows current exercise
+4. Clean, professional UI matching the screenshots
+5. Smooth animations and interactions
+6. Mobile responsive design
+7. Integration with existing navigation and routing
+
+Make this look professional, modern, and exactly like a premium fitness app.
