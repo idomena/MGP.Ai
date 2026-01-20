@@ -6,7 +6,14 @@ MGP.AI is an AI-powered fitness and nutrition mobile web application built with 
 
 ## Recent Changes
 
-### January 2026
+### January 2026 - UI/UX Polish Update
+- **Journey Path Redesign**: Infinite S-curve visualization with dynamic path segments, 3 node states (completed/today/upcoming), auto-scroll to today
+- **Workout Session Enhancement**: Rest timer with 90s countdown, circular progress ring, skip rest option, celebration animation on completion
+- **Navigation Bar Polish**: Gradient purple-blue-cyan background with rounded top corners, center floating chat button with glow effect
+- **Profile Page Redesign**: Gradient header with avatar, streak badge, stats cards (workouts/streak/XP), achievements section, settings menu
+- **Stats Display**: Infinity symbol for workouts (16/∞), fire emoji streak, lightning XP
+
+### Earlier January 2026
 - **Authentication Removal**: App now uses mock user (demo-user-001) - no login required
 - **Accessibility Improvements**: Added ARIA labels, roles, focus states, and semantic HTML across all pages
 - **Scrolling Enhancement**: All pages now have `overflow-y-auto` with `pb-24` for proper scrolling
