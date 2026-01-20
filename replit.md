@@ -10,6 +10,10 @@ MGP.AI is an AI-powered fitness and nutrition mobile web application built with 
 - **Authentication Removal**: App now uses mock user (demo-user-001) - no login required
 - **Accessibility Improvements**: Added ARIA labels, roles, focus states, and semantic HTML across all pages
 - **Scrolling Enhancement**: All pages now have `overflow-y-auto` with `pb-24` for proper scrolling
+- **Workout List Redesign**: New gradient exercise cards, MGP-AI header, custom bottom navigation bar
+- **AI Assistant Integration**: Context-aware AI help on workout pages via headphones icon
+- **ExerciseAIAssistant**: AI chat during active workout sessions (Sparkles button)
+- **WorkoutAIAssistant**: AI chat on workout list page with full workout context
 
 ## User Preferences
 
