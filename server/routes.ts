@@ -192,10 +192,9 @@ export function registerRoutes(app: Express): void {
       const completedDays = completionsData.map(c => c.dayNumber);
 
       const displayDays: { day: number; status: "locked" | "active" | "preview"; isCompleted: boolean }[] = [];
-      const startDay = Math.max(1, currentDay - 4);
-      const endDay = Math.min(totalDays, startDay + 4);
       
-      for (let day = startDay; day <= endDay; day++) {
+      // Return all 90 days for the full journey path
+      for (let day = 1; day <= totalDays; day++) {
         displayDays.push({
           day,
           status: calculateDayStatus(day, currentDay, completedDays),
