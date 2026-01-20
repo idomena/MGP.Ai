@@ -14,17 +14,13 @@ export default function NavigationBar() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50" role="navigation" aria-label="Main navigation">
-      {/* Liquid Glass Effect Container */}
+    <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe" role="navigation" aria-label="Main navigation">
       <div className="relative">
-        {/* Gradient background blur layer */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#7c57ff]/40 via-[#60a5fa]/40 to-[#00c6ff]/40 backdrop-blur-2xl" aria-hidden="true" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] rounded-t-3xl" aria-hidden="true" />
+        <div className="absolute inset-0 bg-black/20 rounded-t-3xl backdrop-blur-xl" aria-hidden="true" />
+        <div className="absolute inset-x-0 top-0 h-px bg-white/30 rounded-t-3xl" aria-hidden="true" />
         
-        {/* Glass border */}
-        <div className="absolute inset-0 border-t border-white/20" aria-hidden="true" />
-        
-        {/* Content */}
-        <div className="relative flex justify-around items-center h-20 backdrop-blur-xl bg-white/5">
+        <div className="relative flex justify-around items-center h-[72px]">
           {/* Center floating button */}
           <div className="absolute left-1/2 -translate-x-1/2 -top-6">
             <Link 

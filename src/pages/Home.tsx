@@ -297,17 +297,15 @@ export default function Home() {
               <div className="grid grid-cols-3 gap-2">
                 <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
                   <p className="text-white/60 text-xs">Workouts</p>
-                  <p className="text-white text-sm font-bold">5/5</p>
+                  <p className="text-white font-bold text-lg">{currentDay || 16}/∞</p>
                 </div>
                 <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
                   <p className="text-white/60 text-xs">Streak</p>
-                  <p className="text-white text-sm font-bold flex items-center gap-1">
-                    12 <Flame className="w-3 h-3 text-orange-500" />
-                  </p>
+                  <p className="text-white font-bold text-lg">12 🔥</p>
                 </div>
                 <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
                   <p className="text-white/60 text-xs">XP</p>
-                  <p className="text-white text-sm font-bold">2,840</p>
+                  <p className="text-white font-bold text-lg">2,840 ⚡</p>
                 </div>
               </div>
             </motion.div>
@@ -319,171 +317,83 @@ export default function Home() {
               getWorkoutForDay={getWorkoutForDay}
               isLoading={isLoadingProgress}
             />
-
           </div>
         </>
       )}
 
-      {/* Workout Details Modal */}
+      {/* Workout Modal */}
       <Dialog open={showWorkoutModal} onOpenChange={setShowWorkoutModal}>
-        <DialogContent className="bg-gradient-to-br from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] border-none p-0 max-w-md">
+        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-md mx-auto">
           <VisuallyHidden>
             <DialogTitle>Workout Details</DialogTitle>
           </VisuallyHidden>
-          <div className="p-6">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h2 className="text-white text-2xl font-bold">
-                  {selectedDay && workoutDetails[selectedDay as keyof typeof workoutDetails]?.name}
-                </h2>
-                <p className="text-white/80 text-sm mt-1">Day {selectedDay}</p>
+          {selectedDay && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold">Day {selectedDay}</h3>
+                  <p className="text-white/60">{getWorkoutForDay(selectedDay).name}</p>
+                </div>
+                {dayStatuses.find(d => d.day === selectedDay)?.isCompleted && (
+                  <div className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-medium">
+                    Completed
+                  </div>
+                )}
               </div>
-              <button 
-                onClick={() => setShowWorkoutModal(false)}
-                className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all"
-              >
-                <X className="w-5 h-5 text-white" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="bg-[#2a2a2a] rounded-xl p-4 text-center">
-                <Users className="w-5 h-5 text-[#7c57ff] mx-auto mb-2" />
-                <p className="text-muted-foreground text-xs mb-1">Exercises</p>
-                <p className="text-white font-bold">
-                  {selectedDay && workoutDetails[selectedDay as keyof typeof workoutDetails]?.exercises}
-                </p>
-              </div>
-              <div className="bg-[#2a2a2a] rounded-xl p-4 text-center">
-                <Clock className="w-5 h-5 text-[#60a5fa] mx-auto mb-2" />
-                <p className="text-muted-foreground text-xs mb-1">Duration</p>
-                <p className="text-white font-bold">
-                  {selectedDay && workoutDetails[selectedDay as keyof typeof workoutDetails]?.time}
-                </p>
-              </div>
-              <div className="bg-[#2a2a2a] rounded-xl p-4 text-center">
-                <Target className="w-5 h-5 text-[#aaf163] mx-auto mb-2" />
-                <p className="text-muted-foreground text-xs mb-1">Muscles</p>
-                <p className="text-white font-bold text-xs">
-                  {selectedDay && workoutDetails[selectedDay as keyof typeof workoutDetails]?.muscles.split(',')[0]}
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-[#2a2a2a] rounded-xl p-4 mb-6">
-              <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <Target className="w-5 h-5 text-[#7c57ff]" />
-                Targeted Muscles
-              </h3>
-              <p className="text-muted-foreground text-sm">
-                {selectedDay && workoutDetails[selectedDay as keyof typeof workoutDetails]?.muscles}
-              </p>
-            </div>
-
-            {(() => {
-              const selectedDayStatus = dayStatuses.find(d => d.day === selectedDay);
-              const isActiveDay = selectedDayStatus?.status === "active";
-              const isAlreadyCompleted = selectedDayStatus?.isCompleted;
-              const canStart = isActiveDay && !isAlreadyCompleted;
               
-              return (
-                <button 
-                  onClick={() => {
-                    if (selectedDay && canStart) {
-                      handleStartWorkout(selectedDay);
-                    } else if (isAlreadyCompleted) {
-                      toast.info("You've already completed today's workout!");
-                    } else if (!isActiveDay) {
-                      toast.error("You can only start today's workout");
-                    }
-                  }}
-                  disabled={!canStart}
-                  className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg transition-transform mb-3 ${
-                    canStart 
-                      ? 'bg-white text-[#7c57ff] hover:scale-105' 
-                      : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                  }`}
-                >
-                  {isAlreadyCompleted ? (
-                    <>
-                      <CheckCircle2 className="w-5 h-5" />
-                      Already Completed
-                    </>
-                  ) : !isActiveDay ? (
-                    <>
-                      <Lock className="w-5 h-5" />
-                      {selectedDayStatus?.status === "locked" ? "Past Workout" : "Future Workout"}
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-5 h-5 fill-current" />
-                      Start Workout
-                    </>
-                  )}
-                </button>
-              );
-            })()}
-
-            <button 
-              onClick={() => {
-                setShowWorkoutModal(false);
-                setShowRescheduleModal(true);
-              }}
-              className="w-full bg-[#2a2a2a] text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-[#3a3a3a] transition-colors"
-            >
-              📅 Reschedule Workout
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Reschedule Modal */}
-      <Dialog open={showRescheduleModal} onOpenChange={setShowRescheduleModal}>
-        <DialogContent className="bg-gradient-to-br from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] border-none p-0 max-w-md">
-          <div className="p-6">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h2 className="text-white text-2xl font-bold">Reschedule Workout</h2>
-                <p className="text-white/80 text-sm mt-1">
-                  Move Day {selectedDay} to a new day
-                </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/5 rounded-xl p-3">
+                  <p className="text-white/60 text-xs mb-1">Duration</p>
+                  <p className="text-white font-semibold">{getWorkoutForDay(selectedDay).time}</p>
+                </div>
+                <div className="bg-white/5 rounded-xl p-3">
+                  <p className="text-white/60 text-xs mb-1">Exercises</p>
+                  <p className="text-white font-semibold">{getWorkoutForDay(selectedDay).exercises}</p>
+                </div>
               </div>
-              <button 
-                onClick={() => setShowRescheduleModal(false)}
-                className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all"
-              >
-                <X className="w-5 h-5 text-white" />
-              </button>
-            </div>
 
-            <div className="bg-[#2a2a2a] rounded-xl p-4 mb-6">
-              <h3 className="text-white font-semibold mb-3">Select Target Day</h3>
-              <div className="grid grid-cols-5 gap-3">
-                {[12, 13, 14, 15, 16].map((day) => (
+              <div className="bg-white/5 rounded-xl p-3">
+                <p className="text-white/60 text-xs mb-1">Target Muscles</p>
+                <p className="text-white font-semibold">{getWorkoutForDay(selectedDay).muscles}</p>
+              </div>
+
+              {(() => {
+                const dayStatus = dayStatuses.find(d => d.day === selectedDay);
+                const isLocked = dayStatus?.status === "locked" || dayStatus?.status === "preview";
+                const isActive = dayStatus?.status === "active";
+                
+                return (
                   <button
-                    key={day}
-                    disabled={day === selectedDay}
                     onClick={() => {
-                      if (selectedDay) {
-                        handleRescheduleWorkout(selectedDay, day);
-                      }
+                      setShowWorkoutModal(false);
+                      handleStartWorkout(selectedDay);
                     }}
-                    className={`w-full aspect-square rounded-xl flex items-center justify-center font-bold text-lg transition-all ${
-                      day === selectedDay
-                        ? 'bg-[#1a1a1a] text-muted-foreground cursor-not-allowed'
-                        : 'bg-white/10 text-white hover:bg-white/20 hover:scale-105'
-                    }`}
+                    disabled={isLocked}
+                    className={`
+                      w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2
+                      ${isLocked 
+                        ? 'bg-white/10 text-white/40 cursor-not-allowed' 
+                        : 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white'
+                      }
+                    `}
+                    data-testid="button-start-modal"
                   >
-                    {day}
+                    {isLocked ? (
+                      <>
+                        <Lock className="w-5 h-5" />
+                        {dayStatus?.status === "preview" ? "Coming Soon" : "Locked"}
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-5 h-5 fill-current" />
+                        {isActive ? "Start Workout" : "View Workout"}
+                      </>
+                    )}
                   </button>
-                ))}
-              </div>
+                );
+              })()}
             </div>
-
-            <p className="text-white/60 text-sm text-center">
-              Click on a day to move this workout
-            </p>
-          </div>
+          )}
         </DialogContent>
       </Dialog>
 

@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Lock, CheckCircle2, Play, Dumbbell } from "lucide-react";
+import { Lock, CheckCircle2, Play } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 interface DayStatus {
   day: number;
@@ -29,290 +30,269 @@ interface NodePosition {
 }
 
 export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay, isLoading }: JourneyPathProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const todayRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (todayRef.current && containerRef.current) {
+      setTimeout(() => {
+        todayRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }, 500);
+    }
+  }, [dayStatuses]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-10 h-10 border-4 border-[#7c57ff] border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-[#7c57ff] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!dayStatuses.length) {
     return (
-      <div className="text-muted-foreground text-center py-10">
+      <div className="text-white/60 text-center py-10">
         Loading your journey...
       </div>
     );
   }
 
-  const nodeSpacing = 100;
-  const viewBoxWidth = 300;
-  const nodeRadius = 32;
-  const padding = 50;
+  const nodeSpacing = 140;
+  const containerWidth = 320;
+  const nodeSize = 70;
+  const todayNodeSize = 90;
+  const padding = 80;
 
   const getNodePosition = (index: number): NodePosition => {
-    const patterns = [
-      { xPercent: 50 },
-      { xPercent: 28 },
-      { xPercent: 72 },
-      { xPercent: 35 },
-      { xPercent: 65 },
-    ];
-    const pattern = patterns[index % patterns.length];
+    const amplitude = 80;
+    const frequency = 0.5;
+    const xOffset = Math.sin(index * frequency * Math.PI) * amplitude;
     return {
-      x: (viewBoxWidth * pattern.xPercent) / 100,
+      x: containerWidth / 2 + xOffset,
       y: padding + index * nodeSpacing,
     };
   };
 
   const nodePositions = dayStatuses.map((_, idx) => getNodePosition(idx));
-  const viewBoxHeight = padding * 2 + (dayStatuses.length - 1) * nodeSpacing;
+  const totalHeight = padding * 2 + (dayStatuses.length - 1) * nodeSpacing + 100;
 
-  const generatePath = (): string => {
-    if (nodePositions.length < 2) return '';
-    
-    let path = `M ${nodePositions[0].x} ${nodePositions[0].y}`;
-    
-    for (let i = 1; i < nodePositions.length; i++) {
-      const prev = nodePositions[i - 1];
-      const curr = nodePositions[i];
-      const midY = (prev.y + curr.y) / 2;
-      
-      path += ` C ${prev.x} ${midY}, ${curr.x} ${midY}, ${curr.x} ${curr.y}`;
-    }
-    
-    return path;
+  const generatePathSegment = (startIdx: number, endIdx: number): string => {
+    if (endIdx <= startIdx) return '';
+    const start = nodePositions[startIdx];
+    const end = nodePositions[endIdx];
+    const midY = (start.y + end.y) / 2;
+    return `M ${start.x} ${start.y} C ${start.x} ${midY}, ${end.x} ${midY}, ${end.x} ${end.y}`;
   };
 
-  const pathD = generatePath();
-
-  const aspectRatio = viewBoxWidth / viewBoxHeight;
-  const containerHeight = `${viewBoxHeight * 1.2}px`;
+  const findActiveIndex = dayStatuses.findIndex(d => d.status === "active" && !d.isCompleted);
+  const activeIndex = findActiveIndex >= 0 ? findActiveIndex : dayStatuses.length;
 
   return (
-    <div className="relative w-full" style={{ height: containerHeight }}>
+    <div 
+      ref={containerRef}
+      className="relative w-full overflow-visible"
+      style={{ minHeight: `${totalHeight}px` }}
+    >
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at 50% 0%, rgba(124,87,255,0.15) 0%, transparent 50%)'
+        }}
+      />
+
       <svg 
-        className="w-full h-full" 
-        viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
+        className="absolute inset-0 w-full h-full" 
+        viewBox={`0 0 ${containerWidth} ${totalHeight}`}
         preserveAspectRatio="xMidYMin meet"
+        style={{ overflow: 'visible' }}
       >
         <defs>
-          <linearGradient id="journeyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#7c57ff" />
-            <stop offset="50%" stopColor="#60a5fa" />
-            <stop offset="100%" stopColor="#a855f7" />
+          <linearGradient id="completedGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#10b981" />
+            <stop offset="100%" stopColor="#7c57ff" />
           </linearGradient>
-          <filter id="pathGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <filter id="nodeGlow" x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation="6" result="blur" />
+          <linearGradient id="activeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#7c57ff" />
+            <stop offset="100%" stopColor="#60a5fa" />
+          </linearGradient>
+          <filter id="glowFilter" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
-        
-        {/* Background glow path */}
-        {pathD && (
-          <motion.path
-            d={pathD}
-            stroke="url(#journeyGradient)"
-            strokeWidth="12"
-            fill="none"
-            opacity="0.4"
-            filter="url(#pathGlow)"
-            strokeLinecap="round"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 2, ease: "easeInOut" }}
-          />
-        )}
-        
-        {/* Main path */}
-        {pathD && (
-          <motion.path
-            d={pathD}
-            stroke="url(#journeyGradient)"
-            strokeWidth="5"
-            fill="none"
-            strokeLinecap="round"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
-          />
-        )}
 
-        {/* Workout Nodes - rendered inside SVG */}
+        {nodePositions.map((_, idx) => {
+          if (idx === 0) return null;
+          const prevDayCompleted = dayStatuses[idx - 1]?.isCompleted;
+          const isUpcoming = !prevDayCompleted;
+          const pathD = generatePathSegment(idx - 1, idx);
+          
+          if (isUpcoming) {
+            return (
+              <motion.path
+                key={`path-${idx}`}
+                d={pathD}
+                stroke="#3f3f46"
+                strokeWidth="4"
+                strokeDasharray="8 8"
+                fill="none"
+                strokeLinecap="round"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 0.5 }}
+                transition={{ duration: 0.5, delay: idx * 0.05 }}
+              />
+            );
+          }
+          
+          return (
+            <g key={`path-${idx}`}>
+              <motion.path
+                d={pathD}
+                stroke="url(#completedGradient)"
+                strokeWidth="8"
+                fill="none"
+                opacity="0.3"
+                strokeLinecap="round"
+                filter="url(#glowFilter)"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 0.5, delay: idx * 0.05 }}
+              />
+              <motion.path
+                d={pathD}
+                stroke="url(#completedGradient)"
+                strokeWidth="5"
+                fill="none"
+                strokeLinecap="round"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 0.5, delay: idx * 0.05 }}
+              />
+            </g>
+          );
+        })}
+      </svg>
+
+      <div className="relative" style={{ height: `${totalHeight}px` }}>
         {dayStatuses.map((dayInfo, idx) => {
           const position = nodePositions[idx];
-          const isActive = dayInfo.status === "active";
-          const isLocked = dayInfo.status === "locked";
+          const isActive = dayInfo.status === "active" && !dayInfo.isCompleted;
+          const isLocked = dayInfo.status === "locked" || dayInfo.status === "preview";
           const isCompleted = dayInfo.isCompleted;
+          const size = isActive ? todayNodeSize : nodeSize;
           const workout = getWorkoutForDay(dayInfo.day);
 
-          const bgColor = isCompleted 
-            ? "#10b981" 
-            : isActive 
-              ? "#7c57ff"
-              : isLocked
-                ? "#3f3f46"
-                : "#6b5fb8";
-
-          const glowColor = isCompleted 
-            ? "rgba(16,185,129,0.6)" 
-            : isActive 
-              ? "rgba(124,87,255,0.7)"
-              : "transparent";
-
           return (
-            <motion.g
+            <motion.div
               key={dayInfo.day}
-              initial={{ opacity: 0, scale: 0.5 }}
+              ref={isActive ? todayRef : undefined}
+              className="absolute transform -translate-x-1/2 -translate-y-1/2"
+              style={{ 
+                left: `${(position.x / containerWidth) * 100}%`,
+                top: `${position.y}px`,
+              }}
+              initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ 
-                delay: idx * 0.08,
+                delay: idx * 0.06,
                 type: "spring",
                 stiffness: 200,
                 damping: 20
               }}
-              style={{ cursor: isLocked ? 'not-allowed' : 'pointer' }}
-              onClick={() => !isLocked && onDayClick(dayInfo.day)}
-              data-testid={`journey-node-${dayInfo.day}`}
             >
-              {/* Pulse ring for active day */}
-              {isActive && !isCompleted && (
-                <>
-                  <circle
-                    cx={position.x}
-                    cy={position.y}
-                    r={nodeRadius + 10}
-                    fill="none"
-                    stroke="#7c57ff"
-                    strokeWidth="2"
-                    opacity="0.3"
-                  >
-                    <animate
-                      attributeName="r"
-                      values={`${nodeRadius + 10};${nodeRadius + 22};${nodeRadius + 10}`}
-                      dur="2s"
-                      repeatCount="indefinite"
-                    />
-                    <animate
-                      attributeName="opacity"
-                      values="0.5;0;0.5"
-                      dur="2s"
-                      repeatCount="indefinite"
-                    />
-                  </circle>
-                </>
-              )}
-
-              {/* Glow effect circle */}
-              {(isActive || isCompleted) && (
-                <circle
-                  cx={position.x}
-                  cy={position.y}
-                  r={nodeRadius + 4}
-                  fill={glowColor}
-                  filter="url(#nodeGlow)"
-                />
-              )}
-
-              {/* Background circle with gradient */}
-              <defs>
-                <linearGradient id={`nodeGrad-${dayInfo.day}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                  {isCompleted ? (
-                    <>
-                      <stop offset="0%" stopColor="#10b981" />
-                      <stop offset="100%" stopColor="#059669" />
-                    </>
-                  ) : isActive ? (
-                    <>
-                      <stop offset="0%" stopColor="#7c57ff" />
-                      <stop offset="100%" stopColor="#60a5fa" />
-                    </>
-                  ) : isLocked ? (
-                    <>
-                      <stop offset="0%" stopColor="#52525b" />
-                      <stop offset="100%" stopColor="#3f3f46" />
-                    </>
-                  ) : (
-                    <>
-                      <stop offset="0%" stopColor="rgba(124,87,255,0.7)" />
-                      <stop offset="100%" stopColor="rgba(96,165,250,0.7)" />
-                    </>
-                  )}
-                </linearGradient>
-              </defs>
-
-              {/* Main circle */}
-              <circle
-                cx={position.x}
-                cy={position.y}
-                r={nodeRadius}
-                fill={`url(#nodeGrad-${dayInfo.day})`}
-                stroke="#18181b"
-                strokeWidth="3"
-              />
-
-              {/* Icon */}
-              <g transform={`translate(${position.x - 12}, ${position.y - 12})`}>
-                {isLocked ? (
-                  <Lock className="w-6 h-6 text-zinc-400" width={24} height={24} color="#a1a1aa" />
-                ) : isCompleted ? (
-                  <CheckCircle2 className="w-6 h-6 text-white" width={24} height={24} color="white" />
-                ) : isActive ? (
-                  <Play className="w-6 h-6 text-white" width={24} height={24} color="white" fill="white" style={{ marginLeft: 2 }} />
-                ) : (
-                  <Dumbbell className="w-6 h-6 text-white/90" width={24} height={24} color="rgba(255,255,255,0.9)" />
-                )}
-              </g>
-
-              {/* Day label */}
-              <text
-                x={position.x}
-                y={position.y + nodeRadius + 18}
-                textAnchor="middle"
-                fill={isActive ? "white" : "#71717a"}
-                fontSize="11"
-                fontWeight="600"
-              >
-                Day {dayInfo.day}
-              </text>
-
-              {/* TODAY badge */}
-              {isActive && !isCompleted && (
-                <g transform={`translate(${position.x + nodeRadius - 8}, ${position.y - nodeRadius - 4})`}>
-                  <rect
-                    x={-16}
-                    y={-8}
-                    width={32}
-                    height={16}
-                    rx={8}
-                    fill="#aaf163"
+              {isActive && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <motion.div
+                    className="rounded-full bg-[#7c57ff]/30"
+                    style={{ width: size + 30, height: size + 30 }}
+                    animate={{ 
+                      scale: [1, 1.2, 1],
+                      opacity: [0.5, 0, 0.5]
+                    }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
                   />
-                  <text
-                    x={0}
-                    y={4}
-                    textAnchor="middle"
-                    fill="black"
-                    fontSize="8"
-                    fontWeight="700"
-                  >
-                    TODAY
-                  </text>
-                </g>
+                </div>
               )}
-            </motion.g>
+
+              {isActive && (
+                <motion.div
+                  className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-[#aaf163] text-black text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.06 + 0.3 }}
+                >
+                  TODAY
+                </motion.div>
+              )}
+
+              <button
+                onClick={() => !isLocked && onDayClick(dayInfo.day)}
+                disabled={isLocked}
+                className={`
+                  relative flex items-center justify-center rounded-full transition-all duration-200
+                  ${isLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105 active:scale-95'}
+                  focus:outline-none focus:ring-2 focus:ring-[#7c57ff] focus:ring-offset-2 focus:ring-offset-[#0a0e27]
+                `}
+                style={{ 
+                  width: size, 
+                  height: size,
+                  background: isCompleted 
+                    ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                    : isActive 
+                      ? 'linear-gradient(135deg, #7c57ff 0%, #60a5fa 100%)'
+                      : 'linear-gradient(135deg, #52525b 0%, #3f3f46 100%)',
+                  boxShadow: isActive 
+                    ? '0 0 30px rgba(124,87,255,0.6), 0 0 60px rgba(124,87,255,0.3)'
+                    : isCompleted
+                      ? '0 0 20px rgba(16,185,129,0.4)'
+                      : 'none',
+                }}
+                aria-label={`Day ${dayInfo.day} - ${workout.name}${isLocked ? ' (locked)' : isCompleted ? ' (completed)' : isActive ? ' (today)' : ''}`}
+                data-testid={`journey-node-${dayInfo.day}`}
+              >
+                <div className="absolute inset-1 rounded-full border-2 border-white/10" />
+                
+                {isLocked ? (
+                  <Lock className="w-6 h-6 text-white/50" />
+                ) : isCompleted ? (
+                  <CheckCircle2 className="w-7 h-7 text-white" />
+                ) : isActive ? (
+                  <Play className="w-8 h-8 text-white fill-white ml-1" />
+                ) : (
+                  <span className="text-white font-bold text-lg">{dayInfo.day}</span>
+                )}
+              </button>
+
+              <div className={`
+                mt-3 text-center whitespace-nowrap
+                ${isActive ? 'text-white font-semibold' : 'text-white/50'}
+              `}>
+                <div className="text-sm">Day {dayInfo.day}</div>
+                {isActive && (
+                  <div className="text-xs text-[#7c57ff] mt-0.5">{workout.shortName}</div>
+                )}
+              </div>
+            </motion.div>
           );
         })}
-      </svg>
+      </div>
+
+      <div 
+        className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
+        style={{
+          background: 'linear-gradient(to bottom, transparent 0%, #0a0e27 100%)'
+        }}
+      />
     </div>
   );
 }
