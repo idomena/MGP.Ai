@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Dumbbell, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import Logo from '@/components/Logo';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -78,11 +79,8 @@ const Auth = () => {
       <Card className="w-full max-w-md glass shadow-glow">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-full gradient-primary">
-              <Dumbbell className="h-8 w-8 text-white" />
-            </div>
+            <Logo />
           </div>
-          <CardTitle className="text-3xl bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#aaf163] bg-clip-text text-transparent">MGP.AI</CardTitle>
           <CardDescription>Your personal fitness companion</CardDescription>
         </CardHeader>
         <CardContent>
