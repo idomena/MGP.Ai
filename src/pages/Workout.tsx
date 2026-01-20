@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Play, ArrowLeft, Lock, Loader2, Clock, Dumbbell, ChevronRight, Home, Headphones, MessageCircle, Scan, MoreHorizontal } from "lucide-react";
+import { Play, ArrowLeft, Lock, Loader2, Clock, Dumbbell, ChevronRight, Sparkles } from "lucide-react";
+import NavigationBar from "@/components/NavigationBar";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import WorkoutSession from "@/components/WorkoutSession";
@@ -327,68 +328,18 @@ export default function WorkoutPage() {
         </button>
       </div>
 
+      {/* Floating AI Button */}
+      <button
+        onClick={openGeneralAI}
+        className="fixed bottom-24 right-4 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center shadow-lg shadow-[#7c57ff]/50"
+        aria-label="Get AI help for workout"
+        data-testid="button-workout-ai"
+      >
+        <Sparkles className="w-6 h-6 text-white" />
+      </button>
+
       {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50" role="navigation" aria-label="Workout navigation">
-        <div className="relative">
-          {/* Gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] rounded-t-3xl" />
-          
-          {/* Content */}
-          <div className="relative flex justify-around items-center h-20 px-4">
-            {/* Home */}
-            <button
-              onClick={() => navigate("/")}
-              className="flex flex-col items-center justify-center p-2"
-              aria-label="Go to Home"
-              data-testid="nav-home-workout"
-            >
-              <Home className="w-6 h-6 text-[#aaf163]" />
-            </button>
-
-            {/* AI Assistant - Headphones */}
-            <button
-              onClick={openGeneralAI}
-              className="flex flex-col items-center justify-center p-2"
-              aria-label="Open AI workout assistant"
-              data-testid="nav-ai-assistant"
-            >
-              <Headphones className="w-6 h-6 text-white" />
-            </button>
-
-            {/* Center Floating Button */}
-            <div className="relative -top-6">
-              <button
-                onClick={openGeneralAI}
-                className="w-16 h-16 rounded-full bg-[#7c57ff] flex items-center justify-center shadow-lg shadow-[#7c57ff]/50 border-4 border-[#1a1a2e]"
-                aria-label="Chat with AI"
-                data-testid="nav-center-chat"
-              >
-                <MessageCircle className="w-7 h-7 text-white" />
-              </button>
-            </div>
-
-            {/* Scan */}
-            <button
-              onClick={() => navigate("/nutrition")}
-              className="flex flex-col items-center justify-center p-2"
-              aria-label="Scan nutrition"
-              data-testid="nav-scan"
-            >
-              <Scan className="w-6 h-6 text-white" />
-            </button>
-
-            {/* More */}
-            <button
-              onClick={() => navigate("/profile")}
-              className="flex flex-col items-center justify-center p-2"
-              aria-label="More options"
-              data-testid="nav-more-workout"
-            >
-              <MoreHorizontal className="w-6 h-6 text-white" />
-            </button>
-          </div>
-        </div>
-      </nav>
+      <NavigationBar />
 
       {/* AI Assistant Modal */}
       <WorkoutAIAssistant
