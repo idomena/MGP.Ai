@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Lock, CheckCircle2, Play } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useLayoutEffect } from "react";
 
 interface DayStatus {
   day: number;
@@ -32,6 +32,24 @@ interface NodePosition {
 export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay, isLoading }: JourneyPathProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const todayRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(320);
+
+  useLayoutEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth);
+      }
+    };
+    
+    updateWidth();
+    
+    const resizeObserver = new ResizeObserver(updateWidth);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    
+    return () => resizeObserver.disconnect();
+  }, []);
 
   useEffect(() => {
     if (todayRef.current && containerRef.current) {
@@ -61,13 +79,12 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
   }
 
   const nodeSpacing = 140;
-  const containerWidth = 320;
   const nodeSize = 70;
   const todayNodeSize = 90;
   const padding = 80;
+  const amplitude = Math.min(containerWidth * 0.2, 100);
 
   const getNodePosition = (index: number): NodePosition => {
-    const amplitude = 80;
     const frequency = 0.5;
     const xOffset = Math.sin(index * frequency * Math.PI) * amplitude;
     return {
@@ -87,9 +104,6 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
     return `M ${start.x} ${start.y} C ${start.x} ${midY}, ${end.x} ${midY}, ${end.x} ${end.y}`;
   };
 
-  const findActiveIndex = dayStatuses.findIndex(d => d.status === "active" && !d.isCompleted);
-  const activeIndex = findActiveIndex >= 0 ? findActiveIndex : dayStatuses.length;
-
   return (
     <div 
       ref={containerRef}
@@ -104,9 +118,11 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
       />
 
       <svg 
-        className="absolute inset-0 w-full h-full" 
+        className="absolute inset-0" 
+        width={containerWidth}
+        height={totalHeight}
         viewBox={`0 0 ${containerWidth} ${totalHeight}`}
-        preserveAspectRatio="xMidYMin meet"
+        preserveAspectRatio="none"
         style={{ overflow: 'visible' }}
       >
         <defs>
@@ -179,7 +195,7 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
         })}
       </svg>
 
-      <div className="relative" style={{ height: `${totalHeight}px` }}>
+      <div className="absolute inset-0" style={{ height: `${totalHeight}px` }}>
         {dayStatuses.map((dayInfo, idx) => {
           const position = nodePositions[idx];
           const isActive = dayInfo.status === "active" && !dayInfo.isCompleted;
@@ -192,10 +208,11 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
             <motion.div
               key={dayInfo.day}
               ref={isActive ? todayRef : undefined}
-              className="absolute transform -translate-x-1/2 -translate-y-1/2"
+              className="absolute"
               style={{ 
-                left: `${(position.x / containerWidth) * 100}%`,
+                left: `${position.x}px`,
                 top: `${position.y}px`,
+                transform: 'translate(-50%, -50%)',
               }}
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
