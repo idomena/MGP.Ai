@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Play, ArrowLeft, Lock, Loader2, Clock, Dumbbell, ChevronRight, Sparkles } from "lucide-react";
 import NavigationBar from "@/components/NavigationBar";
-import Logo from "@/components/Logo";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import WorkoutSession from "@/components/WorkoutSession";
@@ -240,7 +239,11 @@ export default function WorkoutPage() {
 
         {/* Logo */}
         <div className="flex justify-center mb-4">
-          <Logo />
+          <div className="text-center">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] bg-clip-text text-transparent">
+              MGP·AI
+            </h1>
+          </div>
         </div>
 
         {/* Date */}
