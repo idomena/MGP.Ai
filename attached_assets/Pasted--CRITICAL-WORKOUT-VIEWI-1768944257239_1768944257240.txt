@@ -1,0 +1,289 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL: WORKOUT VIEWING & ACCESS PERMISSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RULE: User can VIEW details of ANY workout (past/today/future), but can only 
+START and COMPLETE today's workout.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SCENARIO 1: PAST WORKOUTS (Days 1, 2, 3... before today)
+
+When user clicks a COMPLETED workout circle:
+
+NAVIGATION:
+- Goes to workout list page (same page as TODAY)
+- Shows full workout details
+- Shows all exercises with sets/reps
+
+WHAT USER CAN SEE:
+✅ Workout title: "Day 3 - Legs"
+✅ Date completed: "Completed on Jan 15, 2025"
+✅ List of exercises:
+   - Squats - 4 sets, 12-10-8-8 reps, 12 min
+   - Leg Press - 3 sets, 15-12-10 reps, 10 min
+   - Leg Curls - 3 sets, 12-10-8 reps, 8 min
+✅ Exercise details (tap exercise to see more info)
+
+WHAT USER CANNOT DO:
+❌ NO "Start Workout" button
+❌ Cannot click exercise to start it
+❌ Cannot complete sets
+❌ Cannot mark workout as done (already done)
+
+VISUAL INDICATION:
+- Green checkmark badge at top: "✓ Completed"
+- All exercises show green checkmarks
+- Grayed out appearance (subtle, not too faded)
+- Message at top: "You completed this workout on Jan 15, 2025"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SCENARIO 2: FUTURE WORKOUTS (Days 5, 6, 7... after today)
+
+When user clicks a LOCKED workout circle:
+
+NAVIGATION:
+- Goes to workout list page (same page as TODAY)
+- Shows full workout details
+- Shows all exercises with sets/reps
+
+WHAT USER CAN SEE:
+✅ Workout title: "Day 6 - Shoulders + Abs"
+✅ Availability message: "Available on Jan 18, 2025"
+✅ List of exercises:
+   - Overhead Press - 3 sets, 12-10-8 reps, 10 min
+   - Lateral Raises - 3 sets, 15-12-10 reps, 8 min
+   - Front Raises - 3 sets, 15-12-10 reps, 8 min
+✅ Exercise details (tap exercise to see more info)
+
+WHAT USER CANNOT DO:
+❌ NO "Start Workout" button
+❌ Cannot click exercise to start it
+❌ Cannot complete sets
+❌ Cannot mark workout as done
+
+VISUAL INDICATION:
+- Lock icon badge at top: "🔒 Locked"
+- Message at top: "Complete Day 5 to unlock this workout"
+- Slightly dimmed appearance
+- Optional: Show countdown "Available in 2 days"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SCENARIO 3: TODAY'S WORKOUT (The current day)
+
+When user clicks TODAY's workout circle:
+
+NAVIGATION:
+- Goes to workout list page
+- Shows full workout details
+- Shows all exercises with sets/reps
+
+WHAT USER CAN SEE:
+✅ Workout title: "Day 4 - Chest + Triceps"
+✅ Today badge: "TODAY"
+✅ List of exercises with play icons:
+   - Bench Press - 3 sets, 12-10-8 reps, 10 min ▶
+   - Incline Press - 3 sets, 12-10-8 reps, 8 min ▶
+   - Tricep Dips - 3 sets, 12-10-8 reps, 8 min ▶
+✅ Exercise details (tap exercise to see more info)
+
+WHAT USER CAN DO:
+✅ Click "Start Workout" button at bottom
+✅ Click individual exercises to start them
+✅ Complete sets
+✅ Complete exercises
+✅ Mark entire workout as done
+✅ Full access to all workout features
+
+VISUAL INDICATION:
+- "TODAY" badge at top (bright, prominent)
+- Large "Start Workout" button at bottom (purple/blue gradient)
+- Play icons on each exercise card
+- Bright, active appearance
+- Full interactivity
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TECHNICAL IMPLEMENTATION:
+
+WorkoutList Page Component:
+```typescript
+function WorkoutListPage() {
+  const { day } = useParams()
+  const { data: stats } = useQuery(['stats'], api.getStats)
+  const { data: workout } = useQuery(['workout', day], () => api.getWorkout(day))
+  
+  const currentDay = stats?.totalWorkouts + 1 || 1
+  const dayNumber = Number(day)
+  
+  // Determine workout status
+  const workoutStatus = 
+    dayNumber < currentDay ? 'completed' :
+    dayNumber === currentDay ? 'current' :
+    'locked'
+  
+  return (
+    <div>
+      {/* Header */}
+      <Header>
+        <BackButton />
+        <WorkoutTitle>{workout.title}</WorkoutTitle>
+        
+        {/* Status badge */}
+        {workoutStatus === 'completed' && (
+          <Badge className="bg-green-500">
+            ✓ Completed on {workout.completedDate}
+          </Badge>
+        )}
+        {workoutStatus === 'current' && (
+          <Badge className="bg-purple-500">TODAY</Badge>
+        )}
+        {workoutStatus === 'locked' && (
+          <Badge className="bg-gray-500">
+            🔒 Complete Day {currentDay} to unlock
+          </Badge>
+        )}
+      </Header>
+      
+      {/* Exercise list */}
+      <ExerciseList>
+        {workout.exercises.map(exercise => (
+          <ExerciseCard
+            key={exercise.id}
+            exercise={exercise}
+            isInteractive={workoutStatus === 'current'}
+            isCompleted={workoutStatus === 'completed'}
+            onClick={() => {
+              // Only allow clicking if it's today's workout
+              if (workoutStatus === 'current') {
+                navigateToExercise(exercise.id)
+              } else {
+                // Show exercise details in modal (view-only)
+                showExerciseDetailsModal(exercise)
+              }
+            }}
+          />
+        ))}
+      </ExerciseList>
+      
+      {/* Start Workout button - ONLY show for today */}
+      {workoutStatus === 'current' && (
+        <StartWorkoutButton onClick={startWorkout}>
+          Start Workout
+        </StartWorkoutButton>
+      )}
+      
+      {/* Information messages for past/future */}
+      {workoutStatus === 'completed' && (
+        <InfoMessage>
+          You completed this workout. Great job! 💪
+        </InfoMessage>
+      )}
+      {workoutStatus === 'locked' && (
+        <InfoMessage>
+          This workout will be available on {workout.availableDate}
+        </InfoMessage>
+      )}
+    </div>
+  )
+}
+```
+
+Exercise Card Component:
+```typescript
+function ExerciseCard({ exercise, isInteractive, isCompleted, onClick }) {
+  return (
+    <div 
+      className={cn(
+        "exercise-card",
+        isInteractive && "cursor-pointer hover:scale-105",
+        !isInteractive && "opacity-70 cursor-default",
+        isCompleted && "bg-green-50"
+      )}
+      onClick={onClick}
+    >
+      {/* Exercise icon/image */}
+      <ExerciseIcon src={exercise.icon} />
+      
+      {/* Exercise info */}
+      <div>
+        <h3>{exercise.name}</h3>
+        <p>{exercise.sets} Sets</p>
+        <p>{exercise.reps}</p>
+        <p>{exercise.duration} min</p>
+      </div>
+      
+      {/* Status indicator */}
+      {isCompleted && <Check className="text-green-500" />}
+      {isInteractive && <Play className="text-purple-500" />}
+      {!isInteractive && !isCompleted && <Lock className="text-gray-400" />}
+    </div>
+  )
+}
+```
+
+Exercise Details Modal (View-only):
+```typescript
+function ExerciseDetailsModal({ exercise, onClose }) {
+  return (
+    <Modal onClose={onClose}>
+      <h2>{exercise.name}</h2>
+      
+      {/* Exercise video/image */}
+      <ExerciseMedia src={exercise.videoUrl} />
+      
+      {/* Details */}
+      <div>
+        <p>Muscle Groups: {exercise.muscleGroups.join(', ')}</p>
+        <p>Sets: {exercise.sets}</p>
+        <p>Reps: {exercise.reps}</p>
+        <p>Duration: {exercise.duration} minutes</p>
+      </div>
+      
+      {/* Instructions */}
+      <div>
+        <h3>How to perform:</h3>
+        <p>{exercise.instructions}</p>
+      </div>
+      
+      {/* Close button */}
+      <Button onClick={onClose}>Close</Button>
+      
+      {/* Note: NO "Start Exercise" button - this is view-only */}
+    </Modal>
+  )
+}
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+USER EXPERIENCE SUMMARY:
+
+PAST WORKOUTS:
+User clicks Day 3 → See workout details → See exercises → Cannot start → Can view exercise info
+
+FUTURE WORKOUTS:
+User clicks Day 6 → See workout details → See exercises → Cannot start → Can view exercise info
+
+TODAY'S WORKOUT:
+User clicks Day 4 → See workout details → See exercises → CAN start → Full access
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+KEY IMPLEMENTATION POINTS:
+
+1. Same workout list page for ALL workouts (past/today/future)
+2. Page adapts based on workout status
+3. Show "Start Workout" button ONLY for today
+4. Make exercises interactive ONLY for today
+5. Allow viewing exercise details for ALL workouts
+6. Clear visual indicators for status (completed/today/locked)
+7. Helpful messages explaining why user can't start
+8. Maintain consistent design across all states
+
+This gives users transparency (can see what's coming and what they've done) 
+while maintaining progression (can only do today's workout).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

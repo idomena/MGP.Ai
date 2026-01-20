@@ -253,11 +253,11 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
               )}
 
               <button
-                onClick={() => !isLocked && onDayClick(dayInfo.day)}
-                disabled={isLocked}
+                onClick={() => onDayClick(dayInfo.day)}
                 className={`
                   relative flex items-center justify-center rounded-full transition-all duration-200
-                  ${isLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105 active:scale-95'}
+                  cursor-pointer hover:scale-105 active:scale-95
+                  ${isLocked ? 'opacity-70' : ''}
                   focus:outline-none focus:ring-2 focus:ring-[#7c57ff] focus:ring-offset-2 focus:ring-offset-[#0a0e27]
                 `}
                 style={{ 

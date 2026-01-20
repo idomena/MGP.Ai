@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Play, ArrowLeft, Lock, Loader2, Clock, Dumbbell, ChevronRight, Sparkles } from "lucide-react";
+import { Play, ArrowLeft, Lock, Loader2, Clock, Dumbbell, ChevronRight, Sparkles, CheckCircle2, Calendar, Info } from "lucide-react";
 import NavigationBar from "@/components/NavigationBar";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import WorkoutSession from "@/components/WorkoutSession";
 import WorkoutAIAssistant from "@/components/WorkoutAIAssistant";
+import ExerciseDetailsModal from "@/components/ExerciseDetailsModal";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface ValidationResult {
   success: boolean;
   canStart: boolean;
-  status: "locked" | "active" | "preview";
+  status: "locked" | "active" | "preview" | "completed";
   currentDay: number;
   requestedDay: number;
   serverDate?: string;
@@ -28,6 +29,7 @@ interface Exercise {
   time: string;
   difficulty: string;
   gifUrl: string;
+  instructions?: string;
 }
 
 export default function WorkoutPage() {
@@ -38,14 +40,25 @@ export default function WorkoutPage() {
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
   const [isValidating, setIsValidating] = useState(true);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
-  const [accessBlocked, setAccessBlocked] = useState(false);
-  const [blockReason, setBlockReason] = useState<string>("");
   const [isAIOpen, setIsAIOpen] = useState(false);
   const [selectedExerciseForAI, setSelectedExerciseForAI] = useState<string | undefined>(undefined);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [showExerciseModal, setShowExerciseModal] = useState(false);
 
   const dayNumber = id ? parseInt(id, 10) : 1;
-  const workoutName = "Back training + Front hand";
-  const workoutDate = "16/1/2025";
+  
+  const workoutRotation = [
+    { name: "Chest Day", shortName: "Chest" },
+    { name: "Back & Biceps", shortName: "Back" },
+    { name: "Legs Power", shortName: "Legs" },
+    { name: "Shoulders & Abs", shortName: "Shoulders" },
+    { name: "Arms Blaster", shortName: "Arms" },
+    { name: "Core Focus", shortName: "Core" },
+    { name: "Active Recovery", shortName: "Rest" },
+  ];
+  
+  const workoutIndex = (dayNumber - 1) % workoutRotation.length;
+  const workoutName = workoutRotation[workoutIndex].name;
 
   const exercises: Exercise[] = [
     {
@@ -57,6 +70,7 @@ export default function WorkoutPage() {
       time: "10 min",
       difficulty: "Intermediate",
       gifUrl: "https://media.giphy.com/media/3o7TKB3oifq46DDhOE/giphy.gif",
+      instructions: "Grip the handles firmly, keep your back straight, and pull the weight towards your chest. Squeeze your back muscles at the top of the movement.",
     },
     {
       id: 2,
@@ -67,6 +81,7 @@ export default function WorkoutPage() {
       time: "8 min",
       difficulty: "Beginner",
       gifUrl: "https://media.giphy.com/media/l0MYyv6UK0Bd4DE76/giphy.gif",
+      instructions: "Sit down and grab the bar with a wide grip. Pull the bar down to your chest while keeping your back straight. Slowly return to starting position.",
     },
     {
       id: 3,
@@ -77,6 +92,7 @@ export default function WorkoutPage() {
       time: "10 min",
       difficulty: "Intermediate",
       gifUrl: "https://media.giphy.com/media/xT0xeIbYVQcBFDSdVu/giphy.gif",
+      instructions: "Hold dumbbells with palms facing each other. Curl the weights up while keeping your elbows close to your body. Lower slowly.",
     },
   ];
 
@@ -84,8 +100,6 @@ export default function WorkoutPage() {
     const validateWorkoutAccess = async () => {
       if (!user) {
         setIsValidating(false);
-        setAccessBlocked(true);
-        setBlockReason("Please log in to access workouts");
         return;
       }
 
@@ -93,25 +107,23 @@ export default function WorkoutPage() {
         setIsValidating(true);
         const response = await fetch(`/api/progress/validate/${user.id}/${dayNumber}`);
         const data: ValidationResult = await response.json();
+        
+        if (data.success) {
+          if (dayNumber < data.currentDay) {
+            data.status = "completed";
+            data.canStart = false;
+          } else if (dayNumber === data.currentDay) {
+            data.status = "active";
+            data.canStart = true;
+          } else {
+            data.status = "preview";
+            data.canStart = false;
+          }
+        }
 
         setValidationResult(data);
-
-        if (!data.success || !data.canStart) {
-          setAccessBlocked(true);
-          if (data.status === "locked") {
-            setBlockReason(`This is a past workout (Day ${dayNumber}). You can only complete today's workout (Day ${data.currentDay}).`);
-          } else if (data.status === "preview") {
-            setBlockReason(`This workout (Day ${dayNumber}) is scheduled for a future date. Today's workout is Day ${data.currentDay}.`);
-          } else {
-            setBlockReason(data.error || "Unable to access this workout.");
-          }
-        } else {
-          setAccessBlocked(false);
-        }
       } catch (error) {
         console.error("Error validating workout access:", error);
-        setAccessBlocked(true);
-        setBlockReason("Failed to validate workout access. Please try again.");
       } finally {
         setIsValidating(false);
       }
@@ -120,25 +132,31 @@ export default function WorkoutPage() {
     validateWorkoutAccess();
   }, [user, dayNumber]);
 
+  const workoutStatus = validationResult?.status || "active";
+  const canStartWorkout = validationResult?.canStart ?? true;
+  const currentDay = validationResult?.currentDay || dayNumber;
+
   const handleStartWorkout = () => {
-    if (accessBlocked) {
-      toast.error("You cannot start this workout");
+    if (!canStartWorkout) {
+      toast.error("You can only start today's workout");
       return;
     }
     setIsWorkoutActive(true);
   };
 
-  const handlePlayExercise = (exercise: Exercise) => {
-    if (accessBlocked) {
-      toast.error("You cannot start this workout");
-      return;
+  const handleExerciseClick = (exercise: Exercise) => {
+    if (canStartWorkout) {
+      setIsWorkoutActive(true);
+    } else {
+      setSelectedExercise(exercise);
+      setShowExerciseModal(true);
     }
-    setIsWorkoutActive(true);
   };
 
   const handleWorkoutComplete = () => {
     setIsWorkoutActive(false);
     toast.success("Workout complete! Great job!");
+    navigate("/");
   };
 
   const handleWorkoutExit = () => {
@@ -150,10 +168,8 @@ export default function WorkoutPage() {
   };
 
   const handleGoToTodaysWorkout = () => {
-    if (validationResult?.currentDay) {
-      navigate(`/workout/${validationResult.currentDay}`);
-    } else {
-      navigate("/");
+    if (currentDay && currentDay !== dayNumber) {
+      navigate(`/workout/${currentDay}`);
     }
   };
 
@@ -178,39 +194,6 @@ export default function WorkoutPage() {
     );
   }
 
-  if (accessBlocked) {
-    return (
-      <div className="min-h-screen bg-[#1a1a2e] flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-6">
-            <Lock className="w-10 h-10 text-white/60" />
-          </div>
-          <h1 className="text-white text-2xl font-bold mb-4">Workout Locked</h1>
-          <p className="text-white/60 mb-8">{blockReason}</p>
-          <div className="flex flex-col gap-3">
-            {validationResult?.currentDay && validationResult.currentDay !== dayNumber && (
-              <button
-                onClick={handleGoToTodaysWorkout}
-                className="w-full bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2"
-                data-testid="button-go-to-today"
-              >
-                <Play className="w-5 h-5" />
-                Go to Day {validationResult.currentDay}
-              </button>
-            )}
-            <button
-              onClick={handleGoBack}
-              className="w-full bg-white/10 text-white py-4 rounded-2xl font-semibold"
-              data-testid="button-go-back"
-            >
-              Back to Home
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (isWorkoutActive) {
     return (
       <WorkoutSession
@@ -222,6 +205,68 @@ export default function WorkoutPage() {
       />
     );
   }
+
+  const getStatusBadge = () => {
+    switch (workoutStatus) {
+      case "completed":
+        return (
+          <div className="flex items-center gap-2 bg-green-500/20 text-green-400 px-4 py-2 rounded-full text-sm font-medium">
+            <CheckCircle2 className="w-4 h-4" />
+            Completed
+          </div>
+        );
+      case "active":
+        return (
+          <div className="flex items-center gap-2 bg-[#7c57ff]/20 text-[#7c57ff] px-4 py-2 rounded-full text-sm font-bold animate-pulse">
+            TODAY
+          </div>
+        );
+      case "preview":
+        return (
+          <div className="flex items-center gap-2 bg-zinc-500/20 text-zinc-400 px-4 py-2 rounded-full text-sm font-medium">
+            <Lock className="w-4 h-4" />
+            Locked
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getStatusMessage = () => {
+    switch (workoutStatus) {
+      case "completed":
+        return (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 flex items-start gap-3"
+          >
+            <CheckCircle2 className="w-5 h-5 text-green-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-green-400 font-medium">Great job!</p>
+              <p className="text-green-400/70 text-sm">You completed this workout. Keep up the momentum!</p>
+            </div>
+          </motion.div>
+        );
+      case "preview":
+        return (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-zinc-500/10 border border-zinc-500/20 rounded-xl p-4 flex items-start gap-3"
+          >
+            <Calendar className="w-5 h-5 text-zinc-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-zinc-300 font-medium">Coming Soon</p>
+              <p className="text-zinc-400 text-sm">Complete Day {currentDay} first to unlock this workout.</p>
+            </div>
+          </motion.div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#1a1a2e] pb-24 overflow-y-auto" role="main" aria-label="Workout list page">
@@ -246,22 +291,36 @@ export default function WorkoutPage() {
           </div>
         </div>
 
-        {/* Date */}
-        <p className="text-center text-white/60 text-sm mb-2">{workoutDate}</p>
+        {/* Status Badge */}
+        <div className="flex justify-center mb-3">
+          {getStatusBadge()}
+        </div>
+
+        {/* Day Number */}
+        <p className="text-center text-white/60 text-sm mb-1">Day {dayNumber}</p>
 
         {/* Workout Title */}
         <h2 className="text-center text-white text-xl font-bold">{workoutName}</h2>
       </header>
 
+      {/* Status Message */}
+      <div className="px-4 mb-4">
+        {getStatusMessage()}
+      </div>
+
       {/* Exercise Cards */}
-      <div className="px-4 py-4 space-y-4">
+      <div className="px-4 py-2 space-y-4">
         {exercises.map((exercise, index) => (
           <motion.div
             key={exercise.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="relative bg-gradient-to-br from-[#3a3a5c] via-[#4a4a7c] to-[#5a5a9c] rounded-2xl p-4 overflow-hidden"
+            className={`
+              relative bg-gradient-to-br from-[#3a3a5c] via-[#4a4a7c] to-[#5a5a9c] rounded-2xl p-4 overflow-hidden
+              ${workoutStatus === "completed" ? "opacity-80" : ""}
+              ${workoutStatus === "preview" ? "opacity-60" : ""}
+            `}
             data-testid={`card-exercise-${exercise.id}`}
           >
             {/* Subtle shine effect */}
@@ -269,8 +328,15 @@ export default function WorkoutPage() {
             
             <div className="flex items-center gap-4 relative">
               {/* Number Circle */}
-              <div className="w-10 h-10 rounded-full bg-[#60a5fa] flex items-center justify-center shrink-0">
-                <span className="text-white font-bold text-lg">{index + 1}</span>
+              <div className={`
+                w-10 h-10 rounded-full flex items-center justify-center shrink-0
+                ${workoutStatus === "completed" ? "bg-green-500" : "bg-[#60a5fa]"}
+              `}>
+                {workoutStatus === "completed" ? (
+                  <CheckCircle2 className="w-5 h-5 text-white" />
+                ) : (
+                  <span className="text-white font-bold text-lg">{index + 1}</span>
+                )}
               </div>
 
               {/* Exercise Icon & Info */}
@@ -291,22 +357,33 @@ export default function WorkoutPage() {
                 </div>
               </div>
 
-              {/* Play Button */}
-              <button
-                onClick={() => handlePlayExercise(exercise)}
-                className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
-                aria-label={`Start ${exercise.name}`}
-                data-testid={`button-play-${exercise.id}`}
-              >
-                <Play className="w-6 h-6 text-white fill-white" />
-              </button>
+              {/* Action Button - Play for today, Info for others */}
+              {canStartWorkout ? (
+                <button
+                  onClick={() => handleExerciseClick(exercise)}
+                  className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
+                  aria-label={`Start ${exercise.name}`}
+                  data-testid={`button-play-${exercise.id}`}
+                >
+                  <Play className="w-6 h-6 text-white fill-white" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleExerciseClick(exercise)}
+                  className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                  aria-label={`View details for ${exercise.name}`}
+                  data-testid={`button-info-${exercise.id}`}
+                >
+                  <Info className="w-5 h-5 text-white/70" />
+                </button>
+              )}
 
-              {/* Arrow Icon */}
+              {/* AI Help Button */}
               <button
                 onClick={() => openAIForExercise(exercise.name)}
                 className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
                 aria-label={`Get AI help for ${exercise.name}`}
-                data-testid={`button-info-${exercise.id}`}
+                data-testid={`button-ai-${exercise.id}`}
               >
                 <ChevronRight className="w-4 h-4 text-white/70" />
               </button>
@@ -315,17 +392,36 @@ export default function WorkoutPage() {
         ))}
       </div>
 
-      {/* Start All Button */}
-      <div className="px-4 py-4">
-        <button
-          onClick={handleStartWorkout}
-          className="w-full bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-[#7c57ff]/30"
-          data-testid="button-start-workout"
-          aria-label="Start workout session"
-        >
-          <Play className="w-5 h-5 fill-current" aria-hidden="true" />
-          Start Workout
-        </button>
+      {/* Bottom Action Area */}
+      <div className="px-4 py-4 space-y-3">
+        {/* Start Workout Button - ONLY for today */}
+        {canStartWorkout && (
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            onClick={handleStartWorkout}
+            className="w-full bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-[#7c57ff]/30"
+            data-testid="button-start-workout"
+            aria-label="Start workout session"
+          >
+            <Play className="w-5 h-5 fill-current" aria-hidden="true" />
+            Start Workout
+          </motion.button>
+        )}
+
+        {/* Go to Today's Workout Button - for past/future workouts */}
+        {!canStartWorkout && currentDay !== dayNumber && (
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            onClick={handleGoToTodaysWorkout}
+            className="w-full bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-[#7c57ff]/30"
+            data-testid="button-go-to-today"
+          >
+            <Play className="w-5 h-5 fill-current" />
+            Go to Day {currentDay}
+          </motion.button>
+        )}
       </div>
 
       {/* Floating AI Button */}
@@ -349,6 +445,18 @@ export default function WorkoutPage() {
         isOpen={isAIOpen}
         onClose={() => setIsAIOpen(false)}
       />
+
+      {/* Exercise Details Modal (View-only for past/future) */}
+      {selectedExercise && (
+        <ExerciseDetailsModal
+          exercise={selectedExercise}
+          isOpen={showExerciseModal}
+          onClose={() => {
+            setShowExerciseModal(false);
+            setSelectedExercise(null);
+          }}
+        />
+      )}
     </div>
   );
 }
