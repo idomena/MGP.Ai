@@ -125,11 +125,13 @@ export default function Home() {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-background pb-24 px-4 overflow-y-auto" role="main" aria-label="Home page">
-      <MobileHeader />
+    <div className="h-screen bg-background flex flex-col" role="main" aria-label="Home page">
+      {/* Fixed Top Section */}
+      <div className="flex-shrink-0 px-4">
+        <MobileHeader />
 
-      {/* Toggle Buttons */}
-      <nav className="mt-6" role="tablist" aria-label="Program view selector">
+        {/* Toggle Buttons */}
+        <nav className="mt-6" role="tablist" aria-label="Program view selector">
         <div className="bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] rounded-full p-1">
           <div className="flex">
             <button
@@ -157,7 +159,10 @@ export default function Home() {
           </div>
         </div>
       </nav>
+      </div>
 
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto px-4 pb-24">
       {activeView === "quarterly" ? (
         <div className="mt-8 space-y-10">
           {/* Quarter Header - Clean and Bold */}
@@ -320,6 +325,7 @@ export default function Home() {
           </div>
         </>
       )}
+      </div>
 
       {/* Workout Modal */}
       <Dialog open={showWorkoutModal} onOpenChange={setShowWorkoutModal}>
