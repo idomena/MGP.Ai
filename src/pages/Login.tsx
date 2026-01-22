@@ -35,11 +35,15 @@ export default function Login() {
     setIsLoading(false);
     
     if (error) {
+      let errorMessage = error.message;
+      if (error.message === "Invalid login credentials") {
+        errorMessage = "Incorrect email or password. Please try again.";
+      } else if (error.message.toLowerCase().includes("email not confirmed")) {
+        errorMessage = "Please check your email and click the verification link before logging in.";
+      }
       toast({
         title: "Login failed",
-        description: error.message === "Invalid login credentials" 
-          ? "Incorrect email or password. Please try again."
-          : error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } else {
