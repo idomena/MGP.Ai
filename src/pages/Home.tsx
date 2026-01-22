@@ -13,7 +13,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface DayStatus {
   day: number;
-  status: "locked" | "active" | "preview";
+  status: "locked" | "active" | "preview" | "past";
   isCompleted: boolean;
 }
 

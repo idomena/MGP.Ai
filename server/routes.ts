@@ -6,9 +6,10 @@ import { eq, and } from "drizzle-orm";
 
 const TOTAL_PROGRAM_DAYS = 90;
 
-function calculateDayStatus(dayNumber: number, currentDay: number, completedDays: number[]): "locked" | "active" | "preview" {
+function calculateDayStatus(dayNumber: number, currentDay: number, completedDays: number[]): "locked" | "active" | "preview" | "past" {
   if (dayNumber < currentDay) {
-    return "locked";
+    // Past days - check if completed or missed
+    return "past";
   } else if (dayNumber === currentDay) {
     return "active";
   } else {
@@ -191,9 +192,10 @@ export function registerRoutes(app: Express): void {
 
       const completedDays = completionsData.map(c => c.dayNumber);
 
-      const displayDays: { day: number; status: "locked" | "active" | "preview"; isCompleted: boolean }[] = [];
-      const startDay = Math.max(1, currentDay - 4);
-      const endDay = Math.min(totalDays, startDay + 4);
+      const displayDays: { day: number; status: "locked" | "active" | "preview" | "past"; isCompleted: boolean }[] = [];
+      // Show all 30 days for the full month journey view
+      const startDay = 1;
+      const endDay = Math.min(totalDays, 30);
       
       for (let day = startDay; day <= endDay; day++) {
         displayDays.push({

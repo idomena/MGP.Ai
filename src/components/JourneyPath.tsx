@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
-import { Lock, CheckCircle2, Play } from "lucide-react";
+import { Lock, CheckCircle2, Play, X } from "lucide-react";
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
 
 interface DayStatus {
   day: number;
-  status: "locked" | "active" | "preview";
+  status: "locked" | "active" | "preview" | "past";
   isCompleted: boolean;
 }
 
@@ -153,6 +153,10 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
             <stop offset="0%" stopColor="#52525b" />
             <stop offset="100%" stopColor="#3f3f46" />
           </linearGradient>
+          <linearGradient id="nodeMissedGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f97316" />
+            <stop offset="100%" stopColor="#ea580c" />
+          </linearGradient>
           <filter id="glowFilter" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="4" result="blur" />
             <feMerge>
@@ -222,8 +226,10 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
         {dayStatuses.map((dayInfo, idx) => {
           const pos = nodePositions[idx];
           const isActive = dayInfo.status === "active" && !dayInfo.isCompleted;
+          const isPast = dayInfo.status === "past";
           const isLocked = dayInfo.status === "locked" || dayInfo.status === "preview";
           const isCompleted = dayInfo.isCompleted;
+          const isMissed = isPast && !isCompleted;
           const radius = isActive ? todayNodeRadius : nodeRadius;
           const workout = getWorkoutForDay(dayInfo.day);
 
@@ -258,11 +264,13 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
                 fill={
                   isCompleted 
                     ? "url(#nodeCompletedGradient)"
-                    : isActive 
-                      ? "url(#nodeActiveGradient)"
-                      : "url(#nodeLockedGradient)"
+                    : isMissed
+                      ? "url(#nodeMissedGradient)"
+                      : isActive 
+                        ? "url(#nodeActiveGradient)"
+                        : "url(#nodeLockedGradient)"
                 }
-                filter={isActive ? "url(#activeGlow)" : isCompleted ? "url(#glowFilter)" : undefined}
+                filter={isActive ? "url(#activeGlow)" : isCompleted ? "url(#glowFilter)" : isMissed ? "url(#glowFilter)" : undefined}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: isLocked ? 0.7 : 1 }}
                 transition={{ 
@@ -294,13 +302,15 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
                   onClick={() => onDayClick(dayInfo.day)}
                   className="w-full h-full flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform focus:outline-none focus:ring-2 focus:ring-[#7c57ff] focus:ring-offset-2 focus:ring-offset-[#0a0e27] rounded-full"
                   style={{ background: 'transparent' }}
-                  aria-label={`Day ${dayInfo.day} - ${workout.name}${isLocked ? ' (locked)' : isCompleted ? ' (completed)' : isActive ? ' (today)' : ''}`}
+                  aria-label={`Day ${dayInfo.day} - ${workout.name}${isLocked ? ' (locked)' : isCompleted ? ' (completed)' : isMissed ? ' (missed)' : isActive ? ' (today)' : ''}`}
                   data-testid={`journey-node-${dayInfo.day}`}
                 >
                   {isLocked ? (
                     <Lock className="w-5 h-5 text-white/50" />
                   ) : isCompleted ? (
                     <CheckCircle2 className="w-6 h-6 text-white" />
+                  ) : isMissed ? (
+                    <X className="w-6 h-6 text-white" />
                   ) : isActive ? (
                     <Play className="w-7 h-7 text-white fill-white ml-0.5" />
                   ) : (
