@@ -1,11 +1,23 @@
 import NavigationBar from "@/components/NavigationBar";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, Settings, Bell, Award, Zap, Flame, Target, ChevronRight, Shield, HelpCircle, Star, Dumbbell } from "lucide-react";
-import { Link } from "react-router-dom";
+import { User, Settings, Bell, Award, Zap, Flame, Target, ChevronRight, Shield, HelpCircle, Star, Dumbbell, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    await signOut();
+    toast({
+      title: "Logged out",
+      description: "You've been successfully logged out.",
+    });
+    navigate("/login");
+  };
 
   const stats = [
     { label: "Workouts", value: "16", icon: Dumbbell, color: "#7c57ff" },
@@ -127,6 +139,16 @@ export default function ProfilePage() {
             })}
           </div>
         </section>
+
+        <button
+          onClick={handleLogout}
+          className="w-full mt-6 flex items-center justify-center gap-3 p-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-2xl transition-colors"
+          data-testid="button-logout"
+          aria-label="Log out"
+        >
+          <LogOut className="w-5 h-5 text-red-400" />
+          <span className="text-red-400 font-medium">Log Out</span>
+        </button>
 
         <p className="text-center text-white/30 text-xs mt-8">
           MGP.AI v1.0.0 - Your AI Fitness Coach
