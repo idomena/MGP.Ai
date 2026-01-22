@@ -35,14 +35,20 @@ export default function Login() {
     setIsLoading(false);
     
     if (error) {
+      console.error("Login error:", error.message, error);
       let errorMessage = error.message;
+      let errorTitle = "Login failed";
+      
       if (error.message === "Invalid login credentials") {
         errorMessage = "Incorrect email or password. Please try again.";
       } else if (error.message.toLowerCase().includes("email not confirmed")) {
         errorMessage = "Please check your email and click the verification link before logging in.";
+      } else if (error.message.toLowerCase().includes("invalid") || error.message.toLowerCase().includes("user not found")) {
+        errorMessage = "No account found with this email. Please sign up first.";
       }
+      
       toast({
-        title: "Login failed",
+        title: errorTitle,
         description: errorMessage,
         variant: "destructive",
       });
