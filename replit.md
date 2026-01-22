@@ -2,9 +2,18 @@
 
 ## Overview
 
-MGP.AI is an AI-powered fitness and nutrition mobile web application built with React, TypeScript, and Vite. The app provides personalized fitness coaching, workout tracking, nutrition scanning via OCR, and an AI assistant powered by Google Gemini. It features a dark-themed mobile-first design with glassmorphism UI elements. The app is publicly accessible without authentication, using a mock user for all functionality.
+MGP.AI is an AI-powered fitness and nutrition mobile web application built with React, TypeScript, and Vite. The app provides personalized fitness coaching, workout tracking, nutrition scanning via OCR, and an AI assistant powered by Google Gemini. It features a dark-themed mobile-first design with glassmorphism UI elements.
 
 ## Recent Changes
+
+### January 2026 - Authentication System
+- **Supabase Auth Integration**: Full authentication using Supabase Auth with email/password
+- **Auth Pages**: Login (/login), Signup (/signup), Reset Password (/reset-password)
+- **Protected Routes**: All app routes require authentication, redirects to login if not authenticated
+- **AuthContext**: React Context API with Supabase session management, auto-refresh tokens
+- **Password Requirements**: Minimum 8 characters, 1 uppercase letter, 1 number
+- **Email Verification**: Users receive verification email on signup
+- **Logout**: Log out button on Profile page with session cleanup
 
 ### January 2026 - UI/UX Polish Update
 - **Journey Path Redesign**: Infinite S-curve visualization with dynamic path segments, 3 node states (completed/today/upcoming), auto-scroll to today. All nodes are now clickable to view workout details.
@@ -16,7 +25,6 @@ MGP.AI is an AI-powered fitness and nutrition mobile web application built with 
 - **Stats Display**: Infinity symbol for workouts (16/∞), fire emoji streak, lightning XP
 
 ### Earlier January 2026
-- **Authentication Removal**: App now uses mock user (demo-user-001) - no login required
 - **Accessibility Improvements**: Added ARIA labels, roles, focus states, and semantic HTML across all pages
 - **Scrolling Enhancement**: All pages now have `overflow-y-auto` with `pb-24` for proper scrolling
 - **Workout List Redesign**: New gradient exercise cards, MGP-AI header, custom bottom navigation bar
