@@ -334,11 +334,31 @@ export default function Home() {
                   <h3 className="text-xl font-bold">Day {selectedDay}</h3>
                   <p className="text-white/60">{getWorkoutForDay(selectedDay).name}</p>
                 </div>
-                {dayStatuses.find(d => d.day === selectedDay)?.isCompleted && (
-                  <div className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-medium">
-                    Completed
-                  </div>
-                )}
+                {(() => {
+                  const dayStatus = dayStatuses.find(d => d.day === selectedDay);
+                  if (dayStatus?.isCompleted) {
+                    return (
+                      <div className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-medium">
+                        Completed
+                      </div>
+                    );
+                  }
+                  if (dayStatus?.status === "past" && !dayStatus?.isCompleted) {
+                    return (
+                      <div className="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm font-medium">
+                        Missed
+                      </div>
+                    );
+                  }
+                  if (dayStatus?.status === "active") {
+                    return (
+                      <div className="bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full text-sm font-medium animate-pulse">
+                        TODAY
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
               
               <div className="grid grid-cols-2 gap-3">
@@ -361,6 +381,31 @@ export default function Home() {
                 const dayStatus = dayStatuses.find(d => d.day === selectedDay);
                 const isLocked = dayStatus?.status === "locked" || dayStatus?.status === "preview";
                 const isActive = dayStatus?.status === "active";
+                const isPast = dayStatus?.status === "past";
+                const isCompleted = dayStatus?.isCompleted;
+                const isMissed = isPast && !isCompleted;
+                
+                // Past days (completed or missed) are view-only - no Start button
+                if (isPast) {
+                  return (
+                    <div className="space-y-3">
+                      {isCompleted ? (
+                        <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-green-500/20 text-green-400 border border-green-500/30">
+                          <CheckCircle2 className="w-5 h-5" />
+                          Workout Completed
+                        </div>
+                      ) : (
+                        <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                          <X className="w-5 h-5" />
+                          Workout Missed
+                        </div>
+                      )}
+                      <p className="text-white/40 text-center text-sm">
+                        Past workouts cannot be started
+                      </p>
+                    </div>
+                  );
+                }
                 
                 return (
                   <button
