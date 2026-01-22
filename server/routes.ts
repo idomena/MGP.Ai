@@ -6,6 +6,10 @@ import { eq, and } from "drizzle-orm";
 
 const TOTAL_PROGRAM_DAYS = 90;
 
+// DEBUG: Simulate being on day 7 (add 6 days offset)
+// Set to 0 for production
+const DEBUG_DAY_OFFSET = 6;
+
 function calculateDayStatus(dayNumber: number, currentDay: number, completedDays: number[]): "locked" | "active" | "preview" | "past" {
   if (dayNumber < currentDay) {
     // Past days - check if completed or missed
@@ -23,7 +27,8 @@ function calculateCurrentDay(programStartDate: Date, serverNow: Date): number {
   const now = startOfDay(serverNow);
   const diffTime = now.getTime() - start.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  return Math.max(1, Math.min(diffDays + 1, TOTAL_PROGRAM_DAYS));
+  // Add debug offset to simulate being further in the program
+  return Math.max(1, Math.min(diffDays + 1 + DEBUG_DAY_OFFSET, TOTAL_PROGRAM_DAYS));
 }
 
 export function registerRoutes(app: Express): void {
