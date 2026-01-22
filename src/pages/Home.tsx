@@ -159,6 +159,50 @@ export default function Home() {
           </div>
         </div>
       </nav>
+
+        {/* Weekly Program Header and Stats - Fixed */}
+        {activeView === "weekly" && (
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-semibold text-lg flex items-center gap-2">
+                <BarChart3 className="w-5 h-5" />
+                Your Program
+              </h3>
+              <button 
+                onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+                className="text-muted-foreground text-sm flex items-center gap-1 hover:text-white transition-colors hover:gap-2"
+              >
+                View Stats →
+              </button>
+            </div>
+
+            {/* Weekly Progress Card - Compact */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-4"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-white font-semibold text-sm">Weekly Progress</h4>
+                <TrendingUp className="w-4 h-4 text-[#7c57ff]" />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
+                  <p className="text-white/60 text-xs">Workouts</p>
+                  <p className="text-white font-bold text-lg">{currentDay || 16}/∞</p>
+                </div>
+                <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
+                  <p className="text-white/60 text-xs">Streak</p>
+                  <p className="text-white font-bold text-lg">12 🔥</p>
+                </div>
+                <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
+                  <p className="text-white/60 text-xs">XP</p>
+                  <p className="text-white font-bold text-lg">2,840 ⚡</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </div>
 
       {/* Scrollable Content Area */}
@@ -274,48 +318,8 @@ export default function Home() {
         </div>
       ) : (
         <>
-          {/* Weekly Program View */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-                <BarChart3 className="w-5 h-5" />
-                Your Program
-              </h3>
-              <button 
-                onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-                className="text-muted-foreground text-sm flex items-center gap-1 hover:text-white transition-colors hover:gap-2"
-              >
-                View Stats →
-              </button>
-            </div>
-
-            {/* Weekly Progress Card - Compact */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-4 mb-6"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-white font-semibold text-sm">Weekly Progress</h4>
-                <TrendingUp className="w-4 h-4 text-[#7c57ff]" />
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
-                  <p className="text-white/60 text-xs">Workouts</p>
-                  <p className="text-white font-bold text-lg">{currentDay || 16}/∞</p>
-                </div>
-                <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
-                  <p className="text-white/60 text-xs">Streak</p>
-                  <p className="text-white font-bold text-lg">12 🔥</p>
-                </div>
-                <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
-                  <p className="text-white/60 text-xs">XP</p>
-                  <p className="text-white font-bold text-lg">2,840 ⚡</p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Journey Path */}
+          {/* Weekly Program View - Only Journey Path scrolls */}
+          <div className="mt-4">
             <JourneyPath
               dayStatuses={dayStatuses}
               onDayClick={handleDayClick}
