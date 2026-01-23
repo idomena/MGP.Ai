@@ -99,6 +99,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
       setIsLoading(true);
       setError(null);
 
+      // Get profile for start date
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("created_at")
@@ -108,6 +109,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
       let startDate: string;
 
       if (profileError || !profile) {
+        // Fall back to today if no profile found
         startDate = new Date().toISOString().split("T")[0];
       } else {
         startDate = profile.created_at.split("T")[0];
@@ -116,16 +118,26 @@ export function useWorkoutProgress(): WorkoutProgressData {
       const calculatedCurrentDay = calculateCurrentDay(startDate);
       setCurrentDay(calculatedCurrentDay);
 
-      const { data: completions, error: completionsError } = await supabase
-        .from("workout_completions")
-        .select("*")
-        .eq("user_id", user.id);
+      // Try to fetch workout completions - handle table not existing
+      let completedDayNumbers: number[] = [];
+      
+      try {
+        const { data: completions, error: completionsError } = await supabase
+          .from("workout_completions")
+          .select("day_number")
+          .eq("user_id", user.id);
 
-      if (completionsError) throw completionsError;
-
-      const completedDayNumbers = (completions || []).map((c: WorkoutCompletion) => c.day_number);
+        if (!completionsError && completions) {
+          completedDayNumbers = completions.map((c) => c.day_number);
+        }
+      } catch {
+        // Table doesn't exist - use empty completions
+        console.log("workout_completions table not found, using empty state");
+      }
+      
       setCompletedDays(completedDayNumbers);
 
+      // Build day statuses for all 30 days
       const statuses: DayStatus[] = [];
       for (let day = 1; day <= TOTAL_PROGRAM_DAYS; day++) {
         statuses.push({
@@ -136,6 +148,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
       }
       setDayStatuses(statuses);
 
+      // Calculate stats
       const streak = calculateStreak(completedDayNumbers, calculatedCurrentDay);
       const xp = completedDayNumbers.length * XP_PER_WORKOUT;
 
@@ -148,7 +161,26 @@ export function useWorkoutProgress(): WorkoutProgressData {
 
     } catch (err) {
       console.error("Error fetching workout progress:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch progress");
+      // Even on error, set up default state so UI doesn't break
+      const calculatedCurrentDay = 1;
+      setCurrentDay(calculatedCurrentDay);
+      setCompletedDays([]);
+      
+      const statuses: DayStatus[] = [];
+      for (let day = 1; day <= TOTAL_PROGRAM_DAYS; day++) {
+        statuses.push({
+          day,
+          status: calculateDayStatus(day, calculatedCurrentDay, []),
+          isCompleted: false,
+        });
+      }
+      setDayStatuses(statuses);
+      setUserStats({
+        workoutsCompleted: 0,
+        totalWorkouts: TOTAL_PROGRAM_DAYS,
+        streak: 0,
+        xp: 0,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -161,6 +193,8 @@ export function useWorkoutProgress(): WorkoutProgressData {
   useEffect(() => {
     if (!user?.id) return;
 
+    // Set up real-time subscription for workout completions
+    // This will work once the table exists in Supabase
     const channel = supabase
       .channel("workout_completions_changes")
       .on(
@@ -176,7 +210,11 @@ export function useWorkoutProgress(): WorkoutProgressData {
           fetchProgress();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          console.log("Subscribed to workout_completions changes");
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
