@@ -4,7 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { Tables } from "@/integrations/supabase/types";
 
 type WorkoutCompletion = Tables<"workout_completions">;
-type UserProgram = Tables<"user_programs">;
 
 interface DayStatus {
   day: number;
@@ -100,37 +99,21 @@ export function useWorkoutProgress(): WorkoutProgressData {
       setIsLoading(true);
       setError(null);
 
-      const { data: existingProgram, error: programError } = await supabase
-        .from("user_programs")
-        .select("*")
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("created_at")
         .eq("user_id", user.id)
         .single();
 
-      let program: UserProgram;
+      let startDate: string;
 
-      if (programError && programError.code === "PGRST116") {
-        const today = new Date().toISOString().split("T")[0];
-        const { data: newProgram, error: insertError } = await supabase
-          .from("user_programs")
-          .insert({
-            user_id: user.id,
-            start_date: today,
-            total_days: TOTAL_PROGRAM_DAYS,
-          })
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-        if (!newProgram) throw new Error("Failed to create program");
-        program = newProgram;
-      } else if (programError) {
-        throw programError;
-      } else if (!existingProgram) {
-        throw new Error("No program found");
+      if (profileError || !profile) {
+        startDate = new Date().toISOString().split("T")[0];
       } else {
-        program = existingProgram;
+        startDate = profile.created_at.split("T")[0];
       }
-      const calculatedCurrentDay = calculateCurrentDay(program.start_date);
+
+      const calculatedCurrentDay = calculateCurrentDay(startDate);
       setCurrentDay(calculatedCurrentDay);
 
       const { data: completions, error: completionsError } = await supabase

@@ -1,7 +1,7 @@
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
 import JourneyPath from "@/components/JourneyPath";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
@@ -10,12 +10,7 @@ import { motion } from "framer-motion";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-
-interface DayStatus {
-  day: number;
-  status: "locked" | "active" | "preview" | "past";
-  isCompleted: boolean;
-}
+import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
 
 export default function Home() {
   const { user } = useAuth();
@@ -23,12 +18,17 @@ export default function Home() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
-  const [completedDays, setCompletedDays] = useState<Set<number>>(new Set());
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [customSchedule, setCustomSchedule] = useState<Record<number, any>>({});
-  const [dayStatuses, setDayStatuses] = useState<DayStatus[]>([]);
-  const [currentDay, setCurrentDay] = useState<number | null>(null);
-  const [isLoadingProgress, setIsLoadingProgress] = useState(true);
+
+  const {
+    dayStatuses,
+    currentDay,
+    completedDays,
+    userStats,
+    isLoading: isLoadingProgress,
+    error: progressError,
+  } = useWorkoutProgress();
 
   // Workout rotation for 90 days (repeating 6-day cycle with rest)
   const workoutRotation = [
@@ -82,7 +82,6 @@ export default function Home() {
     const workoutToMove = workoutDetails[fromDay as keyof typeof workoutDetails];
     if (!workoutToMove) return;
 
-    // Update local schedule state
     setCustomSchedule(prev => {
       const updated = { ...prev };
       updated[toDay] = workoutToMove;
@@ -94,35 +93,6 @@ export default function Home() {
     setShowRescheduleModal(false);
     setShowWorkoutModal(false);
   };
-
-  // Fetch progress from server API
-  const fetchProgress = async () => {
-    if (!user) return;
-    
-    try {
-      setIsLoadingProgress(true);
-      const response = await fetch(`/api/progress/${user.id}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setCurrentDay(data.currentDay);
-        setDayStatuses(data.dayStatuses);
-        setCompletedDays(new Set(data.completedDays));
-      } else {
-        console.error('Error fetching progress:', data.error);
-      }
-    } catch (error) {
-      console.error('Error fetching progress:', error);
-    } finally {
-      setIsLoadingProgress(false);
-    }
-  };
-
-  // Fetch progress from server API on mount
-  useEffect(() => {
-    if (!user) return;
-    fetchProgress();
-  }, [user]);
 
   return (
     <div className="h-screen bg-background flex flex-col" role="main" aria-label="Home page">
@@ -189,15 +159,15 @@ export default function Home() {
               <div className="grid grid-cols-3 gap-2">
                 <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
                   <p className="text-white/60 text-xs">Workouts</p>
-                  <p className="text-white font-bold text-lg">{currentDay || 16}/∞</p>
+                  <p className="text-white font-bold text-lg">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</p>
                 </div>
                 <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
                   <p className="text-white/60 text-xs">Streak</p>
-                  <p className="text-white font-bold text-lg">12 🔥</p>
+                  <p className="text-white font-bold text-lg">{userStats.streak} 🔥</p>
                 </div>
                 <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
                   <p className="text-white/60 text-xs">XP</p>
-                  <p className="text-white font-bold text-lg">2,840 ⚡</p>
+                  <p className="text-white font-bold text-lg">{userStats.xp.toLocaleString()} ⚡</p>
                 </div>
               </div>
             </motion.div>
@@ -235,7 +205,7 @@ export default function Home() {
                   stroke="url(#progressGradient)"
                   strokeWidth="8"
                   strokeLinecap="round"
-                  strokeDasharray={`${15 * 2.64} ${100 * 2.64}`}
+                  strokeDasharray={`${(userStats.workoutsCompleted / userStats.totalWorkouts * 100) * 2.64} ${100 * 2.64}`}
                 />
                 <defs>
                   <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -245,12 +215,12 @@ export default function Home() {
                 </defs>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-white text-5xl font-bold">15%</span>
+                <span className="text-white text-5xl font-bold">{Math.round(userStats.workoutsCompleted / userStats.totalWorkouts * 100)}%</span>
                 <span className="text-zinc-500 text-sm mt-1">Complete</span>
               </div>
             </div>
             <p className="text-zinc-400 mt-6 text-center">
-              Week <span className="text-white font-semibold">3</span> of 12
+              Week <span className="text-white font-semibold">{Math.ceil(currentDay / 7)}</span> of {Math.ceil(userStats.totalWorkouts / 7)}
             </p>
           </div>
 
@@ -267,21 +237,21 @@ export default function Home() {
                   <p className="text-zinc-500 text-sm">This quarter</p>
                 </div>
               </div>
-              <p className="text-white text-3xl font-bold">16<span className="text-zinc-500 text-xl">/48</span></p>
+              <p className="text-white text-3xl font-bold">{userStats.workoutsCompleted}<span className="text-zinc-500 text-xl">/{userStats.totalWorkouts}</span></p>
             </div>
 
-            {/* Calories */}
+            {/* XP */}
             <div className="flex items-center justify-between py-4 border-b border-zinc-800">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center">
                   <Flame className="w-6 h-6 text-orange-500" />
                 </div>
                 <div>
-                  <p className="text-white text-lg font-medium">Calories Burned</p>
+                  <p className="text-white text-lg font-medium">XP Earned</p>
                   <p className="text-zinc-500 text-sm">Total this quarter</p>
                 </div>
               </div>
-              <p className="text-white text-3xl font-bold">12.4k</p>
+              <p className="text-white text-3xl font-bold">{userStats.xp.toLocaleString()}</p>
             </div>
 
             {/* Streak */}
@@ -291,11 +261,11 @@ export default function Home() {
                   <TrendingUp className="w-6 h-6 text-[#aaf163]" />
                 </div>
                 <div>
-                  <p className="text-white text-lg font-medium">Best Streak</p>
+                  <p className="text-white text-lg font-medium">Current Streak</p>
                   <p className="text-zinc-500 text-sm">Consecutive days</p>
                 </div>
               </div>
-              <p className="text-white text-3xl font-bold">12</p>
+              <p className="text-white text-3xl font-bold">{userStats.streak}</p>
             </div>
 
             {/* Consistency */}
@@ -309,7 +279,7 @@ export default function Home() {
                   <p className="text-zinc-500 text-sm">Weekly average</p>
                 </div>
               </div>
-              <p className="text-white text-3xl font-bold">85<span className="text-zinc-500 text-xl">%</span></p>
+              <p className="text-white text-3xl font-bold">{currentDay > 0 ? Math.round((userStats.workoutsCompleted / currentDay) * 100) : 0}<span className="text-zinc-500 text-xl">%</span></p>
             </div>
           </div>
 
