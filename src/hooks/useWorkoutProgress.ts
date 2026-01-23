@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Tables } from "@/integrations/supabase/types";
 
-type WorkoutCompletion = Tables<"workout_completions">;
+type WorkoutCompletion = Tables<"workout_completion">;
 
 interface DayStatus {
   day: number;
@@ -123,7 +123,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
       
       try {
         const { data: completions, error: completionsError } = await supabase
-          .from("workout_completions")
+          .from("workout_completion")
           .select("day_number")
           .eq("user_id", user.id);
 
@@ -196,13 +196,13 @@ export function useWorkoutProgress(): WorkoutProgressData {
     // Set up real-time subscription for workout completions
     // This will work once the table exists in Supabase
     const channel = supabase
-      .channel("workout_completions_changes")
+      .channel("workout_completion_changes")
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
-          table: "workout_completions",
+          table: "workout_completion",
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
