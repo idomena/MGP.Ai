@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      user_programs: {
+        Row: {
+          id: string
+          user_id: string
+          start_date: string
+          total_days: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          start_date: string
+          total_days?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          start_date?: string
+          total_days?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
