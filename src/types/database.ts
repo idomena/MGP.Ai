@@ -18,6 +18,8 @@ export interface WorkoutCompletions {
   created_at: string;
 }
 
+export type WorkoutTemplate = WorkoutCompletions;
+
 /**
  * ExerciseTemplate - Represents an individual exercise within a workout
  * Maps to the exercise_templates table in Supabase
