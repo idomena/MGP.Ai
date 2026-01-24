@@ -4,7 +4,7 @@ import { generateRequestSchema, ocrRequestSchema, completeWorkoutRequestSchema, 
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 
-const TOTAL_PROGRAM_DAYS = 90;
+const TOTAL_PROGRAM_DAYS = 21;
 
 // DEBUG: Simulate being on day 7 (add 6 days offset)
 // Set to 0 for production

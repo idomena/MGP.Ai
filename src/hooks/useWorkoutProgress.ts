@@ -28,7 +28,7 @@ interface WorkoutProgressData {
   refetch: () => Promise<void>;
 }
 
-const TOTAL_PROGRAM_DAYS = 30;
+const TOTAL_PROGRAM_DAYS = 21;
 const XP_PER_WORKOUT = 100;
 
 function calculateStreak(completedDays: number[], currentDay: number): number {
