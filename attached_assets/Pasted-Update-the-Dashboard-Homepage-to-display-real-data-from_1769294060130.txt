@@ -1,0 +1,78 @@
+Update the Dashboard/Homepage to display real data from Supabase.
+
+REQUIREMENTS:
+
+1. Find the main Dashboard or Home page component
+
+2. Use the custom hooks:
+   - const { workouts, loading } = useWorkouts()
+   - const { progress } = useUserProgress()
+   - const { stats } = useUserStats()
+
+3. Display user stats at top:
+   - Total workouts: {stats.total_workouts}/21
+   - Current streak: 🔥 {stats.current_streak} days
+   - Total XP: ⭐ {stats.total_xp}
+
+4. Display 21 workout circles:
+   - Arrange in 3 rows of 7 (3 weeks)
+   - Each circle shows day number
+   - Completed workouts: green background + ✅ checkmark
+   - Current day (stats.current_day): highlighted + "TODAY" badge
+   - Future days: gray/locked + 🔒
+
+5. Workout circle logic:
+   - Check if day exists in progress array → completed
+   - If day === stats.current_day → current
+   - If day > stats.current_day → locked
+
+6. Click behavior:
+   - Only allow clicking current day
+   - Navigate to /workout/{workout.id}
+   - Show tooltip on locked days: "Complete previous days first"
+
+7. Loading state:
+   - Show skeleton or spinner while loading
+   - Don't show data until loaded
+
+8. Error state:
+   - Show friendly message if data fails to load
+   - "Retry" button
+
+EXAMPLE LOGIC:
+```tsx
+import { useWorkouts } from '../hooks/useWorkouts'
+import { useUserProgress } from '../hooks/useUserProgress'
+import { useUserStats } from '../hooks/useUserStats'
+
+export function Dashboard() {
+  const { workouts, loading: workoutsLoading } = useWorkouts()
+  const { progress, loading: progressLoading } = useUserProgress()
+  const { stats, loading: statsLoading } = useUserStats()
+  
+  const loading = workoutsLoading || progressLoading || statsLoading
+  
+  if (loading) return <LoadingSpinner />
+  
+  const isCompleted = (dayNumber: number) => {
+    return progress.some(p => p.workout_template_id === workouts[dayNumber - 1]?.id)
+  }
+  
+  const isCurrent = (dayNumber: number) => {
+    return dayNumber === stats.current_day
+  }
+  
+  const isLocked = (dayNumber: number) => {
+    return dayNumber > stats.current_day
+  }
+  
+  return (
+    <div>
+      {/* Stats display */}
+      {/* Workout grid */}
+    </div>
+  )
+}
+```
+
+Make it look beautiful and functional!
