@@ -7,7 +7,7 @@
  * WorkoutTemplate - Represents a workout for a specific day in the program
  * Maps to the workout_completions table in Supabase
  */
-export interface WorkoutTemplate {
+export interface WorkoutCompletions {
   id: string;
   user_id: string | null;
   day_number: number;
