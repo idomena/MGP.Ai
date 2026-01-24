@@ -16,19 +16,25 @@ async function testSupabaseConnection() {
   console.log('Testing Supabase connection...');
   
   try {
+    // Check workout_completions
     const { data, error } = await supabase
       .from('workout_completions')
       .select('*');
     
     if (error) {
-      console.error('Error fetching workout_templates:', error.message);
+      console.error('Error fetching workout_completions:', error.message);
       console.error('Error details:', error);
-      return;
+    } else {
+      console.log('workout_completions data:', JSON.stringify(data, null, 2));
+      console.log('Total records:', data?.length ?? 0);
     }
+
+    // Also list all tables we can access
+    console.log('\n--- Checking other tables ---');
     
-    console.log('Successfully connected to Supabase!');
-    console.log('workout_templates data:', data);
-    console.log('Total records:', data?.length ?? 0);
+    const { data: profiles } = await supabase.from('profiles').select('*').limit(5);
+    console.log('profiles:', profiles?.length ?? 0, 'records');
+    
   } catch (err) {
     console.error('Connection failed:', err);
   }
