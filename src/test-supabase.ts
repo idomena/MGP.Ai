@@ -17,7 +17,7 @@ async function testSupabaseConnection() {
   
   try {
     const { data, error } = await supabase
-      .from('workout_templates')
+      .from('workout_completions')
       .select('*');
     
     if (error) {

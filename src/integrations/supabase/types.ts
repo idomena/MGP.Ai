@@ -65,7 +65,7 @@ export type Database = {
         }
         Relationships: []
       }
-      workout_completion: {
+      workout_completions: {
         Row: {
           calories_burned: number | null
           completed_at: string
