@@ -118,20 +118,19 @@ export function useWorkoutProgress(): WorkoutProgressData {
       const calculatedCurrentDay = calculateCurrentDay(startDate);
       setCurrentDay(calculatedCurrentDay);
 
-      // Try to fetch workout completions - handle table not existing
+      // Fetch workout completions - check for completed=true
       let completedDayNumbers: number[] = [];
       
       try {
         const { data: completions, error: completionsError } = await supabase
           .from("workout_completions")
-          .select("day_number")
-          .eq("user_id", user.id);
+          .select("day_number, completed")
+          .eq("completed", true);
 
         if (!completionsError && completions) {
           completedDayNumbers = completions.map((c) => c.day_number);
         }
       } catch {
-        // Table doesn't exist - use empty completions
         console.log("workout_completions table not found, using empty state");
       }
       

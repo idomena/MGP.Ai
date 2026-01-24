@@ -67,34 +67,34 @@ export type Database = {
       }
       workout_completions: {
         Row: {
-          calories_burned: number | null
-          completed_at: string
-          created_at: string
-          day_number: number
-          duration_minutes: number | null
           id: string
-          user_id: string
-          workout_name: string
+          user_id: string | null
+          day_number: number
+          title: string
+          workout_type: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
         }
         Insert: {
-          calories_burned?: number | null
-          completed_at?: string
-          created_at?: string
-          day_number: number
-          duration_minutes?: number | null
           id?: string
-          user_id: string
-          workout_name: string
+          user_id?: string | null
+          day_number: number
+          title: string
+          workout_type: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
         }
         Update: {
-          calories_burned?: number | null
-          completed_at?: string
-          created_at?: string
-          day_number?: number
-          duration_minutes?: number | null
           id?: string
-          user_id?: string
-          workout_name?: string
+          user_id?: string | null
+          day_number?: number
+          title?: string
+          workout_type?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
         }
         Relationships: []
       }
