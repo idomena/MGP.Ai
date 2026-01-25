@@ -8,6 +8,7 @@ import WorkoutSession from "@/components/WorkoutSession";
 import WorkoutAIAssistant from "@/components/WorkoutAIAssistant";
 import ExerciseDetailsModal from "@/components/ExerciseDetailsModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
 
 interface ValidationResult {
   success: boolean;
@@ -36,6 +37,7 @@ export default function WorkoutPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { completeWorkout, currentDay: programCurrentDay, completedDays } = useWorkoutProgress();
   
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
   const [isValidating, setIsValidating] = useState(true);
@@ -153,9 +155,18 @@ export default function WorkoutPage() {
     }
   };
 
-  const handleWorkoutComplete = () => {
+  const handleWorkoutComplete = async () => {
     setIsWorkoutActive(false);
-    toast.success("Workout complete! Great job!");
+    
+    // Save workout completion to database
+    const success = await completeWorkout(dayNumber, workoutName, workoutRotation[workoutIndex].shortName);
+    
+    if (success) {
+      toast.success("Workout complete! Great job!");
+    } else {
+      toast.error("Failed to save workout. Please try again.");
+    }
+    
     navigate("/");
   };
 
