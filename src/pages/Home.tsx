@@ -69,7 +69,7 @@ export default function Home() {
     error: progressError,
   } = useWorkoutProgress();
 
-  // Workout rotation for 90 days (repeating 6-day cycle with rest)
+  // Workout rotation for 90 days (repeating 6-day /st)
   const workoutRotation = [
     { name: "Chest", shortName: "Chest", muscles: "Chest, Triceps", time: "35 min", exercises: 5, focus: "Chest" },
     { name: "Back", shortName: "Back", muscles: "Back, Biceps", time: "40 min", exercises: 5, focus: "Back" },
