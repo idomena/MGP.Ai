@@ -233,6 +233,30 @@ export function useWorkoutProgress(): WorkoutProgressData {
       return false;
     }
 
+    // Prevent duplicate completion
+    if (completedDays.includes(day)) {
+      console.log(`Day ${day} already completed, skipping`);
+      return true;
+    }
+
+    // Instant UI update (optimistic)
+    setCompletedDays(prev => [...prev, day]);
+
+    // Update day statuses immediately
+    setDayStatuses(prev => prev.map(ds => 
+      ds.day === day ? { ...ds, isCompleted: true } : ds
+    ));
+
+    // Update stats immediately
+    const newCompletedCount = completedDays.length + 1;
+    const newStreak = calculateStreak([...completedDays, day], currentDay);
+    setUserStats(prev => ({
+      ...prev,
+      workoutsCompleted: newCompletedCount,
+      streak: newStreak,
+      xp: newCompletedCount * XP_PER_WORKOUT,
+    }));
+
     try {
       const { error: insertError } = await supabase
         .from("workout_completions")
@@ -247,17 +271,25 @@ export function useWorkoutProgress(): WorkoutProgressData {
 
       if (insertError) {
         console.error("Error completing workout:", insertError);
+        // Revert optimistic update on error
+        setCompletedDays(prev => prev.filter(d => d !== day));
+        setDayStatuses(prev => prev.map(ds => 
+          ds.day === day ? { ...ds, isCompleted: false } : ds
+        ));
+        await fetchProgress(); // Refetch to get correct state
         return false;
       }
 
       console.log(`Workout day ${day} completed successfully`);
-      await fetchProgress();
       return true;
     } catch (err) {
       console.error("Error completing workout:", err);
+      // Revert optimistic update on error
+      setCompletedDays(prev => prev.filter(d => d !== day));
+      await fetchProgress();
       return false;
     }
-  }, [user?.id, fetchProgress]);
+  }, [user?.id, completedDays, currentDay, fetchProgress]);
 
   return {
     dayStatuses,
