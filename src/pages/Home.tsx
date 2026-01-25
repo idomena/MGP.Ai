@@ -1,7 +1,7 @@
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
 import JourneyPath from "@/components/JourneyPath";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
@@ -11,15 +11,54 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
+import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
   const [activeView, setActiveView] = useState<"weekly" | "quarterly">("weekly");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [customSchedule, setCustomSchedule] = useState<Record<number, any>>({});
+
+  // Direct Supabase fetch for workout completions
+  const [user, setUser] = useState<User | null>(null);
+  const [completedDaysFromDB, setCompletedDaysFromDB] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const init = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        console.log("No user yet, waiting...");
+        setLoading(false);
+        return;
+      }
+
+      setUser(user);
+
+      const { data, error } = await supabase
+        .from("workout_completions")
+        .select("day_number")
+        .eq("user_id", user.id);
+
+      if (error) {
+        console.error(error);
+      } else {
+        setCompletedDaysFromDB(data.map(d => d.day_number));
+        console.log("COMPLETED DAYS FROM DB:", data.map(d => d.day_number));
+      }
+
+      setLoading(false);
+    };
+
+    init();
+  }, []);
 
   const {
     dayStatuses,
