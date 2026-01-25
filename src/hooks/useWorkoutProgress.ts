@@ -135,12 +135,12 @@ export function useWorkoutProgress(): WorkoutProgressData {
 
         if (!completionsError && completions) {
           completedDayNumbers = completions.map((c) => c.day_number);
-          console.log("Fetched completed days from Supabase:", completedDayNumbers);
         }
       } catch (err) {
         console.error("workout_completions fetch error:", err);
       }
       
+      console.log("COMPLETED DAYS FROM DB:", completedDayNumbers);
       setCompletedDays(completedDayNumbers);
 
       // Build day statuses for all 30 days
