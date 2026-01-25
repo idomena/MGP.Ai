@@ -26,6 +26,7 @@ interface WorkoutProgressData {
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
+  completeWorkout: (day: number, title: string, workoutType: string) => Promise<boolean>;
 }
 
 const TOTAL_PROGRAM_DAYS = 21;
@@ -226,6 +227,38 @@ export function useWorkoutProgress(): WorkoutProgressData {
     };
   }, [user?.id, fetchProgress]);
 
+  const completeWorkout = useCallback(async (day: number, title: string, workoutType: string): Promise<boolean> => {
+    if (!user?.id) {
+      console.error("No user logged in");
+      return false;
+    }
+
+    try {
+      const { error: insertError } = await supabase
+        .from("workout_completions")
+        .insert({
+          user_id: user.id,
+          day_number: day,
+          title,
+          workout_type: workoutType,
+          completed: true,
+          completed_at: new Date().toISOString(),
+        });
+
+      if (insertError) {
+        console.error("Error completing workout:", insertError);
+        return false;
+      }
+
+      console.log(`Workout day ${day} completed successfully`);
+      await fetchProgress();
+      return true;
+    } catch (err) {
+      console.error("Error completing workout:", err);
+      return false;
+    }
+  }, [user?.id, fetchProgress]);
+
   return {
     dayStatuses,
     currentDay,
@@ -234,5 +267,6 @@ export function useWorkoutProgress(): WorkoutProgressData {
     isLoading,
     error,
     refetch: fetchProgress,
+    completeWorkout,
   };
 }
