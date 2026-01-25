@@ -125,9 +125,8 @@ export function useWorkoutProgress(): WorkoutProgressData {
       try {
         const { data: completions, error: completionsError } = await supabase
           .from("workout_completions")
-          .select("day_number, completed")
-          .eq("user_id", user.id)
-          .eq("completed", true);
+          .select("day_number")
+          .eq("user_id", user.id);
 
         if (completionsError) {
           console.error("Error fetching workout completions:", completionsError);
@@ -263,9 +262,9 @@ export function useWorkoutProgress(): WorkoutProgressData {
         .insert({
           user_id: user.id,
           day_number: day,
-          title,
-          workout_type: workoutType,
-          completed: true,
+          workout_name: title,
+          duration_minutes: 0,
+          calories_burned: 0,
           completed_at: new Date().toISOString(),
         });
 
