@@ -317,7 +317,10 @@ export function useWorkoutProgress(): WorkoutProgressData {
         .insert({
           user_id: user.id,
           day_number: dayNumber,
+          title: dayInfo?.title || "Workout",
+          workout_type: dayInfo?.workoutType || "full",
           completed: true,
+          completed_at: new Date().toISOString(),
         });
 
       if (insertError) {
