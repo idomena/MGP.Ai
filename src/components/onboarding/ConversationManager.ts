@@ -1,4 +1,5 @@
 export type QuestionType = 
+  | 'coachName'
   | 'name'
   | 'assistant'
   | 'weight'
@@ -13,36 +14,42 @@ export type QuestionType =
 export interface Question {
   id: QuestionType;
   botMessage: string;
-  componentType: 'name' | 'assistant' | 'weight' | 'options' | 'yesno' | 'textarea' | 'review';
+  componentType: 'name' | 'coachName' | 'assistant' | 'weight' | 'options' | 'yesno' | 'textarea' | 'review';
   options?: { id: string; label: string; icon?: string; description?: string }[];
   multiSelect?: boolean;
   required?: boolean;
 }
 
-export const ASSISTANT_NAME = "Max";
+export const DEFAULT_COACH_NAME = "Coach";
 
 export const QUESTIONS: Question[] = [
   {
+    id: 'coachName',
+    botMessage: `Hey there! Welcome to MGP.AI! I'm your personal AI fitness coach, and I'm super excited to help you crush your fitness goals! Before we start, what would you like to call me? Give me a fun name!`,
+    componentType: 'coachName',
+    required: true,
+  },
+  {
     id: 'name',
-    botMessage: `Hey there! I'm ${ASSISTANT_NAME}, your AI fitness coach. I'm here to help you create a personalized workout plan. What's your name?`,
+    botMessage: `Love it! Now tell me, what's YOUR name? I want to get to know the awesome person I'll be training!`,
     componentType: 'name',
     required: true,
   },
   {
     id: 'assistant',
-    botMessage: "Great to meet you! What type of coaching style do you prefer?",
+    botMessage: "Awesome to meet you! Now, how do you like to be coached? Pick the style that vibes with you:",
     componentType: 'assistant',
     required: true,
   },
   {
     id: 'weight',
-    botMessage: "To personalize your workouts, what's your current weight?",
+    botMessage: "Perfect! Now let's get a bit more personal - what's your current weight? Don't worry, this helps me tailor workouts just for you!",
     componentType: 'weight',
     required: true,
   },
   {
     id: 'goals',
-    botMessage: "What are your fitness goals? Select all that apply.",
+    botMessage: "This is the exciting part! What do you want to achieve? Dream big and pick all that apply!",
     componentType: 'options',
     multiSelect: true,
     required: true,
@@ -57,7 +64,7 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 'experience',
-    botMessage: "What's your fitness experience level?",
+    botMessage: "Love those goals! Now, where are you on your fitness journey so far?",
     componentType: 'options',
     multiSelect: false,
     required: true,
@@ -69,7 +76,7 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 'trainingDays',
-    botMessage: "Which days would you like to train?",
+    botMessage: "Alright, let's plan your week! Which days work best for you to train? Pick as many as you'd like!",
     componentType: 'options',
     multiSelect: true,
     required: true,
@@ -85,7 +92,7 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 'workoutTypes',
-    botMessage: "What types of workouts interest you?",
+    botMessage: "Nice schedule! Now for the fun stuff - what kind of workouts get you pumped?",
     componentType: 'options',
     multiSelect: true,
     required: true,
@@ -102,25 +109,26 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 'injuries',
-    botMessage: "Do you have any injuries or limitations I should know about?",
+    botMessage: "Safety first! Do you have any injuries or physical limitations I should keep in mind?",
     componentType: 'yesno',
     required: true,
   },
   {
     id: 'additionalInfo',
-    botMessage: "Anything else you'd like to share about your fitness journey or preferences?",
+    botMessage: "Almost done! Anything else you'd like me to know? Maybe dietary preferences, equipment you have, or just say hi!",
     componentType: 'textarea',
     required: false,
   },
   {
     id: 'review',
-    botMessage: "Here's a summary of your profile. Review and confirm when you're ready!",
+    botMessage: "You're all set! Here's your profile summary. Take a look and let's get started when you're ready!",
     componentType: 'review',
     required: true,
   },
 ];
 
 export interface UserSelections {
+  coachName: string;
   name: string;
   assistantType: 'coach' | 'nutritionist' | 'trainer';
   weight: { value: number; unit: 'kg' | 'lbs' };
@@ -135,6 +143,7 @@ export interface UserSelections {
 
 export function getDefaultSelections(): UserSelections {
   return {
+    coachName: 'Coach',
     name: '',
     assistantType: 'coach',
     weight: { value: 70, unit: 'kg' },

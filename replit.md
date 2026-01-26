@@ -6,6 +6,21 @@ MGP.AI is an AI-powered fitness and nutrition mobile web application built with 
 
 ## Recent Changes
 
+### January 2026 - Conversational Onboarding Chat
+- **Chatbot Experience**: Full conversational onboarding with animated message bubbles and typing indicators
+- **Custom Coach Naming**: Users can name their AI coach (displayed in header throughout app)
+- **Friendly Messages**: Warm, encouraging tone throughout the conversation
+- **Question Flow**: Coach Name → User Name → Coaching Style → Weight → Goals → Experience → Training Days → Workout Types → Injuries → Additional Info → Review
+- **Selection Components**: 
+  - `WeightSelector` - Slider with kg/lbs toggle and warnings for extreme values
+  - `OptionSelector` - Multi-select cards with icons for goals, days, workout types
+  - `AssistantSelector` - Choose between Coach, Nutritionist, or Fitness Trainer style
+  - `YesNoSelector` - Simple yes/no buttons
+  - `AdditionalInfo` - Optional textarea with skip button
+  - `ReviewSelections` - Collapsible summary with edit buttons for each field
+- **Conversation Manager**: Located at `src/components/onboarding/ConversationManager.ts`
+- **Components Location**: All onboarding components in `src/components/onboarding/`
+
 ### January 2026 - LocalStorage-Based 21-Day Plan
 - **Preferences in localStorage**: Training days and workout selections saved to `mgp_workout_preferences` in localStorage
 - **21 Circles Generated Client-Side**: Plan calculated from preferences, not stored in database upfront

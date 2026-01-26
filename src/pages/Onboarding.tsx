@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 import {
   QUESTIONS,
-  ASSISTANT_NAME,
+  DEFAULT_COACH_NAME,
   getDefaultSelections,
   UserSelections,
   Question,
@@ -147,6 +147,12 @@ export default function Onboarding() {
     }
   }, [currentQuestionIndex, addUserMessage, askNextQuestion, safeSetTimeout]);
 
+  const handleCoachNameSubmit = (coachName: string) => {
+    const name = coachName.trim() || DEFAULT_COACH_NAME;
+    setSelections(prev => ({ ...prev, coachName: name }));
+    handleAnswer('coachName', name, name);
+  };
+
   const handleNameSubmit = (name: string) => {
     setSelections(prev => ({ ...prev, name }));
     handleAnswer('name', name, name);
@@ -203,6 +209,7 @@ export default function Onboarding() {
 
   const handleReviewConfirm = () => {
     const preferences = {
+      coachName: selections.coachName,
       trainingDays: selections.trainingDays,
       selectedWorkouts: selections.workoutTypes,
       startDate: new Date().toISOString(),
@@ -222,7 +229,7 @@ export default function Onboarding() {
     
     simulateTyping(() => {
       if (!isMountedRef.current) return;
-      addBotMessage(`Awesome, ${selections.name}! Your personalized 21-day workout plan is ready. Let's crush it together!`);
+      addBotMessage(`Awesome, ${selections.name}! I'm ${selections.coachName}, and your personalized 21-day workout plan is ready. Let's crush it together!`);
       
       safeSetTimeout(() => {
         toast.success("Your 21-day workout plan is ready!");
@@ -248,6 +255,9 @@ export default function Onboarding() {
     if (!question || !showCurrentComponent || isComplete) return null;
 
     switch (question.componentType) {
+      case 'coachName':
+        return <NameInput onSubmit={handleCoachNameSubmit} placeholder="Give me a name..." />;
+      
       case 'name':
         return <NameInput onSubmit={handleNameSubmit} placeholder="Enter your name..." />;
       
@@ -282,6 +292,7 @@ export default function Onboarding() {
         return (
           <ReviewSelections
             selections={{
+              coachName: selections.coachName,
               name: selections.name,
               assistant: selections.assistantType === 'coach' ? 'Coach' : selections.assistantType === 'nutritionist' ? 'Nutritionist' : 'Fitness Trainer',
               weight: `${selections.weight.value} ${selections.weight.unit}`,
@@ -308,7 +319,7 @@ export default function Onboarding() {
         <div className="flex items-center justify-center gap-2">
           <Sparkles className="w-5 h-5 text-[#7c57ff]" />
           <h1 className="text-xl font-bold bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] bg-clip-text text-transparent">
-            {ASSISTANT_NAME} - AI Coach
+            {selections.coachName || DEFAULT_COACH_NAME} - AI Coach
           </h1>
         </div>
       </header>
