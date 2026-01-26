@@ -1,0 +1,138 @@
+You are a senior full-stack engineer.
+
+Your task is to implement a FULL, CLEAN onboarding → workout plan generation → UI rendering flow.
+No shortcuts. No hardcoded data. Database is the single source of truth.
+
+TECH STACK:
+- Frontend: React (or React Native / Expo)
+- Backend: Supabase
+- Auth: Supabase Auth
+- DB tables:
+  - workout_templates
+  - exercise_templates
+  - workout_completions
+
+----------------------------------------
+GOAL
+----------------------------------------
+When a NEW user signs up:
+1. User selects:
+   - Available training days (Mon–Sun)
+   - Workout templates (Push, Pull, Legs, etc.)
+2. System automatically generates a 21-day workout plan.
+3. Each workout is stored in workout_completions.
+4. UI renders 21 circles from workout_completions.
+5. Circle turns green ONLY after workout completion.
+6. Clicking a workout shows exercises from exercise_templates.
+
+----------------------------------------
+DATABASE CHANGES
+----------------------------------------
+
+Create a new table:
+
+TABLE: user_preferences
+- id (uuid, pk)
+- user_id (uuid, fk -> auth.users)
+- training_days (text[])   // ["Mon","Wed","Fri"]
+- selected_workouts (uuid[]) // workout_template ids
+- created_at (timestamp)
+
+----------------------------------------
+ONBOARDING FLOW
+----------------------------------------
+
+1. Detect first login:
+   - If no row exists in user_preferences → show onboarding
+2. Onboarding screen:
+   - Multi-select training days
+   - Multi-select workout templates
+3. Save preferences to user_preferences
+4. Trigger workout plan generation ONCE
+
+----------------------------------------
+WORKOUT PLAN GENERATION
+----------------------------------------
+
+Rules:
+- Plan length = 21 days
+- Only assign workouts on selected training days
+- Rotate workouts in order
+- Rest days are skipped (no DB row)
+- All workouts start as completed = false
+- Generation happens ONCE per user
+
+Algorithm:
+- Loop day 1 → 21
+- Calculate calendar date
+- If weekday is in training_days:
+  - Pick next workout template
+  - Create workout_completions row
+
+Insert fields:
+- user_id
+- day_number (1–21)
+- date
+- title (from workout_templates)
+- workout_type
+- workout_template_id
+- exercise_template_id
+- completed = false
+
+----------------------------------------
+UI RULES (CRITICAL)
+----------------------------------------
+
+1. UI NEVER generates workouts.
+2. UI NEVER changes workout titles manually.
+3. UI ONLY reads from workout_completions.
+4. Circles:
+   - Gray = completed false
+   - Green = completed true
+5. Clicking a circle:
+   - Load workout_completions row
+   - Load exercise_templates.exercises
+   - Render exercise list
+
+----------------------------------------
+WORKOUT COMPLETION
+----------------------------------------
+
+When user finishes workout:
+- Update workout_completions.completed = true
+- UI automatically updates circle color
+- State persists after refresh
+
+----------------------------------------
+ERROR HANDLING
+----------------------------------------
+
+- Normalize exercises JSON before rendering
+- Handle empty workout days
+- Prevent duplicate plan generation
+- Safe parsing of exercises (string or JSON)
+
+----------------------------------------
+DELIVERABLES
+----------------------------------------
+
+Implement:
+1. user_preferences table
+2. Onboarding UI
+3. 21-day generator function
+4. Supabase insert logic
+5. Circles UI from workout_completions
+6. Workout details screen with exercises
+7. Completion update flow
+
+----------------------------------------
+IMPORTANT CONSTRAINTS
+----------------------------------------
+
+- No hardcoded workouts
+- No mock data
+- No UI-only state
+- DB is always the source of truth
+- Code must be readable and scalable
+
+You must implement this end-to-end.

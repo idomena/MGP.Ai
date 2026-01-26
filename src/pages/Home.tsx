@@ -1,7 +1,7 @@
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
 import JourneyPath from "@/components/JourneyPath";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
@@ -11,15 +11,25 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
+import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
 
 export default function Home() {
   const { user: authUser } = useAuth();
+  const navigate = useNavigate();
   const [activeView, setActiveView] = useState<"weekly" | "quarterly">("weekly");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [customSchedule, setCustomSchedule] = useState<Record<number, any>>({});
+
+  const { isLoading: isLoadingOnboarding, needsOnboarding } = useOnboardingStatus();
+
+  useEffect(() => {
+    if (!isLoadingOnboarding && needsOnboarding) {
+      navigate("/onboarding");
+    }
+  }, [isLoadingOnboarding, needsOnboarding, navigate]);
 
   // Use hook for all workout progress data - single source of truth
   const {
@@ -56,14 +66,12 @@ export default function Home() {
     setShowWorkoutModal(true);
   };
 
-  const navigate = useNavigate();
-
   const handleStartWorkout = (day: number) => {
     navigate(`/workout/${day}`);
   };
 
   const handleRescheduleWorkout = async (fromDay: number, toDay: number) => {
-    if (!user || fromDay === toDay) return;
+    if (!authUser || fromDay === toDay) return;
 
     const workoutToMove = workoutDetails[fromDay as keyof typeof workoutDetails];
     if (!workoutToMove) return;

@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      user_preferences: {
+        Row: {
+          id: string
+          user_id: string
+          training_days: string[]
+          selected_workouts: string[]
+          onboarding_completed: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          training_days: string[]
+          selected_workouts: string[]
+          onboarding_completed?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          training_days?: string[]
+          selected_workouts?: string[]
+          onboarding_completed?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      workout_templates: {
+        Row: {
+          id: string
+          name: string
+          workout_type: string
+          description: string
+          duration: string
+          exercises_count: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          workout_type: string
+          description?: string
+          duration?: string
+          exercises_count?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          workout_type?: string
+          description?: string
+          duration?: string
+          exercises_count?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
       user_progress: {
         Row: {
           id: string
@@ -50,29 +107,35 @@ export type Database = {
       exercise_templates: {
         Row: {
           id: string
+          workout_template_id: string | null
           day_number: number
           title: string
           workout_type: string
           duration: string
           exercises_count: number
+          exercises: Json
           created_at: string
         }
         Insert: {
           id?: string
+          workout_template_id?: string | null
           day_number: number
           title: string
           workout_type: string
           duration?: string
           exercises_count?: number
+          exercises?: Json
           created_at?: string
         }
         Update: {
           id?: string
+          workout_template_id?: string | null
           day_number?: number
           title?: string
           workout_type?: string
           duration?: string
           exercises_count?: number
+          exercises?: Json
           created_at?: string
         }
         Relationships: []
@@ -133,8 +196,11 @@ export type Database = {
           id: string
           user_id: string | null
           day_number: number
+          date: string | null
           title: string
           workout_type: string
+          workout_template_id: string | null
+          exercise_template_id: string | null
           completed: boolean
           completed_at: string | null
           created_at: string
@@ -143,8 +209,11 @@ export type Database = {
           id?: string
           user_id?: string | null
           day_number: number
+          date?: string | null
           title: string
           workout_type: string
+          workout_template_id?: string | null
+          exercise_template_id?: string | null
           completed?: boolean
           completed_at?: string | null
           created_at?: string
@@ -153,8 +222,11 @@ export type Database = {
           id?: string
           user_id?: string | null
           day_number?: number
+          date?: string | null
           title?: string
           workout_type?: string
+          workout_template_id?: string | null
+          exercise_template_id?: string | null
           completed?: boolean
           completed_at?: string | null
           created_at?: string

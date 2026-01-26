@@ -1,10 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Tables, Json } from "@/integrations/supabase/types";
 
-type UserProgress = Tables<"user_progress">;
-type ExerciseTemplate = Tables<"exercise_templates">;
 type WorkoutCompletion = Tables<"workout_completions">;
 
 interface DayStatus {
@@ -12,6 +10,8 @@ interface DayStatus {
   status: "completed" | "active" | "locked";
   title: string;
   workoutType: string;
+  workoutTemplateId?: string | null;
+  exerciseTemplateId?: string | null;
 }
 
 interface UserStats {
@@ -47,13 +47,13 @@ const TOTAL_PROGRAM_DAYS = 21;
 const XP_PER_WORKOUT = 50;
 
 const DEFAULT_TEMPLATES: WorkoutTemplate[] = [
-  { dayNumber: 1, title: "Chest", workoutType: "Chest", duration: "35 min", exercisesCount: 5 },
-  { dayNumber: 2, title: "Back", workoutType: "Back", duration: "40 min", exercisesCount: 5 },
-  { dayNumber: 3, title: "Legs", workoutType: "Legs", duration: "45 min", exercisesCount: 6 },
-  { dayNumber: 4, title: "Shoulders", workoutType: "Shoulders", duration: "30 min", exercisesCount: 4 },
-  { dayNumber: 5, title: "Arms", workoutType: "Arms", duration: "35 min", exercisesCount: 5 },
-  { dayNumber: 6, title: "Core", workoutType: "Core", duration: "25 min", exercisesCount: 4 },
-  { dayNumber: 7, title: "Rest Day", workoutType: "Recovery", duration: "0 min", exercisesCount: 0 },
+  { dayNumber: 1, title: "Push", workoutType: "push", duration: "35 min", exercisesCount: 5 },
+  { dayNumber: 2, title: "Pull", workoutType: "pull", duration: "40 min", exercisesCount: 5 },
+  { dayNumber: 3, title: "Legs", workoutType: "legs", duration: "45 min", exercisesCount: 6 },
+  { dayNumber: 4, title: "Upper Body", workoutType: "upper", duration: "35 min", exercisesCount: 5 },
+  { dayNumber: 5, title: "Lower Body", workoutType: "lower", duration: "40 min", exercisesCount: 5 },
+  { dayNumber: 6, title: "Core", workoutType: "core", duration: "25 min", exercisesCount: 4 },
+  { dayNumber: 7, title: "Full Body", workoutType: "full", duration: "45 min", exercisesCount: 6 },
 ];
 
 function getDefaultTemplate(day: number): WorkoutTemplate {
@@ -78,10 +78,20 @@ export function useWorkoutProgress(): WorkoutProgressData {
   const [error, setError] = useState<string | null>(null);
 
   const getWorkoutForDay = useCallback((day: number): WorkoutTemplate => {
+    const status = dayStatuses.find(d => d.day === day);
+    if (status) {
+      return {
+        dayNumber: day,
+        title: status.title,
+        workoutType: status.workoutType,
+        duration: "35 min",
+        exercisesCount: 5,
+      };
+    }
     const template = exerciseTemplates.find(t => t.dayNumber === day);
     if (template) return template;
     return getDefaultTemplate(day);
-  }, [exerciseTemplates]);
+  }, [dayStatuses, exerciseTemplates]);
 
   const fetchProgress = useCallback(async () => {
     if (!user?.id) return;
@@ -90,145 +100,97 @@ export function useWorkoutProgress(): WorkoutProgressData {
       setIsLoading(true);
       setError(null);
 
-      // 1. Fetch or create user_progress
-      let userProgress: UserProgress | null = null;
-      
-      const { data: progressData, error: progressError } = await supabase
-        .from("user_progress")
+      const { data: workoutCompletions, error: completionsError } = await supabase
+        .from("workout_completions")
         .select("*")
         .eq("user_id", user.id)
-        .single();
-
-      if (progressError && progressError.code === "PGRST116") {
-        // No row exists, create one
-        const { data: newProgress, error: insertError } = await supabase
-          .from("user_progress")
-          .insert({
-            user_id: user.id,
-            current_day: 1,
-            workouts_completed: 0,
-            streak: 0,
-            xp: 0,
-          })
-          .select()
-          .single();
-
-        if (insertError) {
-          console.error("Error creating user_progress:", insertError);
-        } else {
-          userProgress = newProgress;
-        }
-      } else if (progressError) {
-        console.error("Error fetching user_progress:", progressError);
-      } else {
-        userProgress = progressData;
-      }
-
-      const userCurrentDay = userProgress?.current_day ?? 1;
-      setCurrentDay(userCurrentDay);
-      
-      setUserStats({
-        workoutsCompleted: userProgress?.workouts_completed ?? 0,
-        totalWorkouts: TOTAL_PROGRAM_DAYS,
-        streak: userProgress?.streak ?? 0,
-        xp: userProgress?.xp ?? 0,
-        currentDay: userCurrentDay,
-      });
-
-      // 2. Fetch exercise_templates
-      const { data: templates, error: templatesError } = await supabase
-        .from("exercise_templates")
-        .select("*")
         .order("day_number", { ascending: true });
 
-      let workoutTemplates: WorkoutTemplate[] = [];
-      
-      if (templatesError) {
-        console.error("Error fetching exercise_templates:", templatesError);
-        // Use default templates
-        workoutTemplates = Array.from({ length: TOTAL_PROGRAM_DAYS }, (_, i) => getDefaultTemplate(i + 1));
-      } else if (templates && templates.length > 0) {
-        workoutTemplates = templates.map(t => ({
-          dayNumber: t.day_number,
-          title: t.title,
-          workoutType: t.workout_type,
-          duration: t.duration,
-          exercisesCount: t.exercises_count,
-        }));
-      } else {
-        // No templates in DB, use defaults
-        workoutTemplates = Array.from({ length: TOTAL_PROGRAM_DAYS }, (_, i) => getDefaultTemplate(i + 1));
-      }
-      
-      setExerciseTemplates(workoutTemplates);
-
-      // 3. Fetch workout_completions (with title for workout names)
-      const { data: completions, error: completionsError } = await supabase
-        .from("workout_completions")
-        .select("day_number, title, workout_type")
-        .eq("user_id", user.id);
-
-      let completedDayNumbers: number[] = [];
-      const completionTitles: Record<number, { title: string; workoutType: string }> = {};
-      
       if (completionsError) {
         console.error("Error fetching workout_completions:", completionsError);
-      } else if (completions) {
-        completedDayNumbers = completions.map(c => c.day_number);
-        // Store titles from completions for display
-        completions.forEach(c => {
-          if (c.title) {
-            completionTitles[c.day_number] = {
-              title: c.title,
-              workoutType: c.workout_type || c.title,
-            };
-          }
-        });
+        setError("Failed to load workout data");
+        setIsLoading(false);
+        return;
       }
+
+      if (!workoutCompletions || workoutCompletions.length === 0) {
+        setDayStatuses([]);
+        setCompletedDays([]);
+        setCurrentDay(1);
+        setUserStats({
+          workoutsCompleted: 0,
+          totalWorkouts: 0,
+          streak: 0,
+          xp: 0,
+          currentDay: 1,
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      const completedDayNumbers = workoutCompletions
+        .filter(w => w.completed)
+        .map(w => w.day_number);
       
       setCompletedDays(completedDayNumbers);
 
-      // Calculate current day: if user_progress doesn't exist, use max completed + 1
-      let effectiveCurrentDay = userCurrentDay;
-      if (!userProgress && completedDayNumbers.length > 0) {
-        effectiveCurrentDay = Math.max(...completedDayNumbers) + 1;
-        if (effectiveCurrentDay > TOTAL_PROGRAM_DAYS) {
-          effectiveCurrentDay = TOTAL_PROGRAM_DAYS;
+      let activeDay = 1;
+      for (const workout of workoutCompletions) {
+        if (!workout.completed) {
+          activeDay = workout.day_number;
+          break;
         }
-        setCurrentDay(effectiveCurrentDay);
-        setUserStats(prev => ({ ...prev, currentDay: effectiveCurrentDay }));
+        activeDay = workout.day_number + 1;
       }
+      
+      if (activeDay > workoutCompletions.length) {
+        activeDay = workoutCompletions.length;
+      }
+      
+      setCurrentDay(activeDay);
 
-      // 4. Build day statuses - STRICT LOGIC
-      const statuses: DayStatus[] = [];
-      for (let day = 1; day <= TOTAL_PROGRAM_DAYS; day++) {
-        const template = workoutTemplates.find(t => t.dayNumber === day) || getDefaultTemplate(day);
-        
-        // Use title from workout_completions if available, else from template
-        const completionData = completionTitles[day];
-        const displayTitle = completionData?.title || template.title;
-        const displayType = completionData?.workoutType || template.workoutType;
-        
+      const statuses: DayStatus[] = workoutCompletions.map(w => {
         let status: "completed" | "active" | "locked";
-        if (completedDayNumbers.includes(day)) {
+        
+        if (w.completed) {
           status = "completed";
-        } else if (day === effectiveCurrentDay) {
+        } else if (w.day_number === activeDay) {
           status = "active";
         } else {
           status = "locked";
         }
 
-        statuses.push({
-          day,
-          status,
-          title: displayTitle,
-          workoutType: displayType,
-        });
+        console.log(`CIRCLE Day ${w.day_number}: status=${status}, title=${w.title}`);
 
-        console.log(`CIRCLE Day ${day}: status=${status}, title=${displayTitle}`);
-      }
-      
+        return {
+          day: w.day_number,
+          status,
+          title: w.title,
+          workoutType: w.workout_type,
+          workoutTemplateId: w.workout_template_id,
+          exerciseTemplateId: w.exercise_template_id,
+        };
+      });
+
       setDayStatuses(statuses);
+
+      const workoutsCompleted = completedDayNumbers.length;
+      let streak = 0;
+      for (let i = completedDayNumbers.length - 1; i >= 0; i--) {
+        if (completedDayNumbers.includes(i + 1)) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+
+      setUserStats({
+        workoutsCompleted,
+        totalWorkouts: workoutCompletions.length,
+        streak,
+        xp: workoutsCompleted * XP_PER_WORKOUT,
+        currentDay: activeDay,
+      });
 
     } catch (err) {
       console.error("Error fetching workout progress:", err);
@@ -260,19 +222,6 @@ export function useWorkoutProgress(): WorkoutProgressData {
           fetchProgress();
         }
       )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "user_progress",
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          console.log("Real-time update: user_progress changed");
-          fetchProgress();
-        }
-      )
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {
           console.log("Subscribed to workout progress changes");
@@ -300,9 +249,6 @@ export function useWorkoutProgress(): WorkoutProgressData {
       return true;
     }
 
-    const template = getWorkoutForDay(dayNumber);
-
-    // Optimistic UI update
     setCompletedDays(prev => [...prev, dayNumber]);
     setCurrentDay(prev => prev + 1);
     setDayStatuses(prev => prev.map(ds => {
@@ -319,39 +265,18 @@ export function useWorkoutProgress(): WorkoutProgressData {
     }));
 
     try {
-      // 1. Insert workout_completions
-      const { error: insertError } = await supabase
+      const { error: updateError } = await supabase
         .from("workout_completions")
-        .insert({
-          user_id: user.id,
-          day_number: dayNumber,
-          title: template.title,
-          workout_type: template.workoutType,
+        .update({
           completed: true,
           completed_at: new Date().toISOString(),
-        });
-
-      if (insertError) {
-        console.error("Error inserting workout_completion:", insertError);
-        await fetchProgress(); // Revert to actual state
-        return false;
-      }
-
-      // 2. Update user_progress
-      const { error: updateError } = await supabase
-        .from("user_progress")
-        .update({
-          current_day: dayNumber + 1,
-          workouts_completed: userStats.workoutsCompleted + 1,
-          streak: userStats.streak + 1,
-          xp: userStats.xp + XP_PER_WORKOUT,
-          updated_at: new Date().toISOString(),
         })
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .eq("day_number", dayNumber);
 
       if (updateError) {
-        console.error("Error updating user_progress:", updateError);
-        await fetchProgress(); // Revert to actual state
+        console.error("Error updating workout_completion:", updateError);
+        await fetchProgress();
         return false;
       }
 
@@ -359,10 +284,10 @@ export function useWorkoutProgress(): WorkoutProgressData {
       return true;
     } catch (err) {
       console.error("Error completing workout:", err);
-      await fetchProgress(); // Revert to actual state
+      await fetchProgress();
       return false;
     }
-  }, [user?.id, currentDay, completedDays, getWorkoutForDay, userStats, fetchProgress]);
+  }, [user?.id, currentDay, completedDays, fetchProgress]);
 
   return {
     dayStatuses,
