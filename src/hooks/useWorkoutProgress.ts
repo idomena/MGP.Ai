@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { Tables } from "@/integrations/supabase/types";
 
 type WorkoutCompletion = Tables<"workout_completions">;
+type WorkoutSchedule = Tables<"workout_schedule">;
 
 interface DayStatus {
   day: number;
@@ -18,6 +19,15 @@ interface UserStats {
   xp: number;
 }
 
+export interface WorkoutTemplate {
+  name: string;
+  shortName: string;
+  muscles: string;
+  time: string;
+  exercises: number;
+  focus: string;
+}
+
 interface WorkoutProgressData {
   dayStatuses: DayStatus[];
   currentDay: number;
@@ -27,10 +37,22 @@ interface WorkoutProgressData {
   error: string | null;
   refetch: () => Promise<void>;
   completeWorkout: (day: number, title: string, workoutType: string) => Promise<boolean>;
+  getWorkoutForDay: (day: number) => WorkoutTemplate;
+  workoutSchedule: Map<number, WorkoutTemplate>;
 }
 
 const TOTAL_PROGRAM_DAYS = 21;
 const XP_PER_WORKOUT = 100;
+
+const DEFAULT_WORKOUT_ROTATION: WorkoutTemplate[] = [
+  { name: "Chest", shortName: "Chest", muscles: "Chest, Triceps", time: "35 min", exercises: 5, focus: "Chest" },
+  { name: "Back", shortName: "Back", muscles: "Back, Biceps", time: "40 min", exercises: 5, focus: "Back" },
+  { name: "Legs", shortName: "Legs", muscles: "Quads, Hamstrings, Glutes", time: "45 min", exercises: 6, focus: "Legs" },
+  { name: "Shoulders", shortName: "Shoulders", muscles: "Shoulders, Traps", time: "30 min", exercises: 4, focus: "Shoulders" },
+  { name: "Arms", shortName: "Arms", muscles: "Biceps, Triceps, Forearms", time: "35 min", exercises: 5, focus: "Arms" },
+  { name: "Core", shortName: "Core", muscles: "Abs, Obliques, Lower Back", time: "25 min", exercises: 4, focus: "Core" },
+  { name: "Rest Day", shortName: "Rest", muscles: "", time: "0 min", exercises: 0, focus: "Recovery" },
+];
 
 function calculateStreak(completedDays: number[], currentDay: number): number {
   if (completedDays.length === 0) return 0;
@@ -96,6 +118,15 @@ export function useWorkoutProgress(): WorkoutProgressData {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [workoutSchedule, setWorkoutSchedule] = useState<Map<number, WorkoutTemplate>>(new Map());
+
+  const getWorkoutForDay = useCallback((day: number): WorkoutTemplate => {
+    if (workoutSchedule.has(day)) {
+      return workoutSchedule.get(day)!;
+    }
+    const index = (day - 1) % DEFAULT_WORKOUT_ROTATION.length;
+    return DEFAULT_WORKOUT_ROTATION[index];
+  }, [workoutSchedule]);
 
   const fetchProgress = useCallback(async () => {
     if (!user?.id) return;
@@ -126,6 +157,36 @@ export function useWorkoutProgress(): WorkoutProgressData {
       
       console.log("COMPLETED DAYS FROM DB:", completedDayNumbers);
       setCompletedDays(completedDayNumbers);
+
+      // Fetch workout schedule from Supabase
+      try {
+        const { data: scheduleData, error: scheduleError } = await supabase
+          .from("workout_schedule")
+          .select("*")
+          .eq("user_id", user.id);
+
+        if (scheduleError) {
+          console.error("Error fetching workout schedule:", scheduleError);
+        }
+
+        if (!scheduleError && scheduleData && scheduleData.length > 0) {
+          const scheduleMap = new Map<number, WorkoutTemplate>();
+          scheduleData.forEach((item) => {
+            scheduleMap.set(item.day_number, {
+              name: item.workout_name,
+              shortName: item.workout_name.split(" ")[0],
+              muscles: item.focus,
+              time: item.duration,
+              exercises: item.exercises,
+              focus: item.focus,
+            });
+          });
+          setWorkoutSchedule(scheduleMap);
+          console.log("Workout schedule loaded from DB:", scheduleMap.size, "days");
+        }
+      } catch (err) {
+        console.error("workout_schedule fetch error:", err);
+      }
 
       // Calculate current day based on completions (first uncompleted day)
       const calculatedCurrentDay = calculateCurrentDay(completedDayNumbers);
@@ -288,5 +349,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
     error,
     refetch: fetchProgress,
     completeWorkout,
+    getWorkoutForDay,
+    workoutSchedule,
   };
 }

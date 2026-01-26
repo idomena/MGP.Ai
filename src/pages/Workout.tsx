@@ -37,7 +37,7 @@ export default function WorkoutPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { completeWorkout, currentDay: programCurrentDay, completedDays } = useWorkoutProgress();
+  const { completeWorkout, currentDay: programCurrentDay, completedDays, getWorkoutForDay } = useWorkoutProgress();
   
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
   const [isValidating, setIsValidating] = useState(true);
@@ -49,18 +49,8 @@ export default function WorkoutPage() {
 
   const dayNumber = id ? parseInt(id, 10) : 1;
   
-  const workoutRotation = [
-    { name: "Chest Day", shortName: "Chest" },
-    { name: "Back & Biceps", shortName: "Back" },
-    { name: "Legs Power", shortName: "Legs" },
-    { name: "Shoulders & Abs", shortName: "Shoulders" },
-    { name: "Arms Blaster", shortName: "Arms" },
-    { name: "Core Focus", shortName: "Core" },
-    { name: "Active Recovery", shortName: "Rest" },
-  ];
-  
-  const workoutIndex = (dayNumber - 1) % workoutRotation.length;
-  const workoutName = workoutRotation[workoutIndex].name;
+  const workoutTemplate = getWorkoutForDay(dayNumber);
+  const workoutName = workoutTemplate.name;
 
   const exercises: Exercise[] = [
     {
@@ -160,8 +150,8 @@ export default function WorkoutPage() {
   const handleWorkoutComplete = async () => {
     setIsWorkoutActive(false);
     
-    // Save workout completion to database
-    const success = await completeWorkout(dayNumber, workoutName, workoutRotation[workoutIndex].shortName);
+    // Save workout completion to database - use shortName as workout_type
+    const success = await completeWorkout(dayNumber, workoutTemplate.name, workoutTemplate.shortName);
     
     if (success) {
       toast.success("Workout complete! Great job!");

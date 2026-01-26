@@ -67,23 +67,8 @@ export default function Home() {
     userStats,
     isLoading: isLoadingProgress,
     error: progressError,
+    getWorkoutForDay,
   } = useWorkoutProgress();
-
-  // Workout rotation for 90 days (repeating 6-day /st)
-  const workoutRotation = [
-    { name: "Chest", shortName: "Chest", muscles: "Chest, Triceps", time: "35 min", exercises: 5, focus: "Chest" },
-    { name: "Back", shortName: "Back", muscles: "Back, Biceps", time: "40 min", exercises: 5, focus: "Back" },
-    { name: "Legs", shortName: "Legs", muscles: "Quads, Hamstrings, Glutes", time: "45 min", exercises: 6, focus: "Legs" },
-    { name: "Shoulders", shortName: "Shoulders", muscles: "Shoulders, Traps", time: "30 min", exercises: 4, focus: "Shoulders" },
-    { name: "Arms", shortName: "Arms", muscles: "Biceps, Triceps, Forearms", time: "35 min", exercises: 5, focus: "Arms" },
-    { name: "Core", shortName: "Core", muscles: "Abs, Obliques, Lower Back", time: "25 min", exercises: 4, focus: "Core" },
-    { name: "Rest Day", shortName: "Rest", muscles: "", time: "0 min", exercises: 0, focus: "Recovery" },
-  ];
-
-  const getWorkoutForDay = (day: number) => {
-    const index = (day - 1) % workoutRotation.length;
-    return workoutRotation[index];
-  };
 
   const defaultWorkoutDetails = {
     12: { name: "Chest & Triceps", muscles: "Chest, Triceps", time: "35 min", exercises: 5, focus: "Chest" },
