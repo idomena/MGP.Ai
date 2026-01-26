@@ -156,6 +156,14 @@ export function useWorkoutProgress(): WorkoutProgressData {
 
       const plan = generate21DayPlan(preferences);
       
+      // Calculate the current program day based on start date
+      const startDate = new Date(preferences.startDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      startDate.setHours(0, 0, 0, 0);
+      const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      const todayProgramDay = Math.min(Math.max(daysSinceStart + 1, 1), TOTAL_PROGRAM_DAYS);
+      
       let completedDayNumbers: number[] = [];
       
       if (user?.id) {
@@ -195,8 +203,8 @@ export function useWorkoutProgress(): WorkoutProgressData {
       const statuses: DayStatus[] = plan.map(p => {
         let status: "completed" | "active" | "locked";
         
-        // Rest days are automatically marked as completed
-        if (p.workoutType === "rest") {
+        // Rest days are completed only if we've reached that day
+        if (p.workoutType === "rest" && p.day <= todayProgramDay) {
           status = "completed";
         } else if (completedDayNumbers.includes(p.day)) {
           status = "completed";
