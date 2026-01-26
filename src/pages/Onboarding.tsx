@@ -34,7 +34,13 @@ interface Message {
   multiSelect?: boolean;
 }
 
-type OnboardingStep = "welcome" | "name" | "days" | "workouts" | "generating" | "complete";
+type OnboardingStep =
+  | "welcome"
+  | "name"
+  | "days"
+  | "workouts"
+  | "generating"
+  | "complete";
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -77,7 +83,11 @@ export default function Onboarding() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const addBotMessage = (content: string, options?: Message["options"], multiSelect?: boolean) => {
+  const addBotMessage = (
+    content: string,
+    options?: Message["options"],
+    multiSelect?: boolean,
+  ) => {
     const newMessage: Message = {
       id: Date.now().toString(),
       type: "bot",
@@ -85,7 +95,7 @@ export default function Onboarding() {
       options,
       multiSelect,
     };
-    setMessages(prev => [...prev, newMessage]);
+    setMessages((prev) => [...prev, newMessage]);
   };
 
   const addUserMessage = (content: string) => {
@@ -94,24 +104,29 @@ export default function Onboarding() {
       type: "user",
       content,
     };
-    setMessages(prev => [...prev, newMessage]);
+    setMessages((prev) => [...prev, newMessage]);
   };
 
-  const simulateTyping = useCallback((callback: () => void, delay = 1000) => {
-    if (!isMountedRef.current) return;
-    setIsTyping(true);
-    safeSetTimeout(() => {
+  const simulateTyping = useCallback(
+    (callback: () => void, delay = 1000) => {
       if (!isMountedRef.current) return;
-      setIsTyping(false);
-      callback();
-    }, delay);
-  }, [safeSetTimeout]);
+      setIsTyping(true);
+      safeSetTimeout(() => {
+        if (!isMountedRef.current) return;
+        setIsTyping(false);
+        callback();
+      }, delay);
+    },
+    [safeSetTimeout],
+  );
 
   useEffect(() => {
     if (currentStep === "welcome") {
       simulateTyping(() => {
         if (!isMountedRef.current) return;
-        addBotMessage("Hey there! I'm your MGP AI fitness coach. I'm here to help you create a personalized 21-day workout plan.");
+        addBotMessage(
+          "Hey there! I'm your MGP AI fitness coach. I'm here to help you create a personalized 21-day workout plan.",
+        );
         safeSetTimeout(() => {
           simulateTyping(() => {
             if (!isMountedRef.current) return;
@@ -125,7 +140,7 @@ export default function Onboarding() {
 
   const handleNameSubmit = () => {
     if (!inputValue.trim()) return;
-    
+
     const name = inputValue.trim();
     setUserName(name);
     addUserMessage(name);
@@ -141,8 +156,8 @@ export default function Onboarding() {
           if (!isMountedRef.current) return;
           addBotMessage(
             "Which days would you like to train? Tap all that apply, then hit confirm.",
-            DAYS_OF_WEEK.map(d => ({ id: d.id, label: d.label })),
-            true
+            DAYS_OF_WEEK.map((d) => ({ id: d.id, label: d.label })),
+            true,
           );
           setCurrentStep("days");
         }, 800);
@@ -156,21 +171,27 @@ export default function Onboarding() {
       return;
     }
 
-    const dayLabels = selectedDays.map(id => DAYS_OF_WEEK.find(d => d.id === id)?.label || id);
+    const dayLabels = selectedDays.map(
+      (id) => DAYS_OF_WEEK.find((d) => d.id === id)?.label || id,
+    );
     addUserMessage(dayLabels.join(", "));
 
     simulateTyping(() => {
       if (!isMountedRef.current) return;
       addBotMessage(
-        `${selectedDays.length} day${selectedDays.length > 1 ? "s" : ""} per week - solid commitment!`
+        `${selectedDays.length} day${selectedDays.length > 1 ? "s" : ""} per week - solid commitment!`,
       );
       safeSetTimeout(() => {
         simulateTyping(() => {
           if (!isMountedRef.current) return;
           addBotMessage(
             "Now, what types of workouts do you want to include in your plan?",
-            WORKOUT_TEMPLATES.map(w => ({ id: w.id, label: w.name, description: w.description })),
-            true
+            WORKOUT_TEMPLATES.map((w) => ({
+              id: w.id,
+              label: w.name,
+              description: w.description,
+            })),
+            true,
           );
           setCurrentStep("workouts");
         }, 800);
@@ -189,14 +210,18 @@ export default function Onboarding() {
       return;
     }
 
-    const workoutLabels = selectedWorkouts.map(id => WORKOUT_TEMPLATES.find(w => w.id === id)?.name || id);
+    const workoutLabels = selectedWorkouts.map(
+      (id) => WORKOUT_TEMPLATES.find((w) => w.id === id)?.name || id,
+    );
     addUserMessage(workoutLabels.join(", "));
     setCurrentStep("generating");
 
     simulateTyping(() => {
       if (!isMountedRef.current) return;
-      addBotMessage("Great choices! Let me put together your personalized 21-day plan...");
-      
+      addBotMessage(
+        "Great choices! Let me put together your personalized 21-day plan...",
+      );
+
       safeSetTimeout(() => {
         if (!isMountedRef.current) return;
         try {
@@ -206,17 +231,22 @@ export default function Onboarding() {
             startDate: new Date().toISOString(),
             userName: userName,
           };
-          
-          localStorage.setItem("mgp_workout_preferences", JSON.stringify(preferences));
-          
+
+          localStorage.setItem(
+            "mgp_workout_preferences",
+            JSON.stringify(preferences),
+          );
+
           setIsTyping(true);
           safeSetTimeout(() => {
             if (!isMountedRef.current) return;
             setIsTyping(false);
-            
-            addBotMessage(`Your plan is ready, ${userName}! You've got ${selectedDays.length} training days per week with ${selectedWorkouts.length} different workout types. Let's crush it!`);
+
+            addBotMessage(
+              `Your plan is ready, ${userName}! You've got ${selectedDays.length} training days per week with ${selectedWorkouts.length} different workout types. Let's crush it!`,
+            );
             setCurrentStep("complete");
-            
+
             safeSetTimeout(() => {
               if (!isMountedRef.current) return;
               toast.success("Your 21-day workout plan is ready!");
@@ -233,18 +263,16 @@ export default function Onboarding() {
   };
 
   const toggleDay = (dayId: string) => {
-    setSelectedDays(prev =>
-      prev.includes(dayId)
-        ? prev.filter(d => d !== dayId)
-        : [...prev, dayId]
+    setSelectedDays((prev) =>
+      prev.includes(dayId) ? prev.filter((d) => d !== dayId) : [...prev, dayId],
     );
   };
 
   const toggleWorkout = (workoutId: string) => {
-    setSelectedWorkouts(prev =>
+    setSelectedWorkouts((prev) =>
       prev.includes(workoutId)
-        ? prev.filter(w => w !== workoutId)
-        : [...prev, workoutId]
+        ? prev.filter((w) => w !== workoutId)
+        : [...prev, workoutId],
     );
   };
 
@@ -272,37 +300,44 @@ export default function Onboarding() {
               exit={{ opacity: 0 }}
               className={`flex gap-3 ${message.type === "user" ? "flex-row-reverse" : ""}`}
             >
-              <div className={`
+              <div
+                className={`
                 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center
-                ${message.type === "bot" 
-                  ? "bg-gradient-to-br from-[#7c57ff] to-[#60a5fa]" 
-                  : "bg-white/20"
+                ${
+                  message.type === "bot"
+                    ? "bg-gradient-to-br from-[#7c57ff] to-[#60a5fa]"
+                    : "bg-white/20"
                 }
-              `}>
+              `}
+              >
                 {message.type === "bot" ? (
                   <Bot className="w-4 h-4 text-white" />
                 ) : (
                   <User className="w-4 h-4 text-white" />
                 )}
               </div>
-              
-              <div className={`
+
+              <div
+                className={`
                 max-w-[80%] rounded-2xl px-4 py-3
-                ${message.type === "bot"
-                  ? "bg-white/10 text-white rounded-tl-sm"
-                  : "bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] text-white rounded-tr-sm"
+                ${
+                  message.type === "bot"
+                    ? "bg-white/10 text-white rounded-tl-sm"
+                    : "bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] text-white rounded-tr-sm"
                 }
-              `}>
+              `}
+              >
                 <p className="text-sm leading-relaxed">{message.content}</p>
-                
+
                 {message.options && (
                   <div className="mt-3 space-y-2">
                     <div className="flex flex-wrap gap-2">
                       {message.options.map((option) => {
-                        const isSelected = currentStep === "days" 
-                          ? selectedDays.includes(option.id)
-                          : selectedWorkouts.includes(option.id);
-                        
+                        const isSelected =
+                          currentStep === "days"
+                            ? selectedDays.includes(option.id)
+                            : selectedWorkouts.includes(option.id);
+
                         return (
                           <button
                             key={option.id}
@@ -313,12 +348,16 @@ export default function Onboarding() {
                                 toggleWorkout(option.id);
                               }
                             }}
-                            disabled={currentStep === "generating" || currentStep === "complete"}
+                            disabled={
+                              currentStep === "generating" ||
+                              currentStep === "complete"
+                            }
                             className={`
                               px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2
-                              ${isSelected
-                                ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg"
-                                : "bg-white/10 text-white/80 hover:bg-white/20"
+                              ${
+                                isSelected
+                                  ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg"
+                                  : "bg-white/10 text-white/80 hover:bg-white/20"
                               }
                               ${currentStep === "generating" || currentStep === "complete" ? "opacity-50 cursor-not-allowed" : ""}
                             `}
@@ -330,22 +369,24 @@ export default function Onboarding() {
                         );
                       })}
                     </div>
-                    
-                    {message.multiSelect && currentStep !== "generating" && currentStep !== "complete" && (
-                      <button
-                        onClick={() => {
-                          if (currentStep === "days") {
-                            handleDaysConfirm();
-                          } else if (currentStep === "workouts") {
-                            handleWorkoutsConfirm();
-                          }
-                        }}
-                        className="mt-3 w-full py-2 rounded-xl bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white text-sm font-semibold shadow-lg shadow-[#7c57ff]/30"
-                        data-testid="button-confirm"
-                      >
-                        Confirm Selection
-                      </button>
-                    )}
+
+                    {message.multiSelect &&
+                      currentStep !== "generating" &&
+                      currentStep !== "complete" && (
+                        <button
+                          onClick={() => {
+                            if (currentStep === "days") {
+                              handleDaysConfirm();
+                            } else if (currentStep === "workouts") {
+                              handleWorkoutsConfirm();
+                            }
+                          }}
+                          className="mt-3 w-full py-2 rounded-xl bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white text-sm font-semibold shadow-lg shadow-[#7c57ff]/30"
+                          data-testid="button-confirm"
+                        >
+                          Confirm Selection
+                        </button>
+                      )}
                   </div>
                 )}
               </div>
@@ -364,9 +405,18 @@ export default function Onboarding() {
             </div>
             <div className="bg-white/10 rounded-2xl rounded-tl-sm px-4 py-3">
               <div className="flex gap-1">
-                <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                <span
+                  className="w-2 h-2 bg-white/60 rounded-full animate-bounce"
+                  style={{ animationDelay: "0ms" }}
+                />
+                <span
+                  className="w-2 h-2 bg-white/60 rounded-full animate-bounce"
+                  style={{ animationDelay: "150ms" }}
+                />
+                <span
+                  className="w-2 h-2 bg-white/60 rounded-full animate-bounce"
+                  style={{ animationDelay: "300ms" }}
+                />
               </div>
             </div>
           </motion.div>
@@ -394,9 +444,10 @@ export default function Onboarding() {
               disabled={!inputValue.trim()}
               className={`
                 p-3 rounded-xl transition-all
-                ${inputValue.trim()
-                  ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white"
-                  : "bg-white/10 text-white/40"
+                ${
+                  inputValue.trim()
+                    ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white"
+                    : "bg-white/10 text-white/40"
                 }
               `}
               data-testid="button-send"
