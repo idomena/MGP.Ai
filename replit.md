@@ -6,6 +6,11 @@ MGP.AI is an AI-powered fitness and nutrition mobile web application built with 
 
 ## Recent Changes
 
+### January 2026 - 21-Day Journey Fix
+- **Full 21-Day Plan**: Onboarding now creates all 21 days (training days get workouts, non-training days get "Rest Day")
+- **Journey Visualization**: Shows all 21 circles properly (completed/active/locked states)
+- **Database Reset**: Cleared old partial data to ensure fresh onboarding experience
+
 ### January 2026 - Database Schema & Exercise Loading
 - **exercise_templates Table**: 55 exercises across 13 workout types (chest, back, legs, shoulders, arms, core, push, pull, full, upper, lower, rest, cardio)
 - **useExercises Hook**: Fetches exercises from database with fallback to local data

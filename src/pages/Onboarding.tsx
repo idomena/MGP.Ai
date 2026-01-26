@@ -109,20 +109,28 @@ export default function Onboarding() {
           });
           
           workoutIndex++;
+        } else {
+          workoutRows.push({
+            user_id: user.id,
+            day_number: dayNum,
+            date: currentDate.toISOString().split("T")[0],
+            title: "Rest Day",
+            workout_type: "rest",
+            workout_template_id: "rest",
+            completed: false,
+          });
         }
       }
 
-      if (workoutRows.length > 0) {
-        const { error: insertError } = await supabase
-          .from("workout_completions")
-          .insert(workoutRows);
+      const { error: insertError } = await supabase
+        .from("workout_completions")
+        .insert(workoutRows);
 
-        if (insertError) {
-          console.error("Error inserting workouts:", insertError);
-          toast.error("Failed to generate workout plan");
-          setIsGenerating(false);
-          return;
-        }
+      if (insertError) {
+        console.error("Error inserting workouts:", insertError);
+        toast.error("Failed to generate workout plan");
+        setIsGenerating(false);
+        return;
       }
 
       toast.success("Your 21-day workout plan is ready!");
