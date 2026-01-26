@@ -6,29 +6,29 @@ MGP.AI is an AI-powered fitness and nutrition mobile web application built with 
 
 ## Recent Changes
 
-### January 2026 - 21-Day Journey Fix
-- **Full 21-Day Plan**: Onboarding now creates all 21 days (training days get workouts, non-training days get "Rest Day")
-- **Journey Visualization**: Shows all 21 circles properly (completed/active/locked states)
-- **Database Reset**: Cleared old partial data to ensure fresh onboarding experience
+### January 2026 - LocalStorage-Based 21-Day Plan
+- **Preferences in localStorage**: Training days and workout selections saved to `mgp_workout_preferences` in localStorage
+- **21 Circles Generated Client-Side**: Plan calculated from preferences, not stored in database upfront
+- **Supabase Only for Completions**: Only completed workouts get saved to Supabase
+- **Rest Day Skipping**: Active day automatically skips rest days and points to next training day
+- **Exercise Fallback**: Uses local exercise data if Supabase table not available
 
-### January 2026 - Database Schema & Exercise Loading
-- **exercise_templates Table**: 55 exercises across 13 workout types (chest, back, legs, shoulders, arms, core, push, pull, full, upper, lower, rest, cardio)
-- **useExercises Hook**: Fetches exercises from database with fallback to local data
-- **Workout Page Update**: Now loads exercises from exercise_templates Supabase table
+### January 2026 - Supabase Schema Requirements
+The `workout_completions` table in Supabase needs these columns:
+| Column | Type | Required |
+|--------|------|----------|
+| id | uuid | PK, auto |
+| user_id | uuid | Yes |
+| day_number | int4 | Yes |
+| completed | boolean | Yes |
 
-### January 2026 - Onboarding & Workout Plan Generation
-- **useOnboardingStatus Hook**: Checks if user has workout_completions rows, redirects to /onboarding if empty
-- **21-Day Plan Generator**: Creates workout_completions rows based on user's selected workout templates and training days
-- **Strict Gating**: No workout_completions = always redirect to onboarding (ignores onboarding_completed flag)
-- **workout_completions as Single Source of Truth**: All circle states, workout info, and progress derived from this table
+Optional columns (not currently used):
+- title, workout_type, completed_at, created_at
 
-### January 2026 - Strict Database-Driven Progress System
-- **workout_completions Table**: Stores day_number, title, workout_type, completed, completed_at for each user's 21-day plan
-- **Strict State Model**: Only 3 states for circles: completed/active/locked (no more past/preview)
-- **Single Source of Truth**: useWorkoutProgress hook reads from workout_completions only
-- **XP System**: 50 XP per completed workout
-- **21-Day Program**: TOTAL_PROGRAM_DAYS constant set to 21 for journey visualization
-- **Exercise Loading**: useExercises hook fetches from exercise_templates table with fallback to local getExercisesForWorkoutType()
+### January 2026 - Exercise Loading
+- **exercises_templates Table**: Optional - fetches exercises from Supabase if available
+- **useExercises Hook**: Falls back to local `getExercisesForWorkoutType()` if table missing
+- **Graceful Degradation**: App works without any Supabase tables configured
 
 ### January 2026 - Real-time Supabase Integration
 - **useWorkoutProgress Hook**: Custom hook that fetches and manages workout data from Supabase

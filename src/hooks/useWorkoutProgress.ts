@@ -174,10 +174,18 @@ export function useWorkoutProgress(): WorkoutProgressData {
       
       let activeDay = 1;
       for (let d = 1; d <= TOTAL_PROGRAM_DAYS; d++) {
+        const dayPlan = plan.find(p => p.day === d);
+        const isRestDay = dayPlan?.workoutType === "rest";
+        
+        if (isRestDay) {
+          continue;
+        }
+        
         if (!completedDayNumbers.includes(d)) {
           activeDay = d;
           break;
         }
+        
         if (d === TOTAL_PROGRAM_DAYS) {
           activeDay = TOTAL_PROGRAM_DAYS;
         }
@@ -304,19 +312,17 @@ export function useWorkoutProgress(): WorkoutProgressData {
     }));
 
     try {
-      const { error: insertError } = await supabase
+      const { error: insertError } = await (supabase as any)
         .from("workout_completions")
         .insert({
           user_id: user.id,
           day_number: dayNumber,
-          title: dayInfo?.title || "Workout",
-          workout_type: dayInfo?.workoutType || "full",
           completed: true,
-          completed_at: new Date().toISOString(),
         });
 
       if (insertError) {
         console.error("Error inserting workout_completion:", insertError);
+        console.error("Insert error details:", JSON.stringify(insertError));
         await fetchProgress();
         return false;
       }
