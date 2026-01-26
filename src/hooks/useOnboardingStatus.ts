@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface OnboardingStatus {
@@ -15,26 +14,24 @@ export function useOnboardingStatus(): OnboardingStatus {
   const [hasWorkoutPlan, setHasWorkoutPlan] = useState(false);
 
   useEffect(() => {
-    async function checkOnboardingStatus() {
+    function checkOnboardingStatus() {
       if (!user?.id) {
         setIsLoading(false);
         return;
       }
 
       try {
-        const { data: workouts, error: workoutsError } = await supabase
-          .from("workout_completions")
-          .select("id")
-          .eq("user_id", user.id)
-          .limit(1);
-
-        if (workoutsError) {
-          console.error("Error checking workout plan:", workoutsError);
-          setNeedsOnboarding(true);
-          setHasWorkoutPlan(false);
-        } else if (workouts && workouts.length > 0) {
-          setNeedsOnboarding(false);
-          setHasWorkoutPlan(true);
+        const stored = localStorage.getItem("mgp_workout_preferences");
+        
+        if (stored) {
+          const preferences = JSON.parse(stored);
+          if (preferences.trainingDays && preferences.selectedWorkouts && preferences.startDate) {
+            setNeedsOnboarding(false);
+            setHasWorkoutPlan(true);
+          } else {
+            setNeedsOnboarding(true);
+            setHasWorkoutPlan(false);
+          }
         } else {
           setNeedsOnboarding(true);
           setHasWorkoutPlan(false);
@@ -42,6 +39,7 @@ export function useOnboardingStatus(): OnboardingStatus {
       } catch (err) {
         console.error("Error checking onboarding status:", err);
         setNeedsOnboarding(true);
+        setHasWorkoutPlan(false);
       } finally {
         setIsLoading(false);
       }

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronRight, ChevronLeft, Dumbbell, Calendar } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -70,79 +69,14 @@ export default function Onboarding() {
     setIsGenerating(true);
 
     try {
-      // First, delete any existing workout_completions for this user
-      const { error: deleteError } = await supabase
-        .from("workout_completions")
-        .delete()
-        .eq("user_id", user.id);
-
-      if (deleteError) {
-        console.error("Error clearing old workouts:", deleteError);
-      }
-
-      const { error: prefError } = await supabase
-        .from("user_preferences")
-        .upsert({
-          user_id: user.id,
-          training_days: selectedDays,
-          selected_workouts: selectedWorkouts,
-          onboarding_completed: true,
-        });
-
-      if (prefError) {
-        console.error("Error saving preferences:", prefError);
-      }
-
-      const dayOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-      const startDate = new Date();
-      const workoutRows: any[] = [];
-      let workoutIndex = 0;
-
-      for (let dayNum = 1; dayNum <= 21; dayNum++) {
-        const currentDate = new Date(startDate);
-        currentDate.setDate(startDate.getDate() + dayNum - 1);
-        
-        const dayOfWeek = dayOrder[currentDate.getDay() === 0 ? 6 : currentDate.getDay() - 1];
-        
-        if (selectedDays.includes(dayOfWeek)) {
-          const workoutId = selectedWorkouts[workoutIndex % selectedWorkouts.length];
-          const template = WORKOUT_TEMPLATES.find(t => t.id === workoutId);
-          
-          workoutRows.push({
-            user_id: user.id,
-            day_number: dayNum,
-            date: currentDate.toISOString().split("T")[0],
-            title: template?.name || "Workout",
-            workout_type: template?.id || workoutId,
-            workout_template_id: workoutId,
-            completed: false,
-          });
-          
-          workoutIndex++;
-        } else {
-          workoutRows.push({
-            user_id: user.id,
-            day_number: dayNum,
-            date: currentDate.toISOString().split("T")[0],
-            title: "Rest Day",
-            workout_type: "rest",
-            workout_template_id: "rest",
-            completed: false,
-          });
-        }
-      }
-
-      const { error: insertError } = await supabase
-        .from("workout_completions")
-        .insert(workoutRows);
-
-      if (insertError) {
-        console.error("Error inserting workouts:", insertError);
-        toast.error("Failed to generate workout plan");
-        setIsGenerating(false);
-        return;
-      }
-
+      const preferences = {
+        trainingDays: selectedDays,
+        selectedWorkouts: selectedWorkouts,
+        startDate: new Date().toISOString(),
+      };
+      
+      localStorage.setItem("mgp_workout_preferences", JSON.stringify(preferences));
+      
       toast.success("Your 21-day workout plan is ready!");
       navigate("/");
     } catch (err) {

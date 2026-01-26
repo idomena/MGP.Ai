@@ -18,24 +18,22 @@ export default function ProfilePage() {
     
     setIsResetting(true);
     try {
+      localStorage.removeItem("mgp_workout_preferences");
+      
       const { error } = await supabase
         .from("workout_completions")
         .delete()
         .eq("user_id", user.id);
 
       if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to reset workout plan.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Plan Reset",
-          description: "Redirecting to setup your new plan...",
-        });
-        navigate("/onboarding");
+        console.log("Could not clear Supabase completions:", error);
       }
+      
+      toast({
+        title: "Plan Reset",
+        description: "Redirecting to setup your new plan...",
+      });
+      navigate("/onboarding");
     } catch (err) {
       console.error("Error resetting plan:", err);
     } finally {
