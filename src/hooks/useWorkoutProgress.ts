@@ -162,30 +162,57 @@ export function useWorkoutProgress(): WorkoutProgressData {
       
       setExerciseTemplates(workoutTemplates);
 
-      // 3. Fetch workout_completions
+      // 3. Fetch workout_completions (with title for workout names)
       const { data: completions, error: completionsError } = await supabase
         .from("workout_completions")
-        .select("day_number")
+        .select("day_number, title, workout_type")
         .eq("user_id", user.id);
 
       let completedDayNumbers: number[] = [];
+      const completionTitles: Record<number, { title: string; workoutType: string }> = {};
+      
       if (completionsError) {
         console.error("Error fetching workout_completions:", completionsError);
       } else if (completions) {
         completedDayNumbers = completions.map(c => c.day_number);
+        // Store titles from completions for display
+        completions.forEach(c => {
+          if (c.title) {
+            completionTitles[c.day_number] = {
+              title: c.title,
+              workoutType: c.workout_type || c.title,
+            };
+          }
+        });
       }
       
       setCompletedDays(completedDayNumbers);
+
+      // Calculate current day: if user_progress doesn't exist, use max completed + 1
+      let effectiveCurrentDay = userCurrentDay;
+      if (!userProgress && completedDayNumbers.length > 0) {
+        effectiveCurrentDay = Math.max(...completedDayNumbers) + 1;
+        if (effectiveCurrentDay > TOTAL_PROGRAM_DAYS) {
+          effectiveCurrentDay = TOTAL_PROGRAM_DAYS;
+        }
+        setCurrentDay(effectiveCurrentDay);
+        setUserStats(prev => ({ ...prev, currentDay: effectiveCurrentDay }));
+      }
 
       // 4. Build day statuses - STRICT LOGIC
       const statuses: DayStatus[] = [];
       for (let day = 1; day <= TOTAL_PROGRAM_DAYS; day++) {
         const template = workoutTemplates.find(t => t.dayNumber === day) || getDefaultTemplate(day);
         
+        // Use title from workout_completions if available, else from template
+        const completionData = completionTitles[day];
+        const displayTitle = completionData?.title || template.title;
+        const displayType = completionData?.workoutType || template.workoutType;
+        
         let status: "completed" | "active" | "locked";
         if (completedDayNumbers.includes(day)) {
           status = "completed";
-        } else if (day === userCurrentDay) {
+        } else if (day === effectiveCurrentDay) {
           status = "active";
         } else {
           status = "locked";
@@ -194,11 +221,11 @@ export function useWorkoutProgress(): WorkoutProgressData {
         statuses.push({
           day,
           status,
-          title: template.title,
-          workoutType: template.workoutType,
+          title: displayTitle,
+          workoutType: displayType,
         });
 
-        console.log(`CIRCLE Day ${day}: status=${status}, title=${template.title}, type=${template.workoutType}`);
+        console.log(`CIRCLE Day ${day}: status=${status}, title=${displayTitle}`);
       }
       
       setDayStatuses(statuses);
