@@ -134,9 +134,11 @@ export default function WorkoutPage() {
     validateWorkoutAccess();
   }, [user, dayNumber]);
 
-  const workoutStatus = validationResult?.status || "active";
-  const canStartWorkout = validationResult?.canStart ?? true;
   const currentDay = programCurrentDay || 1;
+  const isToday = dayNumber === currentDay;
+  const isCompleted = completedDays.includes(dayNumber);
+  const canStartWorkout = isToday && !isCompleted;
+  const workoutStatus = isCompleted ? "completed" : isToday ? "active" : dayNumber < currentDay ? "past" : "preview";
 
   const handleStartWorkout = () => {
     if (!canStartWorkout) {
@@ -243,19 +245,11 @@ export default function WorkoutPage() {
             Coming Soon
           </div>
         );
-      case "locked":
-        if (isPastDay) {
-          return (
-            <div className="flex items-center gap-2 bg-orange-500/20 text-orange-400 px-4 py-2 rounded-full text-sm font-medium">
-              <Calendar className="w-4 h-4" />
-              Missed
-            </div>
-          );
-        }
+      case "past":
         return (
-          <div className="flex items-center gap-2 bg-zinc-500/20 text-zinc-400 px-4 py-2 rounded-full text-sm font-medium">
-            <Lock className="w-4 h-4" />
-            Locked
+          <div className="flex items-center gap-2 bg-orange-500/20 text-orange-400 px-4 py-2 rounded-full text-sm font-medium">
+            <Calendar className="w-4 h-4" />
+            Missed
           </div>
         );
       default:
@@ -293,32 +287,17 @@ export default function WorkoutPage() {
             </div>
           </motion.div>
         );
-      case "locked":
-        if (isPastDay) {
-          return (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 flex items-start gap-3"
-            >
-              <Calendar className="w-5 h-5 text-orange-400 mt-0.5 shrink-0" />
-              <div>
-                <p className="text-orange-400 font-medium">Missed Workout</p>
-                <p className="text-orange-400/70 text-sm">This workout was not completed. You can view the exercises below.</p>
-              </div>
-            </motion.div>
-          );
-        }
+      case "past":
         return (
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-zinc-500/10 border border-zinc-500/20 rounded-xl p-4 flex items-start gap-3"
+            className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 flex items-start gap-3"
           >
-            <Lock className="w-5 h-5 text-zinc-400 mt-0.5 shrink-0" />
+            <Calendar className="w-5 h-5 text-orange-400 mt-0.5 shrink-0" />
             <div>
-              <p className="text-zinc-300 font-medium">Locked</p>
-              <p className="text-zinc-400 text-sm">Complete previous workouts to unlock this one.</p>
+              <p className="text-orange-400 font-medium">Missed Workout</p>
+              <p className="text-orange-400/70 text-sm">This workout was not completed. You can view the exercises below.</p>
             </div>
           </motion.div>
         );
