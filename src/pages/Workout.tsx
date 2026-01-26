@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Play, ArrowLeft, Lock, Loader2, Clock, Dumbbell, ChevronRight, Sparkles, CheckCircle2, Calendar, Info } from "lucide-react";
+import { Play, ArrowLeft, Lock, Clock, Dumbbell, ChevronRight, Sparkles, CheckCircle2, Info } from "lucide-react";
 import NavigationBar from "@/components/NavigationBar";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -9,17 +9,6 @@ import WorkoutAIAssistant from "@/components/WorkoutAIAssistant";
 import ExerciseDetailsModal from "@/components/ExerciseDetailsModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
-
-interface ValidationResult {
-  success: boolean;
-  canStart: boolean;
-  status: "locked" | "active" | "preview" | "completed";
-  currentDay: number;
-  requestedDay: number;
-  serverDate?: string;
-  formattedDate?: string;
-  error?: string;
-}
 
 interface Exercise {
   id: number;
@@ -40,8 +29,6 @@ export default function WorkoutPage() {
   const { completeWorkout, currentDay: programCurrentDay, completedDays, getWorkoutForDay } = useWorkoutProgress();
   
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
-  const [isValidating, setIsValidating] = useState(true);
-  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isAIOpen, setIsAIOpen] = useState(false);
   const [selectedExerciseForAI, setSelectedExerciseForAI] = useState<string | undefined>(undefined);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
@@ -50,7 +37,7 @@ export default function WorkoutPage() {
   const dayNumber = id ? parseInt(id, 10) : 1;
   
   const workoutTemplate = getWorkoutForDay(dayNumber);
-  const workoutName = workoutTemplate.name;
+  const workoutName = workoutTemplate.title;
 
   const exercises: Exercise[] = [
     {
@@ -88,47 +75,17 @@ export default function WorkoutPage() {
     },
   ];
 
-  useEffect(() => {
-    const validateWorkoutAccess = async () => {
-      if (!user) {
-        setIsValidating(false);
-        return;
-      }
-
-      try {
-        setIsValidating(true);
-        const response = await fetch(`/api/progress/validate/${user.id}/${dayNumber}`);
-        const data: ValidationResult = await response.json();
-        
-        if (data.success) {
-          // Only allow starting today's workout, but keep the backend's status
-          // for accurate display (completed vs locked for past days)
-          if (dayNumber === data.currentDay) {
-            data.canStart = true;
-          } else {
-            data.canStart = false;
-          }
-          
-          // If status is "locked" but day is in the past, it means user skipped it
-          // Backend returns appropriate status, we just use it
-        }
-
-        setValidationResult(data);
-      } catch (error) {
-        console.error("Error validating workout access:", error);
-      } finally {
-        setIsValidating(false);
-      }
-    };
-
-    validateWorkoutAccess();
-  }, [user, dayNumber]);
-
+  // Derive workout status from database state only
   const currentDay = programCurrentDay || 1;
   const isToday = dayNumber === currentDay;
   const isCompleted = completedDays.includes(dayNumber);
   const canStartWorkout = isToday && !isCompleted;
-  const workoutStatus = isCompleted ? "completed" : isToday ? "active" : dayNumber < currentDay ? "past" : "preview";
+  
+  // Strict status: completed/active/locked only (no past/preview)
+  const workoutStatus: "completed" | "active" | "locked" = 
+    isCompleted ? "completed" : 
+    isToday ? "active" : 
+    "locked";
 
   const handleStartWorkout = () => {
     if (!canStartWorkout) {
@@ -150,8 +107,8 @@ export default function WorkoutPage() {
   const handleWorkoutComplete = async () => {
     setIsWorkoutActive(false);
     
-    // Save workout completion to database - use shortName as workout_type
-    const success = await completeWorkout(dayNumber, workoutTemplate.name, workoutTemplate.shortName);
+    // Save workout completion to database
+    const success = await completeWorkout(dayNumber);
     
     if (success) {
       toast.success("Workout complete! Great job!");
@@ -186,17 +143,6 @@ export default function WorkoutPage() {
     setIsAIOpen(true);
   };
 
-  if (isValidating) {
-    return (
-      <div className="min-h-screen bg-[#1a1a2e] flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-[#7c57ff] animate-spin mx-auto mb-4" />
-          <p className="text-white text-lg">Loading workout...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (isWorkoutActive) {
     return (
       <WorkoutSession
@@ -209,9 +155,6 @@ export default function WorkoutPage() {
       />
     );
   }
-
-  const isPastDay = dayNumber < currentDay;
-  const isFutureDay = dayNumber > currentDay;
 
   const getStatusBadge = () => {
     switch (workoutStatus) {
@@ -228,18 +171,11 @@ export default function WorkoutPage() {
             TODAY
           </div>
         );
-      case "preview":
+      case "locked":
         return (
           <div className="flex items-center gap-2 bg-zinc-500/20 text-zinc-400 px-4 py-2 rounded-full text-sm font-medium">
             <Lock className="w-4 h-4" />
-            Coming Soon
-          </div>
-        );
-      case "past":
-        return (
-          <div className="flex items-center gap-2 bg-orange-500/20 text-orange-400 px-4 py-2 rounded-full text-sm font-medium">
-            <Calendar className="w-4 h-4" />
-            Missed
+            Locked
           </div>
         );
       default:
@@ -263,31 +199,17 @@ export default function WorkoutPage() {
             </div>
           </motion.div>
         );
-      case "preview":
+      case "locked":
         return (
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-zinc-500/10 border border-zinc-500/20 rounded-xl p-4 flex items-start gap-3"
           >
-            <Calendar className="w-5 h-5 text-zinc-400 mt-0.5 shrink-0" />
+            <Lock className="w-5 h-5 text-zinc-400 mt-0.5 shrink-0" />
             <div>
-              <p className="text-zinc-300 font-medium">Coming Soon</p>
+              <p className="text-zinc-300 font-medium">Locked</p>
               <p className="text-zinc-400 text-sm">Complete Day {currentDay} first to unlock this workout.</p>
-            </div>
-          </motion.div>
-        );
-      case "past":
-        return (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 flex items-start gap-3"
-          >
-            <Calendar className="w-5 h-5 text-orange-400 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-orange-400 font-medium">Missed Workout</p>
-              <p className="text-orange-400/70 text-sm">This workout was not completed. You can view the exercises below.</p>
             </div>
           </motion.div>
         );
@@ -347,7 +269,7 @@ export default function WorkoutPage() {
             className={`
               relative bg-gradient-to-br from-[#3a3a5c] via-[#4a4a7c] to-[#5a5a9c] rounded-2xl p-4 overflow-hidden
               ${workoutStatus === "completed" ? "opacity-80" : ""}
-              ${workoutStatus === "preview" ? "opacity-60" : ""}
+              ${workoutStatus === "locked" ? "opacity-60" : ""}
             `}
             data-testid={`card-exercise-${exercise.id}`}
           >
@@ -437,7 +359,7 @@ export default function WorkoutPage() {
           </motion.button>
         )}
 
-        {/* Go to Today's Workout Button - for past/future workouts */}
+        {/* Go to Today's Workout Button - shown when viewing completed or locked workout */}
         {!canStartWorkout && currentDay !== dayNumber && (
           <motion.button
             initial={{ opacity: 0, y: 20 }}
@@ -474,7 +396,7 @@ export default function WorkoutPage() {
         onClose={() => setIsAIOpen(false)}
       />
 
-      {/* Exercise Details Modal (View-only for past/future) */}
+      {/* Exercise Details Modal (View-only for non-active workouts) */}
       {selectedExercise && (
         <ExerciseDetailsModal
           exercise={selectedExercise}

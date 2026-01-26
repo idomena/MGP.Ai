@@ -6,13 +6,19 @@ MGP.AI is an AI-powered fitness and nutrition mobile web application built with 
 
 ## Recent Changes
 
+### January 2026 - Strict Database-Driven Progress System
+- **user_progress Table**: Tracks current_day, workouts_completed, streak, xp per user (auto-created on login)
+- **exercise_templates Table**: Stores workout templates with day_number, title, workout_type
+- **Strict State Model**: Only 3 states for circles: completed/active/locked (no more past/preview)
+- **Single Source of Truth**: useWorkoutProgress hook is the only data source for all components
+- **XP System**: 50 XP per completed workout
+- **21-Day Program**: TOTAL_PROGRAM_DAYS constant set to 21 for journey visualization
+- **completeWorkout Updates**: Updates both workout_completions and user_progress tables
+
 ### January 2026 - Real-time Supabase Integration
 - **useWorkoutProgress Hook**: Custom hook that fetches and manages workout data from Supabase
 - **Real-time Subscriptions**: Listens for `workout_completions` table changes via Supabase realtime
-- **30-Day Program**: TOTAL_PROGRAM_DAYS constant set to 30 for journey visualization
-- **Stats Calculation**: XP (100 per workout), streak (consecutive completed days), completion count
-- **Graceful Fallback**: Handles missing Supabase tables without crashing the app
-- **Day Status Logic**: Determines completed/missed/today/future status for each journey node
+- **Graceful Fallback**: Handles missing Supabase tables without crashing the app (uses default workout rotation)
 
 ### January 2026 - Authentication System
 - **Supabase Auth Integration**: Full authentication using Supabase Auth with email/password

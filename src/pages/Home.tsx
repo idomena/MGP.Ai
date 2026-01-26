@@ -1,7 +1,7 @@
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
 import JourneyPath from "@/components/JourneyPath";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
@@ -11,8 +11,6 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
-import { supabase } from "@/integrations/supabase/client";
-import type { User } from "@supabase/supabase-js";
 
 export default function Home() {
   const { user: authUser } = useAuth();
@@ -23,43 +21,7 @@ export default function Home() {
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [customSchedule, setCustomSchedule] = useState<Record<number, any>>({});
 
-  // Direct Supabase fetch for workout completions
-  const [user, setUser] = useState<User | null>(null);
-  const [completedDaysFromDB, setCompletedDaysFromDB] = useState<number[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const init = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        console.log("No user yet, waiting...");
-        setLoading(false);
-        return;
-      }
-
-      setUser(user);
-
-      const { data, error } = await supabase
-        .from("workout_completions")
-        .select("day_number")
-        .eq("user_id", user.id);
-
-      if (error) {
-        console.error(error);
-      } else {
-        setCompletedDaysFromDB(data.map(d => d.day_number));
-        console.log("COMPLETED DAYS FROM DB:", data.map(d => d.day_number));
-      }
-
-      setLoading(false);
-    };
-
-    init();
-  }, []);
-
+  // Use hook for all workout progress data - single source of truth
   const {
     dayStatuses,
     currentDay,
@@ -317,7 +279,6 @@ export default function Home() {
             <JourneyPath
               dayStatuses={dayStatuses}
               onDayClick={handleDayClick}
-              getWorkoutForDay={getWorkoutForDay}
               isLoading={isLoadingProgress}
             />
           </div>
@@ -331,118 +292,102 @@ export default function Home() {
           <VisuallyHidden>
             <DialogTitle>Workout Details</DialogTitle>
           </VisuallyHidden>
-          {selectedDay && (
+          {selectedDay && (() => {
+            const dayStatus = dayStatuses.find(d => d.day === selectedDay);
+            const workout = getWorkoutForDay(selectedDay);
+            const isCompleted = dayStatus?.status === "completed";
+            const isActive = dayStatus?.status === "active";
+            const isLocked = dayStatus?.status === "locked";
+            
+            return (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xl font-bold">Day {selectedDay}</h3>
-                  <p className="text-white/60">{getWorkoutForDay(selectedDay).name}</p>
+                  <p className="text-white/60">{workout.title}</p>
                 </div>
-                {(() => {
-                  const dayStatus = dayStatuses.find(d => d.day === selectedDay);
-                  if (dayStatus?.isCompleted) {
-                    return (
-                      <div className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-medium">
-                        Completed
-                      </div>
-                    );
-                  }
-                  if (dayStatus?.status === "past" && !dayStatus?.isCompleted) {
-                    return (
-                      <div className="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm font-medium">
-                        Missed
-                      </div>
-                    );
-                  }
-                  if (dayStatus?.status === "active") {
-                    return (
-                      <div className="bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full text-sm font-medium animate-pulse">
-                        TODAY
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
+                {isCompleted && (
+                  <div className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-medium">
+                    Completed
+                  </div>
+                )}
+                {isActive && (
+                  <div className="bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full text-sm font-medium animate-pulse">
+                    TODAY
+                  </div>
+                )}
+                {isLocked && (
+                  <div className="bg-zinc-500/20 text-zinc-400 px-3 py-1 rounded-full text-sm font-medium">
+                    Locked
+                  </div>
+                )}
               </div>
               
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-white/5 rounded-xl p-3">
                   <p className="text-white/60 text-xs mb-1">Duration</p>
-                  <p className="text-white font-semibold">{getWorkoutForDay(selectedDay).time}</p>
+                  <p className="text-white font-semibold">{workout.duration}</p>
                 </div>
                 <div className="bg-white/5 rounded-xl p-3">
                   <p className="text-white/60 text-xs mb-1">Exercises</p>
-                  <p className="text-white font-semibold">{getWorkoutForDay(selectedDay).exercises}</p>
+                  <p className="text-white font-semibold">{workout.exercisesCount}</p>
                 </div>
               </div>
 
               <div className="bg-white/5 rounded-xl p-3">
-                <p className="text-white/60 text-xs mb-1">Target Muscles</p>
-                <p className="text-white font-semibold">{getWorkoutForDay(selectedDay).muscles}</p>
+                <p className="text-white/60 text-xs mb-1">Workout Type</p>
+                <p className="text-white font-semibold">{workout.workoutType}</p>
               </div>
 
               {(() => {
-                const dayStatus = dayStatuses.find(d => d.day === selectedDay);
-                const isLocked = dayStatus?.status === "locked" || dayStatus?.status === "preview";
-                const isActive = dayStatus?.status === "active";
-                const isPast = dayStatus?.status === "past";
-                const isCompleted = dayStatus?.isCompleted;
-                const isMissed = isPast && !isCompleted;
-                
-                // Past days (completed or missed) are view-only - no Start button
-                if (isPast) {
+                // Completed workouts show completed state
+                if (isCompleted) {
                   return (
                     <div className="space-y-3">
-                      {isCompleted ? (
-                        <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-green-500/20 text-green-400 border border-green-500/30">
-                          <CheckCircle2 className="w-5 h-5" />
-                          Workout Completed
-                        </div>
-                      ) : (
-                        <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-orange-500/20 text-orange-400 border border-orange-500/30">
-                          <X className="w-5 h-5" />
-                          Workout Missed
-                        </div>
-                      )}
+                      <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-green-500/20 text-green-400 border border-green-500/30">
+                        <CheckCircle2 className="w-5 h-5" />
+                        Workout Completed
+                      </div>
                       <p className="text-white/40 text-center text-sm">
-                        Past workouts cannot be started
+                        Great job on completing this workout!
                       </p>
                     </div>
                   );
                 }
                 
+                // Active day shows start button
+                if (isActive) {
+                  return (
+                    <button
+                      onClick={() => {
+                        setShowWorkoutModal(false);
+                        handleStartWorkout(selectedDay);
+                      }}
+                      className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white"
+                      data-testid="button-start-modal"
+                    >
+                      <Play className="w-5 h-5 fill-current" />
+                      Start Workout
+                    </button>
+                  );
+                }
+                
+                // Locked days show locked state
                 return (
-                  <button
-                    onClick={() => {
-                      setShowWorkoutModal(false);
-                      handleStartWorkout(selectedDay);
-                    }}
-                    disabled={isLocked}
-                    className={`
-                      w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2
-                      ${isLocked 
-                        ? 'bg-white/10 text-white/40 cursor-not-allowed' 
-                        : 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white'
-                      }
-                    `}
-                    data-testid="button-start-modal"
-                  >
-                    {isLocked ? (
-                      <>
-                        <Lock className="w-5 h-5" />
-                        {dayStatus?.status === "preview" ? "Coming Soon" : "Locked"}
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-5 h-5 fill-current" />
-                        {isActive ? "Start Workout" : "View Workout"}
-                      </>
-                    )}
-                  </button>
+                  <div className="space-y-3">
+                    <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-white/10 text-white/40">
+                      <Lock className="w-5 h-5" />
+                      Locked
+                    </div>
+                    <p className="text-white/40 text-center text-sm">
+                      Complete previous workouts to unlock
+                    </p>
+                  </div>
                 );
               })()}
             </div>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
 

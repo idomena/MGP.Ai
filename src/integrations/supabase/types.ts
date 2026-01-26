@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      user_progress: {
+        Row: {
+          id: string
+          user_id: string
+          current_day: number
+          workouts_completed: number
+          streak: number
+          xp: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          current_day?: number
+          workouts_completed?: number
+          streak?: number
+          xp?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          current_day?: number
+          workouts_completed?: number
+          streak?: number
+          xp?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      exercise_templates: {
+        Row: {
+          id: string
+          day_number: number
+          title: string
+          workout_type: string
+          duration: string
+          exercises_count: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          day_number: number
+          title: string
+          workout_type: string
+          duration?: string
+          exercises_count?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          day_number?: number
+          title?: string
+          workout_type?: string
+          duration?: string
+          exercises_count?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
       user_programs: {
         Row: {
           id: string

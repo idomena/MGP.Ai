@@ -3,13 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Tables } from "@/integrations/supabase/types";
 
+type UserProgress = Tables<"user_progress">;
+type ExerciseTemplate = Tables<"exercise_templates">;
 type WorkoutCompletion = Tables<"workout_completions">;
-type WorkoutSchedule = Tables<"workout_schedule">;
 
 interface DayStatus {
   day: number;
-  status: "locked" | "active" | "preview" | "past";
-  isCompleted: boolean;
+  status: "completed" | "active" | "locked";
+  title: string;
+  workoutType: string;
 }
 
 interface UserStats {
@@ -17,15 +19,15 @@ interface UserStats {
   totalWorkouts: number;
   streak: number;
   xp: number;
+  currentDay: number;
 }
 
 export interface WorkoutTemplate {
-  name: string;
-  shortName: string;
-  muscles: string;
-  time: string;
-  exercises: number;
-  focus: string;
+  dayNumber: number;
+  title: string;
+  workoutType: string;
+  duration: string;
+  exercisesCount: number;
 }
 
 interface WorkoutProgressData {
@@ -36,73 +38,27 @@ interface WorkoutProgressData {
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
-  completeWorkout: (day: number, title: string, workoutType: string) => Promise<boolean>;
+  completeWorkout: (dayNumber: number) => Promise<boolean>;
   getWorkoutForDay: (day: number) => WorkoutTemplate;
-  workoutSchedule: Map<number, WorkoutTemplate>;
+  exerciseTemplates: WorkoutTemplate[];
 }
 
 const TOTAL_PROGRAM_DAYS = 21;
-const XP_PER_WORKOUT = 100;
+const XP_PER_WORKOUT = 50;
 
-const DEFAULT_WORKOUT_ROTATION: WorkoutTemplate[] = [
-  { name: "Chest", shortName: "Chest", muscles: "Chest, Triceps", time: "35 min", exercises: 5, focus: "Chest" },
-  { name: "Back", shortName: "Back", muscles: "Back, Biceps", time: "40 min", exercises: 5, focus: "Back" },
-  { name: "Legs", shortName: "Legs", muscles: "Quads, Hamstrings, Glutes", time: "45 min", exercises: 6, focus: "Legs" },
-  { name: "Shoulders", shortName: "Shoulders", muscles: "Shoulders, Traps", time: "30 min", exercises: 4, focus: "Shoulders" },
-  { name: "Arms", shortName: "Arms", muscles: "Biceps, Triceps, Forearms", time: "35 min", exercises: 5, focus: "Arms" },
-  { name: "Core", shortName: "Core", muscles: "Abs, Obliques, Lower Back", time: "25 min", exercises: 4, focus: "Core" },
-  { name: "Rest Day", shortName: "Rest", muscles: "", time: "0 min", exercises: 0, focus: "Recovery" },
+const DEFAULT_TEMPLATES: WorkoutTemplate[] = [
+  { dayNumber: 1, title: "Chest", workoutType: "Chest", duration: "35 min", exercisesCount: 5 },
+  { dayNumber: 2, title: "Back", workoutType: "Back", duration: "40 min", exercisesCount: 5 },
+  { dayNumber: 3, title: "Legs", workoutType: "Legs", duration: "45 min", exercisesCount: 6 },
+  { dayNumber: 4, title: "Shoulders", workoutType: "Shoulders", duration: "30 min", exercisesCount: 4 },
+  { dayNumber: 5, title: "Arms", workoutType: "Arms", duration: "35 min", exercisesCount: 5 },
+  { dayNumber: 6, title: "Core", workoutType: "Core", duration: "25 min", exercisesCount: 4 },
+  { dayNumber: 7, title: "Rest Day", workoutType: "Recovery", duration: "0 min", exercisesCount: 0 },
 ];
 
-function calculateStreak(completedDays: number[], currentDay: number): number {
-  if (completedDays.length === 0) return 0;
-  
-  let streak = 0;
-  const sortedDays = [...completedDays].sort((a, b) => b - a);
-  
-  for (let day = currentDay; day >= 1; day--) {
-    if (sortedDays.includes(day) || day === currentDay) {
-      if (sortedDays.includes(day)) {
-        streak++;
-      }
-    } else {
-      break;
-    }
-  }
-  
-  return streak;
-}
-
-function calculateDayStatus(
-  dayNumber: number,
-  currentDay: number,
-  completedDays: number[]
-): "locked" | "active" | "preview" | "past" {
-  if (dayNumber < currentDay) {
-    return "past";
-  } else if (dayNumber === currentDay) {
-    return "active";
-  } else {
-    return "preview";
-  }
-}
-
-function calculateCurrentDay(completedDays: number[]): number {
-  // Current day is the first uncompleted day (starting from 1)
-  // If days 1, 2, 3 are completed, current day is 4
-  if (completedDays.length === 0) return 1;
-  
-  const sortedCompleted = [...completedDays].sort((a, b) => a - b);
-  
-  // Find the first gap or next day after the highest completed
-  for (let day = 1; day <= TOTAL_PROGRAM_DAYS; day++) {
-    if (!sortedCompleted.includes(day)) {
-      return day;
-    }
-  }
-  
-  // All days completed
-  return TOTAL_PROGRAM_DAYS;
+function getDefaultTemplate(day: number): WorkoutTemplate {
+  const index = (day - 1) % DEFAULT_TEMPLATES.length;
+  return { ...DEFAULT_TEMPLATES[index], dayNumber: day };
 }
 
 export function useWorkoutProgress(): WorkoutProgressData {
@@ -110,23 +66,22 @@ export function useWorkoutProgress(): WorkoutProgressData {
   const [dayStatuses, setDayStatuses] = useState<DayStatus[]>([]);
   const [currentDay, setCurrentDay] = useState<number>(1);
   const [completedDays, setCompletedDays] = useState<number[]>([]);
+  const [exerciseTemplates, setExerciseTemplates] = useState<WorkoutTemplate[]>([]);
   const [userStats, setUserStats] = useState<UserStats>({
     workoutsCompleted: 0,
     totalWorkouts: TOTAL_PROGRAM_DAYS,
     streak: 0,
     xp: 0,
+    currentDay: 1,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [workoutSchedule, setWorkoutSchedule] = useState<Map<number, WorkoutTemplate>>(new Map());
 
   const getWorkoutForDay = useCallback((day: number): WorkoutTemplate => {
-    if (workoutSchedule.has(day)) {
-      return workoutSchedule.get(day)!;
-    }
-    const index = (day - 1) % DEFAULT_WORKOUT_ROTATION.length;
-    return DEFAULT_WORKOUT_ROTATION[index];
-  }, [workoutSchedule]);
+    const template = exerciseTemplates.find(t => t.dayNumber === day);
+    if (template) return template;
+    return getDefaultTemplate(day);
+  }, [exerciseTemplates]);
 
   const fetchProgress = useCallback(async () => {
     if (!user?.id) return;
@@ -135,107 +90,122 @@ export function useWorkoutProgress(): WorkoutProgressData {
       setIsLoading(true);
       setError(null);
 
-      // Fetch workout completions for this user
-      let completedDayNumbers: number[] = [];
+      // 1. Fetch or create user_progress
+      let userProgress: UserProgress | null = null;
       
-      try {
-        const { data: completions, error: completionsError } = await supabase
-          .from("workout_completions")
-          .select("day_number")
-          .eq("user_id", user.id);
+      const { data: progressData, error: progressError } = await supabase
+        .from("user_progress")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
 
-        if (completionsError) {
-          console.error("Error fetching workout completions:", completionsError);
-        }
+      if (progressError && progressError.code === "PGRST116") {
+        // No row exists, create one
+        const { data: newProgress, error: insertError } = await supabase
+          .from("user_progress")
+          .insert({
+            user_id: user.id,
+            current_day: 1,
+            workouts_completed: 0,
+            streak: 0,
+            xp: 0,
+          })
+          .select()
+          .single();
 
-        if (!completionsError && completions) {
-          completedDayNumbers = completions.map((c) => c.day_number);
+        if (insertError) {
+          console.error("Error creating user_progress:", insertError);
+        } else {
+          userProgress = newProgress;
         }
-      } catch (err) {
-        console.error("workout_completions fetch error:", err);
+      } else if (progressError) {
+        console.error("Error fetching user_progress:", progressError);
+      } else {
+        userProgress = progressData;
+      }
+
+      const userCurrentDay = userProgress?.current_day ?? 1;
+      setCurrentDay(userCurrentDay);
+      
+      setUserStats({
+        workoutsCompleted: userProgress?.workouts_completed ?? 0,
+        totalWorkouts: TOTAL_PROGRAM_DAYS,
+        streak: userProgress?.streak ?? 0,
+        xp: userProgress?.xp ?? 0,
+        currentDay: userCurrentDay,
+      });
+
+      // 2. Fetch exercise_templates
+      const { data: templates, error: templatesError } = await supabase
+        .from("exercise_templates")
+        .select("*")
+        .order("day_number", { ascending: true });
+
+      let workoutTemplates: WorkoutTemplate[] = [];
+      
+      if (templatesError) {
+        console.error("Error fetching exercise_templates:", templatesError);
+        // Use default templates
+        workoutTemplates = Array.from({ length: TOTAL_PROGRAM_DAYS }, (_, i) => getDefaultTemplate(i + 1));
+      } else if (templates && templates.length > 0) {
+        workoutTemplates = templates.map(t => ({
+          dayNumber: t.day_number,
+          title: t.title,
+          workoutType: t.workout_type,
+          duration: t.duration,
+          exercisesCount: t.exercises_count,
+        }));
+      } else {
+        // No templates in DB, use defaults
+        workoutTemplates = Array.from({ length: TOTAL_PROGRAM_DAYS }, (_, i) => getDefaultTemplate(i + 1));
       }
       
-      console.log("COMPLETED DAYS FROM DB:", completedDayNumbers);
+      setExerciseTemplates(workoutTemplates);
+
+      // 3. Fetch workout_completions
+      const { data: completions, error: completionsError } = await supabase
+        .from("workout_completions")
+        .select("day_number")
+        .eq("user_id", user.id);
+
+      let completedDayNumbers: number[] = [];
+      if (completionsError) {
+        console.error("Error fetching workout_completions:", completionsError);
+      } else if (completions) {
+        completedDayNumbers = completions.map(c => c.day_number);
+      }
+      
       setCompletedDays(completedDayNumbers);
 
-      // Fetch workout schedule from Supabase
-      try {
-        const { data: scheduleData, error: scheduleError } = await supabase
-          .from("workout_schedule")
-          .select("*")
-          .eq("user_id", user.id);
-
-        if (scheduleError) {
-          console.error("Error fetching workout schedule:", scheduleError);
-        }
-
-        if (!scheduleError && scheduleData && scheduleData.length > 0) {
-          const scheduleMap = new Map<number, WorkoutTemplate>();
-          scheduleData.forEach((item) => {
-            scheduleMap.set(item.day_number, {
-              name: item.workout_name,
-              shortName: item.workout_name.split(" ")[0],
-              muscles: item.focus,
-              time: item.duration,
-              exercises: item.exercises,
-              focus: item.focus,
-            });
-          });
-          setWorkoutSchedule(scheduleMap);
-          console.log("Workout schedule loaded from DB:", scheduleMap.size, "days");
-        }
-      } catch (err) {
-        console.error("workout_schedule fetch error:", err);
-      }
-
-      // Calculate current day based on completions (first uncompleted day)
-      const calculatedCurrentDay = calculateCurrentDay(completedDayNumbers);
-      setCurrentDay(calculatedCurrentDay);
-
-      // Build day statuses for all 21 days
+      // 4. Build day statuses - STRICT LOGIC
       const statuses: DayStatus[] = [];
       for (let day = 1; day <= TOTAL_PROGRAM_DAYS; day++) {
+        const template = workoutTemplates.find(t => t.dayNumber === day) || getDefaultTemplate(day);
+        
+        let status: "completed" | "active" | "locked";
+        if (completedDayNumbers.includes(day)) {
+          status = "completed";
+        } else if (day === userCurrentDay) {
+          status = "active";
+        } else {
+          status = "locked";
+        }
+
         statuses.push({
           day,
-          status: calculateDayStatus(day, calculatedCurrentDay, completedDayNumbers),
-          isCompleted: completedDayNumbers.includes(day),
+          status,
+          title: template.title,
+          workoutType: template.workoutType,
         });
+
+        console.log(`CIRCLE Day ${day}: status=${status}, title=${template.title}, type=${template.workoutType}`);
       }
+      
       setDayStatuses(statuses);
-
-      // Calculate stats
-      const streak = calculateStreak(completedDayNumbers, calculatedCurrentDay);
-      const xp = completedDayNumbers.length * XP_PER_WORKOUT;
-
-      setUserStats({
-        workoutsCompleted: completedDayNumbers.length,
-        totalWorkouts: TOTAL_PROGRAM_DAYS,
-        streak,
-        xp,
-      });
 
     } catch (err) {
       console.error("Error fetching workout progress:", err);
-      // Even on error, set up default state so UI doesn't break
-      const calculatedCurrentDay = 1;
-      setCurrentDay(calculatedCurrentDay);
-      setCompletedDays([]);
-      
-      const statuses: DayStatus[] = [];
-      for (let day = 1; day <= TOTAL_PROGRAM_DAYS; day++) {
-        statuses.push({
-          day,
-          status: calculateDayStatus(day, calculatedCurrentDay, []),
-          isCompleted: false,
-        });
-      }
-      setDayStatuses(statuses);
-      setUserStats({
-        workoutsCompleted: 0,
-        totalWorkouts: TOTAL_PROGRAM_DAYS,
-        streak: 0,
-        xp: 0,
-      });
+      setError("Failed to load workout progress");
     } finally {
       setIsLoading(false);
     }
@@ -248,10 +218,8 @@ export function useWorkoutProgress(): WorkoutProgressData {
   useEffect(() => {
     if (!user?.id) return;
 
-    // Set up real-time subscription for workout completions
-    // This will work once the table exists in Supabase
     const channel = supabase
-      .channel("workout_completions_changes")
+      .channel("workout_progress_changes")
       .on(
         "postgres_changes",
         {
@@ -260,14 +228,27 @@ export function useWorkoutProgress(): WorkoutProgressData {
           table: "workout_completions",
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
-          console.log("Real-time update received:", payload);
+        () => {
+          console.log("Real-time update: workout_completions changed");
+          fetchProgress();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "user_progress",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          console.log("Real-time update: user_progress changed");
           fetchProgress();
         }
       )
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {
-          console.log("Subscribed to workout_completions changes");
+          console.log("Subscribed to workout progress changes");
         }
       });
 
@@ -276,69 +257,85 @@ export function useWorkoutProgress(): WorkoutProgressData {
     };
   }, [user?.id, fetchProgress]);
 
-  const completeWorkout = useCallback(async (day: number, title: string, workoutType: string): Promise<boolean> => {
+  const completeWorkout = useCallback(async (dayNumber: number): Promise<boolean> => {
     if (!user?.id) {
       console.error("No user logged in");
       return false;
     }
 
-    // Prevent duplicate completion
-    if (completedDays.includes(day)) {
-      console.log(`Day ${day} already completed, skipping`);
+    if (dayNumber !== currentDay) {
+      console.error(`Cannot complete day ${dayNumber}, current day is ${currentDay}`);
+      return false;
+    }
+
+    if (completedDays.includes(dayNumber)) {
+      console.log(`Day ${dayNumber} already completed`);
       return true;
     }
 
-    // Instant UI update (optimistic)
-    setCompletedDays(prev => [...prev, day]);
+    const template = getWorkoutForDay(dayNumber);
 
-    // Update day statuses immediately
-    setDayStatuses(prev => prev.map(ds => 
-      ds.day === day ? { ...ds, isCompleted: true } : ds
-    ));
-
-    // Update stats immediately
-    const newCompletedCount = completedDays.length + 1;
-    const newStreak = calculateStreak([...completedDays, day], currentDay);
+    // Optimistic UI update
+    setCompletedDays(prev => [...prev, dayNumber]);
+    setCurrentDay(prev => prev + 1);
+    setDayStatuses(prev => prev.map(ds => {
+      if (ds.day === dayNumber) return { ...ds, status: "completed" as const };
+      if (ds.day === dayNumber + 1) return { ...ds, status: "active" as const };
+      return ds;
+    }));
     setUserStats(prev => ({
       ...prev,
-      workoutsCompleted: newCompletedCount,
-      streak: newStreak,
-      xp: newCompletedCount * XP_PER_WORKOUT,
+      workoutsCompleted: prev.workoutsCompleted + 1,
+      streak: prev.streak + 1,
+      xp: prev.xp + XP_PER_WORKOUT,
+      currentDay: prev.currentDay + 1,
     }));
 
     try {
+      // 1. Insert workout_completions
       const { error: insertError } = await supabase
         .from("workout_completions")
         .insert({
           user_id: user.id,
-          day_number: day,
-          title: title,
-          workout_type: workoutType,
+          day_number: dayNumber,
+          title: template.title,
+          workout_type: template.workoutType,
           completed: true,
           completed_at: new Date().toISOString(),
         });
 
       if (insertError) {
-        console.error("Error completing workout:", insertError);
-        // Revert optimistic update on error
-        setCompletedDays(prev => prev.filter(d => d !== day));
-        setDayStatuses(prev => prev.map(ds => 
-          ds.day === day ? { ...ds, isCompleted: false } : ds
-        ));
-        await fetchProgress(); // Refetch to get correct state
+        console.error("Error inserting workout_completion:", insertError);
+        await fetchProgress(); // Revert to actual state
         return false;
       }
 
-      console.log(`Workout day ${day} completed successfully`);
+      // 2. Update user_progress
+      const { error: updateError } = await supabase
+        .from("user_progress")
+        .update({
+          current_day: dayNumber + 1,
+          workouts_completed: userStats.workoutsCompleted + 1,
+          streak: userStats.streak + 1,
+          xp: userStats.xp + XP_PER_WORKOUT,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", user.id);
+
+      if (updateError) {
+        console.error("Error updating user_progress:", updateError);
+        await fetchProgress(); // Revert to actual state
+        return false;
+      }
+
+      console.log(`Workout day ${dayNumber} completed successfully`);
       return true;
     } catch (err) {
       console.error("Error completing workout:", err);
-      // Revert optimistic update on error
-      setCompletedDays(prev => prev.filter(d => d !== day));
-      await fetchProgress();
+      await fetchProgress(); // Revert to actual state
       return false;
     }
-  }, [user?.id, completedDays, currentDay, fetchProgress]);
+  }, [user?.id, currentDay, completedDays, getWorkoutForDay, userStats, fetchProgress]);
 
   return {
     dayStatuses,
@@ -350,6 +347,6 @@ export function useWorkoutProgress(): WorkoutProgressData {
     refetch: fetchProgress,
     completeWorkout,
     getWorkoutForDay,
-    workoutSchedule,
+    exerciseTemplates,
   };
 }

@@ -4,23 +4,14 @@ import { useEffect, useRef, useState, useLayoutEffect } from "react";
 
 interface DayStatus {
   day: number;
-  status: "locked" | "active" | "preview" | "past";
-  isCompleted: boolean;
-}
-
-interface WorkoutInfo {
-  name: string;
-  shortName: string;
-  muscles: string;
-  time: string;
-  exercises: number;
-  focus: string;
+  status: "completed" | "active" | "locked";
+  title: string;
+  workoutType: string;
 }
 
 interface JourneyPathProps {
   dayStatuses: DayStatus[];
   onDayClick: (day: number) => void;
-  getWorkoutForDay: (day: number) => WorkoutInfo;
   isLoading?: boolean;
 }
 
@@ -29,7 +20,7 @@ interface NodePosition {
   y: number;
 }
 
-export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay, isLoading }: JourneyPathProps) {
+export default function JourneyPath({ dayStatuses, onDayClick, isLoading }: JourneyPathProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const todayRef = useRef<HTMLButtonElement>(null);
   const [containerWidth, setContainerWidth] = useState(320);
@@ -186,7 +177,7 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
 
         {nodePositions.map((pos, idx) => {
           if (idx === 0) return null;
-          const prevDayCompleted = dayStatuses[idx - 1]?.isCompleted;
+          const prevDayCompleted = dayStatuses[idx - 1]?.status === "completed";
           
           if (prevDayCompleted) {
             const prev = nodePositions[idx - 1];
@@ -225,15 +216,12 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
 
         {dayStatuses.map((dayInfo, idx) => {
           const pos = nodePositions[idx];
-          const isActive = dayInfo.status === "active" && !dayInfo.isCompleted;
-          const isPast = dayInfo.status === "past";
-          const isLocked = dayInfo.status === "locked" || dayInfo.status === "preview";
-          const isCompleted = dayInfo.isCompleted;
-          const isMissed = isPast && !isCompleted;
+          const isActive = dayInfo.status === "active";
+          const isLocked = dayInfo.status === "locked";
+          const isCompleted = dayInfo.status === "completed";
           const radius = isActive ? todayNodeRadius : nodeRadius;
-          const workout = getWorkoutForDay(dayInfo.day);
 
-          console.log(`CIRCLE Day ${dayInfo.day}: isCompleted=${isCompleted}, status=${dayInfo.status}`);
+          console.log(`CIRCLE Day ${dayInfo.day}: status=${dayInfo.status}, title=${dayInfo.title}`);
 
           return (
             <g key={`node-${dayInfo.day}`}>
@@ -266,13 +254,11 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
                 fill={
                   isCompleted 
                     ? "url(#nodeCompletedGradient)"
-                    : isMissed
-                      ? "url(#nodeMissedGradient)"
-                      : isActive 
-                        ? "url(#nodeActiveGradient)"
-                        : "url(#nodeLockedGradient)"
+                    : isActive 
+                      ? "url(#nodeActiveGradient)"
+                      : "url(#nodeLockedGradient)"
                 }
-                filter={isActive ? "url(#activeGlow)" : isCompleted ? "url(#glowFilter)" : isMissed ? "url(#glowFilter)" : undefined}
+                filter={isActive ? "url(#activeGlow)" : isCompleted ? "url(#glowFilter)" : undefined}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: isLocked ? 0.7 : 1 }}
                 transition={{ 
@@ -304,15 +290,13 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
                   onClick={() => onDayClick(dayInfo.day)}
                   className="w-full h-full flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform focus:outline-none focus:ring-2 focus:ring-[#7c57ff] focus:ring-offset-2 focus:ring-offset-[#0a0e27] rounded-full"
                   style={{ background: 'transparent' }}
-                  aria-label={`Day ${dayInfo.day} - ${workout.name}${isLocked ? ' (locked)' : isCompleted ? ' (completed)' : isMissed ? ' (missed)' : isActive ? ' (today)' : ''}`}
+                  aria-label={`Day ${dayInfo.day} - ${dayInfo.title}${isLocked ? ' (locked)' : isCompleted ? ' (completed)' : isActive ? ' (today)' : ''}`}
                   data-testid={`journey-node-${dayInfo.day}`}
                 >
                   {isLocked ? (
                     <Lock className="w-5 h-5 text-white/50" />
                   ) : isCompleted ? (
                     <CheckCircle2 className="w-6 h-6 text-white" />
-                  ) : isMissed ? (
-                    <X className="w-6 h-6 text-white" />
                   ) : isActive ? (
                     <Play className="w-7 h-7 text-white fill-white ml-0.5" />
                   ) : (
@@ -367,7 +351,7 @@ export default function JourneyPath({ dayStatuses, onDayClick, getWorkoutForDay,
                   fontSize="11"
                   fill="#7c57ff"
                 >
-                  {workout.shortName}
+                  {dayInfo.workoutType}
                 </text>
               )}
             </g>
