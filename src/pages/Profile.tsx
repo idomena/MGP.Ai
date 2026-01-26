@@ -1,14 +1,47 @@
 import NavigationBar from "@/components/NavigationBar";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, Settings, Bell, Award, Zap, Flame, Target, ChevronRight, Shield, HelpCircle, Star, Dumbbell, LogOut } from "lucide-react";
+import { User, Settings, Bell, Award, Zap, Flame, Target, ChevronRight, Shield, HelpCircle, Star, Dumbbell, LogOut, RefreshCw } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleResetPlan = async () => {
+    if (!user?.id) return;
+    
+    setIsResetting(true);
+    try {
+      const { error } = await supabase
+        .from("workout_completions")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to reset workout plan.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Plan Reset",
+          description: "Redirecting to setup your new plan...",
+        });
+        navigate("/onboarding");
+      }
+    } catch (err) {
+      console.error("Error resetting plan:", err);
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -141,8 +174,21 @@ export default function ProfilePage() {
         </section>
 
         <button
+          onClick={handleResetPlan}
+          disabled={isResetting}
+          className="w-full mt-6 flex items-center justify-center gap-3 p-4 bg-[#7c57ff]/10 hover:bg-[#7c57ff]/20 border border-[#7c57ff]/20 rounded-2xl transition-colors disabled:opacity-50"
+          data-testid="button-reset-plan"
+          aria-label="Reset workout plan"
+        >
+          <RefreshCw className={`w-5 h-5 text-[#7c57ff] ${isResetting ? 'animate-spin' : ''}`} />
+          <span className="text-[#7c57ff] font-medium">
+            {isResetting ? "Resetting..." : "Reset Workout Plan"}
+          </span>
+        </button>
+
+        <button
           onClick={handleLogout}
-          className="w-full mt-6 flex items-center justify-center gap-3 p-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-2xl transition-colors"
+          className="w-full mt-3 flex items-center justify-center gap-3 p-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-2xl transition-colors"
           data-testid="button-logout"
           aria-label="Log out"
         >

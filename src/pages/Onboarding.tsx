@@ -70,6 +70,16 @@ export default function Onboarding() {
     setIsGenerating(true);
 
     try {
+      // First, delete any existing workout_completions for this user
+      const { error: deleteError } = await supabase
+        .from("workout_completions")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (deleteError) {
+        console.error("Error clearing old workouts:", deleteError);
+      }
+
       const { error: prefError } = await supabase
         .from("user_preferences")
         .upsert({
