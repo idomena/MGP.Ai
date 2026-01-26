@@ -9,6 +9,7 @@ import WorkoutAIAssistant from "@/components/WorkoutAIAssistant";
 import ExerciseDetailsModal from "@/components/ExerciseDetailsModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
+import { useExercises } from "@/hooks/useExercises";
 import { getExercisesForWorkoutType, type Exercise } from "@/data/workoutExercises";
 
 export default function WorkoutPage() {
@@ -28,7 +29,10 @@ export default function WorkoutPage() {
   const workoutTemplate = getWorkoutForDay(dayNumber);
   const workoutName = workoutTemplate.title;
   
-  const exercises = getExercisesForWorkoutType(workoutTemplate.workoutType);
+  const { data: dbExercises, isLoading: exercisesLoading } = useExercises(workoutTemplate.workoutType);
+  const exercises = dbExercises && dbExercises.length > 0 
+    ? dbExercises 
+    : getExercisesForWorkoutType(workoutTemplate.workoutType);
 
   // Derive workout status from database state only
   const currentDay = programCurrentDay || 1;
