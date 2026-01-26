@@ -14,6 +14,7 @@ import {
 } from "@/components/onboarding/ConversationManager";
 
 import NameInput from "@/components/onboarding/NameInput";
+import { GenderSelector } from "@/components/onboarding/GenderSelector";
 import AssistantSelector from "@/components/onboarding/AssistantSelector";
 import WeightSelector from "@/components/onboarding/WeightSelector";
 import OptionSelector from "@/components/onboarding/OptionSelector";
@@ -158,6 +159,17 @@ export default function Onboarding() {
     handleAnswer('name', name, name);
   };
 
+  const handleGenderSelect = (gender: 'male' | 'female' | 'other' | 'prefer_not_to_say') => {
+    setSelections(prev => ({ ...prev, gender }));
+    const labels = { 
+      male: 'Male', 
+      female: 'Female', 
+      other: 'Other', 
+      prefer_not_to_say: 'Prefer not to say' 
+    };
+    handleAnswer('gender', gender, labels[gender]);
+  };
+
   const handleAssistantSelect = (type: 'coach' | 'nutritionist' | 'trainer') => {
     setSelections(prev => ({ ...prev, assistantType: type }));
     const labels = { coach: 'Coach', nutritionist: 'Nutritionist', trainer: 'Fitness Trainer' };
@@ -214,6 +226,7 @@ export default function Onboarding() {
       selectedWorkouts: selections.workoutTypes,
       startDate: new Date().toISOString(),
       userName: selections.name,
+      gender: selections.gender,
       assistantType: selections.assistantType,
       weight: selections.weight,
       goals: selections.goals,
@@ -261,6 +274,9 @@ export default function Onboarding() {
       case 'name':
         return <NameInput onSubmit={handleNameSubmit} placeholder="Enter your name..." />;
       
+      case 'gender':
+        return <GenderSelector onSelect={handleGenderSelect} />;
+      
       case 'assistant':
         return <AssistantSelector onSelect={handleAssistantSelect} />;
       
@@ -289,11 +305,19 @@ export default function Onboarding() {
         return <AdditionalInfo onSubmit={handleAdditionalInfoSubmit} onSkip={handleAdditionalInfoSkip} />;
       
       case 'review':
+        const genderLabels: Record<string, string> = { 
+          male: 'Male', 
+          female: 'Female', 
+          other: 'Other', 
+          prefer_not_to_say: 'Prefer not to say',
+          '': 'Not set'
+        };
         return (
           <ReviewSelections
             selections={{
               coachName: selections.coachName,
               name: selections.name,
+              gender: genderLabels[selections.gender] || 'Not set',
               assistant: selections.assistantType === 'coach' ? 'Coach' : selections.assistantType === 'nutritionist' ? 'Nutritionist' : 'Fitness Trainer',
               weight: `${selections.weight.value} ${selections.weight.unit}`,
               goals: selections.goals,

@@ -6,6 +6,7 @@ import {
   ChevronUp, 
   Edit2, 
   User, 
+  Users,
   Scale, 
   Target, 
   Calendar,
@@ -30,6 +31,7 @@ interface ReviewSelectionsProps {
 const fieldConfig: Record<string, { label: string; icon: React.ReactNode }> = {
   coachName: { label: 'Coach Name', icon: <Bot className="w-4 h-4" /> },
   name: { label: 'Your Name', icon: <User className="w-4 h-4" /> },
+  gender: { label: 'Gender', icon: <Users className="w-4 h-4" /> },
   assistant: { label: 'Coaching Style', icon: <Bot className="w-4 h-4" /> },
   weight: { label: 'Weight', icon: <Scale className="w-4 h-4" /> },
   goals: { label: 'Goals', icon: <Target className="w-4 h-4" /> },

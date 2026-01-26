@@ -1,6 +1,7 @@
 export type QuestionType = 
   | 'coachName'
   | 'name'
+  | 'gender'
   | 'assistant'
   | 'weight'
   | 'goals'
@@ -14,7 +15,7 @@ export type QuestionType =
 export interface Question {
   id: QuestionType;
   botMessage: string;
-  componentType: 'name' | 'coachName' | 'assistant' | 'weight' | 'options' | 'yesno' | 'textarea' | 'review';
+  componentType: 'name' | 'coachName' | 'gender' | 'assistant' | 'weight' | 'options' | 'yesno' | 'textarea' | 'review';
   options?: { id: string; label: string; icon?: string; description?: string }[];
   multiSelect?: boolean;
   required?: boolean;
@@ -36,20 +37,26 @@ export const QUESTIONS: Question[] = [
     required: true,
   },
   {
+    id: 'gender',
+    botMessage: "Nice to meet you, {name}! Just so I can personalize things a bit more - what's your gender?",
+    componentType: 'gender',
+    required: true,
+  },
+  {
     id: 'assistant',
-    botMessage: "Awesome to meet you! Now, how do you like to be coached? Pick the style that vibes with you:",
+    botMessage: "Got it, {name}! Now, how do you like to be coached? Pick the style that vibes with you:",
     componentType: 'assistant',
     required: true,
   },
   {
     id: 'weight',
-    botMessage: "Perfect! Now let's get a bit more personal - what's your current weight? Don't worry, this helps me tailor workouts just for you!",
+    botMessage: "Perfect choice, {name}! Now let's get a bit more personal - what's your current weight? Don't worry, this helps me tailor workouts just for you!",
     componentType: 'weight',
     required: true,
   },
   {
     id: 'goals',
-    botMessage: "This is the exciting part! What do you want to achieve? Dream big and pick all that apply!",
+    botMessage: "Alright {name}, this is the exciting part! What do you want to achieve? Dream big and pick all that apply!",
     componentType: 'options',
     multiSelect: true,
     required: true,
@@ -130,6 +137,7 @@ export const QUESTIONS: Question[] = [
 export interface UserSelections {
   coachName: string;
   name: string;
+  gender: 'male' | 'female' | 'other' | 'prefer_not_to_say' | '';
   assistantType: 'coach' | 'nutritionist' | 'trainer';
   weight: { value: number; unit: 'kg' | 'lbs' };
   goals: string[];
@@ -145,6 +153,7 @@ export function getDefaultSelections(): UserSelections {
   return {
     coachName: 'Coach',
     name: '',
+    gender: '',
     assistantType: 'coach',
     weight: { value: 70, unit: 'kg' },
     goals: [],
