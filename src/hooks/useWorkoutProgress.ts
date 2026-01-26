@@ -262,9 +262,9 @@ export function useWorkoutProgress(): WorkoutProgressData {
         .insert({
           user_id: user.id,
           day_number: day,
-          workout_name: title,
-          duration_minutes: 0,
-          calories_burned: 0,
+          title: title,
+          workout_type: workoutType,
+          completed: true,
           completed_at: new Date().toISOString(),
         });
 
