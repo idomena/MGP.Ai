@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Play, ArrowLeft, Lock, Clock, Dumbbell, ChevronRight, Sparkles, CheckCircle2, Info } from "lucide-react";
+import {
+  Play,
+  ArrowLeft,
+  Lock,
+  Clock,
+  Dumbbell,
+  ChevronRight,
+  Sparkles,
+  CheckCircle2,
+  Info,
+} from "lucide-react";
 import NavigationBar from "@/components/NavigationBar";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -10,41 +20,57 @@ import ExerciseDetailsModal from "@/components/ExerciseDetailsModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
 import { useExercises } from "@/hooks/useExercises";
-import { getExercisesForWorkoutType, type Exercise } from "@/data/workoutExercises";
+import {
+  getExercisesForWorkoutType,
+  type Exercise,
+} from "@/data/workoutExercises";
 
 export default function WorkoutPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { completeWorkout, currentDay: programCurrentDay, completedDays, getWorkoutForDay } = useWorkoutProgress();
-  
+  const {
+    completeWorkout,
+    currentDay: programCurrentDay,
+    completedDays,
+    getWorkoutForDay,
+  } = useWorkoutProgress();
+
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
-  const [selectedExerciseForAI, setSelectedExerciseForAI] = useState<string | undefined>(undefined);
-  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [selectedExerciseForAI, setSelectedExerciseForAI] = useState<
+    string | undefined
+  >(undefined);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
+    null,
+  );
   const [showExerciseModal, setShowExerciseModal] = useState(false);
 
   const dayNumber = id ? parseInt(id, 10) : 1;
-  
+
   const workoutTemplate = getWorkoutForDay(dayNumber);
   const workoutName = workoutTemplate.title;
-  
-  const { data: dbExercises, isLoading: exercisesLoading } = useExercises(workoutTemplate.workoutType);
-  const exercises = dbExercises && dbExercises.length > 0 
-    ? dbExercises 
-    : getExercisesForWorkoutType(workoutTemplate.workoutType);
+
+  const { data: dbExercises, isLoading: exercisesLoading } = useExercises(
+    workoutTemplate.workoutType,
+  );
+  const exercises =
+    dbExercises && dbExercises.length > 0
+      ? dbExercises
+      : getExercisesForWorkoutType(workoutTemplate.workoutType);
 
   // Derive workout status from database state only
   const currentDay = programCurrentDay || 1;
   const isToday = dayNumber === currentDay;
   const isCompleted = completedDays.includes(dayNumber);
   const canStartWorkout = isToday && !isCompleted;
-  
+
   // Strict status: completed/active/locked only (no past/preview)
-  const workoutStatus: "completed" | "active" | "locked" = 
-    isCompleted ? "completed" : 
-    isToday ? "active" : 
-    "locked";
+  const workoutStatus: "completed" | "active" | "locked" = isCompleted
+    ? "completed"
+    : isToday
+      ? "active"
+      : "locked";
 
   const handleStartWorkout = () => {
     if (!canStartWorkout) {
@@ -65,16 +91,16 @@ export default function WorkoutPage() {
 
   const handleWorkoutComplete = async () => {
     setIsWorkoutActive(false);
-    
+
     // Save workout completion to database
     const success = await completeWorkout(dayNumber);
-    
+
     if (success) {
       toast.success("Workout complete! Great job!");
     } else {
       toast.error("Failed to save workout. Please try again.");
     }
-    
+
     navigate("/");
   };
 
@@ -146,7 +172,7 @@ export default function WorkoutPage() {
     switch (workoutStatus) {
       case "completed":
         return (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 flex items-start gap-3"
@@ -154,13 +180,15 @@ export default function WorkoutPage() {
             <CheckCircle2 className="w-5 h-5 text-green-400 mt-0.5 shrink-0" />
             <div>
               <p className="text-green-400 font-medium">Great job!</p>
-              <p className="text-green-400/70 text-sm">You completed this workout. Keep up the momentum!</p>
+              <p className="text-green-400/70 text-sm">
+                You completed this workout. Keep up the momentum!
+              </p>
             </div>
           </motion.div>
         );
       case "locked":
         return (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-zinc-500/10 border border-zinc-500/20 rounded-xl p-4 flex items-start gap-3"
@@ -168,7 +196,9 @@ export default function WorkoutPage() {
             <Lock className="w-5 h-5 text-zinc-400 mt-0.5 shrink-0" />
             <div>
               <p className="text-zinc-300 font-medium">Locked</p>
-              <p className="text-zinc-400 text-sm">Complete Day {currentDay} first to unlock this workout.</p>
+              <p className="text-zinc-400 text-sm">
+                Complete Day {currentDay} first to unlock this workout.
+              </p>
             </div>
           </motion.div>
         );
@@ -178,7 +208,11 @@ export default function WorkoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1a2e] pb-24 overflow-y-auto" role="main" aria-label="Workout list page">
+    <div
+      className="min-h-screen bg-[#1a1a2e] pb-24 overflow-y-auto"
+      role="main"
+      aria-label="Workout list page"
+    >
       {/* Header */}
       <header className="relative px-4 pt-6 pb-4">
         {/* Back Button */}
@@ -201,21 +235,21 @@ export default function WorkoutPage() {
         </div>
 
         {/* Status Badge */}
-        <div className="flex justify-center mb-3">
-          {getStatusBadge()}
-        </div>
+        <div className="flex justify-center mb-3">{getStatusBadge()}</div>
 
         {/* Day Number */}
-        <p className="text-center text-white/60 text-sm mb-1">Day {dayNumber}</p>
+        <p className="text-center text-white/60 text-sm mb-1">
+          Day {dayNumber}
+        </p>
 
         {/* Workout Title */}
-        <h2 className="text-center text-white text-xl font-bold">{workoutName}</h2>
+        <h2 className="text-center text-white text-xl font-bold">
+          {workoutName}
+        </h2>
       </header>
 
       {/* Status Message */}
-      <div className="px-4 mb-4">
-        {getStatusMessage()}
-      </div>
+      <div className="px-4 mb-4">{getStatusMessage()}</div>
 
       {/* Exercise Cards */}
       <div className="px-4 py-2 space-y-4">
@@ -234,17 +268,21 @@ export default function WorkoutPage() {
           >
             {/* Subtle shine effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
-            
+
             <div className="flex items-center gap-4 relative">
               {/* Number Circle */}
-              <div className={`
+              <div
+                className={`
                 w-10 h-10 rounded-full flex items-center justify-center shrink-0
                 ${workoutStatus === "completed" ? "bg-green-500" : "bg-[#60a5fa]"}
-              `}>
+              `}
+              >
                 {workoutStatus === "completed" ? (
                   <CheckCircle2 className="w-5 h-5 text-white" />
                 ) : (
-                  <span className="text-white font-bold text-lg">{index + 1}</span>
+                  <span className="text-white font-bold text-lg">
+                    {index + 1}
+                  </span>
                 )}
               </div>
 
@@ -252,7 +290,9 @@ export default function WorkoutPage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <Dumbbell className="w-4 h-4 text-white/70" />
-                  <h3 className="text-white font-semibold text-base">{exercise.name}</h3>
+                  <h3 className="text-white font-semibold text-base">
+                    {exercise.name}
+                  </h3>
                 </div>
                 <div className="flex items-center gap-4 text-white/70 text-sm">
                   <div className="flex items-center gap-1">
@@ -349,7 +389,12 @@ export default function WorkoutPage() {
       {/* AI Assistant Modal */}
       <WorkoutAIAssistant
         workoutName={workoutName}
-        exercises={exercises.map(e => ({ name: e.name, muscles: e.muscles, sets: e.sets, time: e.time }))}
+        exercises={exercises.map((e) => ({
+          name: e.name,
+          muscles: e.muscles,
+          sets: e.sets,
+          time: e.time,
+        }))}
         currentExercise={selectedExerciseForAI}
         isOpen={isAIOpen}
         onClose={() => setIsAIOpen(false)}
