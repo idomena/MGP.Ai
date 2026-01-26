@@ -1,0 +1,83 @@
+Create a responsive web application optimized specifically for mobile phone viewing with the following principles:
+
+## Mobile Design
+1. **Responsive Layout**
+   - Use mobile-first approach
+   - Maximum width: 100vw
+   - Height adapted to phone viewport
+   - No horizontal scrolling required
+   - All elements fit within screen width
+
+2. **Mobile Typography**
+   - Minimum text size: 16px (prevents automatic zoom)
+   - Headings: 24-32px
+   - Line height: 1.5-1.6
+   - Readable and prominent text
+
+3. **Interactive Elements**
+   - Buttons: minimum 44x44px (comfortable finger tap)
+   - Spacing between buttons: at least 8px
+   - Large, comfortable touch areas
+   - Visual feedback for taps (hover/active states)
+
+4. **Navigation**
+   - Hamburger menu or bottom navigation bar
+   - Easily accessible with one thumb
+   - Convenient placement at top or bottom of screen
+
+5. **Content**
+   - Vertical order (column layout)
+   - Comfortable spacing between elements
+   - Responsive images (max-width: 100%)
+   - Forms with large, comfortable inputs
+
+6. **Performance**
+   - Fast loading
+   - Smooth animations (60fps)
+   - Optimized for cellular networks
+
+7. **Essential Meta Tags**
+```html
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <meta name="mobile-web-app-capable" content="yes">
+```
+
+8. **Colors and Contrast**
+   - High contrast for good readability in sunlight
+   - Pleasant color scheme for eyes
+   - Optional dark mode support
+
+## Basic CSS Example:
+```css
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 100%;
+  padding: 16px;
+  margin: 0 auto;
+}
+
+button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+```
+
+Build the application with full mobile adaptation, including handling touch events, orientation changes, and iOS safe areas.
