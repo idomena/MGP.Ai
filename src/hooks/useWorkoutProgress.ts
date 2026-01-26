@@ -279,8 +279,11 @@ export function useWorkoutProgress(): WorkoutProgressData {
       return false;
     }
 
-    if (dayNumber !== currentDay) {
-      console.error(`Cannot complete day ${dayNumber}, current day is ${currentDay}`);
+    const dayInfo = dayStatuses.find(d => d.day === dayNumber);
+    console.log("Completing workout:", { dayNumber, currentDay, dayInfo, completedDays });
+    
+    if (dayInfo?.workoutType === "rest") {
+      console.log(`Day ${dayNumber} is a rest day, skipping`);
       return false;
     }
 
@@ -289,36 +292,25 @@ export function useWorkoutProgress(): WorkoutProgressData {
       return true;
     }
 
-    const dayInfo = dayStatuses.find(d => d.day === dayNumber);
-    
-    if (dayInfo?.workoutType === "rest") {
-      console.log(`Day ${dayNumber} is a rest day, skipping`);
-      return false;
-    }
-
-    setCompletedDays(prev => [...prev, dayNumber]);
-    setCurrentDay(dayNumber + 1);
-    setDayStatuses(prev => prev.map(ds => {
-      if (ds.day === dayNumber) return { ...ds, status: "completed" as const };
-      if (ds.day === dayNumber + 1) return { ...ds, status: "active" as const };
-      return ds;
-    }));
-    setUserStats(prev => ({
-      ...prev,
-      workoutsCompleted: prev.workoutsCompleted + 1,
-      streak: prev.streak + 1,
-      xp: prev.xp + XP_PER_WORKOUT,
-      currentDay: dayNumber + 1,
-    }));
+    // Get the workout title from the day info or use a fallback
+    const workoutTitle = dayInfo?.title || "Workout";
+    const workoutType = dayInfo?.workoutType || "full";
 
     try {
-      const { error: insertError } = await (supabase as any)
+      console.log("Inserting workout completion:", {
+        user_id: user.id,
+        day_number: dayNumber,
+        title: workoutTitle,
+        workout_type: workoutType,
+      });
+
+      const { error: insertError } = await supabase
         .from("workout_completions")
         .insert({
           user_id: user.id,
           day_number: dayNumber,
-          title: dayInfo?.title || "Workout",
-          workout_type: dayInfo?.workoutType || "full",
+          title: workoutTitle,
+          workout_type: workoutType,
           completed: true,
           completed_at: new Date().toISOString(),
         });
@@ -326,18 +318,44 @@ export function useWorkoutProgress(): WorkoutProgressData {
       if (insertError) {
         console.error("Error inserting workout_completion:", insertError);
         console.error("Insert error details:", JSON.stringify(insertError));
-        await fetchProgress();
         return false;
       }
 
-      console.log(`Workout day ${dayNumber} completed successfully`);
+      console.log(`Workout day ${dayNumber} saved to Supabase successfully`);
+      
+      // Update local state only after successful save
+      setCompletedDays(prev => [...prev, dayNumber]);
+      
+      // Find next active day (skip rest days)
+      let nextActiveDay = dayNumber + 1;
+      for (let d = dayNumber + 1; d <= TOTAL_PROGRAM_DAYS; d++) {
+        const nextDayInfo = dayStatuses.find(ds => ds.day === d);
+        if (nextDayInfo?.workoutType !== "rest") {
+          nextActiveDay = d;
+          break;
+        }
+      }
+      
+      setCurrentDay(nextActiveDay);
+      setDayStatuses(prev => prev.map(ds => {
+        if (ds.day === dayNumber) return { ...ds, status: "completed" as const };
+        if (ds.day === nextActiveDay) return { ...ds, status: "active" as const };
+        return ds;
+      }));
+      setUserStats(prev => ({
+        ...prev,
+        workoutsCompleted: prev.workoutsCompleted + 1,
+        streak: prev.streak + 1,
+        xp: prev.xp + XP_PER_WORKOUT,
+        currentDay: nextActiveDay,
+      }));
+
       return true;
     } catch (err) {
       console.error("Error completing workout:", err);
-      await fetchProgress();
       return false;
     }
-  }, [user?.id, currentDay, completedDays, dayStatuses, fetchProgress]);
+  }, [user?.id, currentDay, completedDays, dayStatuses]);
 
   return {
     dayStatuses,
