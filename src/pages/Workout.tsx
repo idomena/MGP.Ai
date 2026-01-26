@@ -213,6 +213,7 @@ export default function WorkoutPage() {
         workoutName={workoutName}
         onComplete={handleWorkoutComplete}
         onExit={handleWorkoutExit}
+        onCompleteWorkout={completeWorkout}
       />
     );
   }

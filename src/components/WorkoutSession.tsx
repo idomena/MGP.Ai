@@ -21,9 +21,10 @@ interface WorkoutSessionProps {
   workoutName: string;
   onComplete: () => void;
   onExit: () => void;
+  onCompleteWorkout: (day: number, title: string, workoutType: string) => Promise<boolean>;
 }
 
-export default function WorkoutSession({ exercises, dayNumber, workoutName, onComplete, onExit }: WorkoutSessionProps) {
+export default function WorkoutSession({ exercises, dayNumber, workoutName, onComplete, onExit, onCompleteWorkout }: WorkoutSessionProps) {
   const { user } = useAuth();
   const [startTime] = useState(Date.now());
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
@@ -78,36 +79,19 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
       setCurrentSet(1);
       setCompletedSet(0);
     } else {
-      const durationMinutes = Math.round((Date.now() - startTime) / 60000);
-      const estimatedCalories = Math.round(durationMinutes * 8);
-      
-      if (user) {
-        setIsSubmitting(true);
-        try {
-          const response = await fetch('/api/progress/complete', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userId: user.id,
-              dayNumber,
-              workoutName,
-              durationMinutes,
-              caloriesBurned: estimatedCalories,
-            }),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok || !data.success) {
-            console.error('Error saving workout completion:', data.error || data.message);
-          }
-        } catch (error) {
-          console.error('Error saving workout completion:', error);
-        } finally {
-          setIsSubmitting(false);
+      setIsSubmitting(true);
+      try {
+        const success = await onCompleteWorkout(dayNumber, workoutName, workoutName);
+        
+        if (!success) {
+          console.error('Error saving workout completion');
+        } else {
+          console.log(`Workout Day ${dayNumber} saved to Supabase successfully`);
         }
+      } catch (error) {
+        console.error('Error saving workout completion:', error);
+      } finally {
+        setIsSubmitting(false);
       }
       
       setShowCelebration(true);
