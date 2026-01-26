@@ -9,18 +9,7 @@ import WorkoutAIAssistant from "@/components/WorkoutAIAssistant";
 import ExerciseDetailsModal from "@/components/ExerciseDetailsModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
-
-interface Exercise {
-  id: number;
-  name: string;
-  muscles: string;
-  sets: number;
-  reps: string;
-  time: string;
-  difficulty: string;
-  gifUrl: string;
-  instructions?: string;
-}
+import { getExercisesForWorkoutType, type Exercise } from "@/data/workoutExercises";
 
 export default function WorkoutPage() {
   const { id } = useParams<{ id: string }>();
@@ -38,42 +27,8 @@ export default function WorkoutPage() {
   
   const workoutTemplate = getWorkoutForDay(dayNumber);
   const workoutName = workoutTemplate.title;
-
-  const exercises: Exercise[] = [
-    {
-      id: 1,
-      name: "Machine T-bar Row",
-      muscles: "Back, Lats",
-      sets: 3,
-      reps: "12, 10, 8",
-      time: "10 min",
-      difficulty: "Intermediate",
-      gifUrl: "https://media.giphy.com/media/3o7TKB3oifq46DDhOE/giphy.gif",
-      instructions: "Grip the handles firmly, keep your back straight, and pull the weight towards your chest. Squeeze your back muscles at the top of the movement.",
-    },
-    {
-      id: 2,
-      name: "Lat Pull Down",
-      muscles: "Back, Shoulders",
-      sets: 3,
-      reps: "12, 10, 8",
-      time: "8 min",
-      difficulty: "Beginner",
-      gifUrl: "https://media.giphy.com/media/l0MYyv6UK0Bd4DE76/giphy.gif",
-      instructions: "Sit down and grab the bar with a wide grip. Pull the bar down to your chest while keeping your back straight. Slowly return to starting position.",
-    },
-    {
-      id: 3,
-      name: "Hammer Curls",
-      muscles: "Biceps, Forearms",
-      sets: 4,
-      reps: "12, 10, 8, 8",
-      time: "10 min",
-      difficulty: "Intermediate",
-      gifUrl: "https://media.giphy.com/media/xT0xeIbYVQcBFDSdVu/giphy.gif",
-      instructions: "Hold dumbbells with palms facing each other. Curl the weights up while keeping your elbows close to your body. Lower slowly.",
-    },
-  ];
+  
+  const exercises = getExercisesForWorkoutType(workoutTemplate.workoutType);
 
   // Derive workout status from database state only
   const currentDay = programCurrentDay || 1;
