@@ -6,6 +6,11 @@ MGP.AI is an AI-powered fitness and nutrition mobile web application built with 
 
 ## Recent Changes
 
+### January 2026 - Database Schema & Exercise Loading
+- **exercise_templates Table**: 55 exercises across 13 workout types (chest, back, legs, shoulders, arms, core, push, pull, full, upper, lower, rest, cardio)
+- **useExercises Hook**: Fetches exercises from database with fallback to local data
+- **Workout Page Update**: Now loads exercises from exercise_templates Supabase table
+
 ### January 2026 - Onboarding & Workout Plan Generation
 - **useOnboardingStatus Hook**: Checks if user has workout_completions rows, redirects to /onboarding if empty
 - **21-Day Plan Generator**: Creates workout_completions rows based on user's selected workout templates and training days
@@ -18,7 +23,7 @@ MGP.AI is an AI-powered fitness and nutrition mobile web application built with 
 - **Single Source of Truth**: useWorkoutProgress hook reads from workout_completions only
 - **XP System**: 50 XP per completed workout
 - **21-Day Program**: TOTAL_PROGRAM_DAYS constant set to 21 for journey visualization
-- **Exercise Loading**: Uses getExercisesForWorkoutType() based on workout_type field from workout_completions
+- **Exercise Loading**: useExercises hook fetches from exercise_templates table with fallback to local getExercisesForWorkoutType()
 
 ### January 2026 - Real-time Supabase Integration
 - **useWorkoutProgress Hook**: Custom hook that fetches and manages workout data from Supabase
