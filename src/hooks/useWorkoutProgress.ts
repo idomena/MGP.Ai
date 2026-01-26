@@ -195,7 +195,10 @@ export function useWorkoutProgress(): WorkoutProgressData {
       const statuses: DayStatus[] = plan.map(p => {
         let status: "completed" | "active" | "locked";
         
-        if (completedDayNumbers.includes(p.day)) {
+        // Rest days are automatically marked as completed
+        if (p.workoutType === "rest") {
+          status = "completed";
+        } else if (completedDayNumbers.includes(p.day)) {
           status = "completed";
         } else if (p.day === activeDay) {
           status = "active";
@@ -213,20 +216,42 @@ export function useWorkoutProgress(): WorkoutProgressData {
       
       setDayStatuses(statuses);
       
+      // Calculate streak: count consecutive workout completions (skip rest days)
       let streak = 0;
-      const sortedCompleted = [...completedDayNumbers].sort((a, b) => b - a);
-      for (let i = 0; i < sortedCompleted.length; i++) {
-        const expectedDay = activeDay - 1 - i;
-        if (sortedCompleted[i] === expectedDay && expectedDay > 0) {
-          streak++;
-        } else {
+      const workoutDays = plan.filter(p => p.workoutType !== "rest").map(p => p.day);
+      const sortedWorkoutDays = workoutDays.sort((a, b) => a - b);
+      
+      // Find the starting point for streak counting
+      // If activeDay is a workout day, start from the one before it
+      // Otherwise find the last workout day before activeDay
+      let startIndex = sortedWorkoutDays.length - 1;
+      for (let i = sortedWorkoutDays.length - 1; i >= 0; i--) {
+        if (sortedWorkoutDays[i] < activeDay) {
+          startIndex = i;
+          break;
+        }
+        if (sortedWorkoutDays[i] === activeDay) {
+          startIndex = i - 1;
           break;
         }
       }
       
+      // Count backwards from the last completed workout
+      for (let i = startIndex; i >= 0; i--) {
+        const workoutDay = sortedWorkoutDays[i];
+        if (completedDayNumbers.includes(workoutDay)) {
+          streak++;
+        } else {
+          break; // Streak broken
+        }
+      }
+      
+      // Total workouts excludes rest days
+      const totalActualWorkouts = plan.filter(p => p.workoutType !== "rest").length;
+      
       setUserStats({
         workoutsCompleted: completedDayNumbers.length,
-        totalWorkouts: TOTAL_PROGRAM_DAYS,
+        totalWorkouts: totalActualWorkouts,
         streak,
         xp: completedDayNumbers.length * XP_PER_WORKOUT,
         currentDay: activeDay,
