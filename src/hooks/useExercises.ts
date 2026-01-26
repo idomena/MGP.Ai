@@ -22,12 +22,12 @@ export function useExercises(workoutType: string) {
         const exercises: Exercise[] = (data || []).map((row: any) => ({
           id: row.id,
           name: row.name,
-          muscles: row.muscles || "",
+          muscles: Array.isArray(row.muscle_groups) ? row.muscle_groups.join(", ") : "",
           sets: row.sets || 3,
           reps: row.reps || "10",
-          time: row.duration || "5 min",
-          difficulty: row.difficulty || "Beginner",
-          gifUrl: row.gif_url || "",
+          time: row.duration_minutes ? `${row.duration_minutes} min` : "5 min",
+          difficulty: "Beginner",
+          gifUrl: row.video_url || "",
           instructions: row.instructions || "",
         }));
 
