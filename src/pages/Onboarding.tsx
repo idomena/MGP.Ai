@@ -282,15 +282,15 @@ export default function Onboarding() {
         return (
           <ReviewSelections
             selections={{
-              Name: selections.name,
-              "Coaching Style": selections.assistantType === 'coach' ? 'Coach' : selections.assistantType === 'nutritionist' ? 'Nutritionist' : 'Fitness Trainer',
-              Weight: `${selections.weight.value} ${selections.weight.unit}`,
-              Goals: selections.goals.join(', '),
-              Experience: selections.experience,
-              "Training Days": selections.trainingDays.join(', '),
-              "Workout Types": selections.workoutTypes.join(', '),
-              Injuries: selections.hasInjuries ? 'Yes' : 'No',
-              "Additional Info": selections.additionalInfo || 'None',
+              name: selections.name,
+              assistant: selections.assistantType === 'coach' ? 'Coach' : selections.assistantType === 'nutritionist' ? 'Nutritionist' : 'Fitness Trainer',
+              weight: `${selections.weight.value} ${selections.weight.unit}`,
+              goals: selections.goals,
+              experience: selections.experience,
+              trainingDays: selections.trainingDays,
+              workoutTypes: selections.workoutTypes,
+              injuries: selections.hasInjuries ? 'Yes' : 'No',
+              additionalInfo: selections.additionalInfo || 'None',
             }}
             onConfirm={handleReviewConfirm}
             onEdit={handleReviewEdit}
