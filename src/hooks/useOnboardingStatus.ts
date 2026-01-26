@@ -36,19 +36,8 @@ export function useOnboardingStatus(): OnboardingStatus {
           setNeedsOnboarding(false);
           setHasWorkoutPlan(true);
         } else {
-          const { data: prefs, error: prefsError } = await supabase
-            .from("user_preferences")
-            .select("onboarding_completed")
-            .eq("user_id", user.id)
-            .single();
-
-          if (prefsError || !prefs?.onboarding_completed) {
-            setNeedsOnboarding(true);
-            setHasWorkoutPlan(false);
-          } else {
-            setNeedsOnboarding(false);
-            setHasWorkoutPlan(false);
-          }
+          setNeedsOnboarding(true);
+          setHasWorkoutPlan(false);
         }
       } catch (err) {
         console.error("Error checking onboarding status:", err);

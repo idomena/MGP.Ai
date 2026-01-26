@@ -6,14 +6,19 @@ MGP.AI is an AI-powered fitness and nutrition mobile web application built with 
 
 ## Recent Changes
 
+### January 2026 - Onboarding & Workout Plan Generation
+- **useOnboardingStatus Hook**: Checks if user has workout_completions rows, redirects to /onboarding if empty
+- **21-Day Plan Generator**: Creates workout_completions rows based on user's selected workout templates and training days
+- **Strict Gating**: No workout_completions = always redirect to onboarding (ignores onboarding_completed flag)
+- **workout_completions as Single Source of Truth**: All circle states, workout info, and progress derived from this table
+
 ### January 2026 - Strict Database-Driven Progress System
-- **user_progress Table**: Tracks current_day, workouts_completed, streak, xp per user (auto-created on login)
-- **exercise_templates Table**: Stores workout templates with day_number, title, workout_type
+- **workout_completions Table**: Stores day_number, title, workout_type, completed, completed_at for each user's 21-day plan
 - **Strict State Model**: Only 3 states for circles: completed/active/locked (no more past/preview)
-- **Single Source of Truth**: useWorkoutProgress hook is the only data source for all components
+- **Single Source of Truth**: useWorkoutProgress hook reads from workout_completions only
 - **XP System**: 50 XP per completed workout
 - **21-Day Program**: TOTAL_PROGRAM_DAYS constant set to 21 for journey visualization
-- **completeWorkout Updates**: Updates both workout_completions and user_progress tables
+- **Exercise Loading**: Uses getExercisesForWorkoutType() based on workout_type field from workout_completions
 
 ### January 2026 - Real-time Supabase Integration
 - **useWorkoutProgress Hook**: Custom hook that fetches and manages workout data from Supabase

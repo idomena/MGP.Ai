@@ -31,6 +31,14 @@ export default function Home() {
     }
   }, [isLoadingOnboarding, needsOnboarding, navigate]);
 
+  if (isLoadingOnboarding) {
+    return (
+      <div className="h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-[#7c57ff] border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
   // Use hook for all workout progress data - single source of truth
   const {
     dayStatuses,
