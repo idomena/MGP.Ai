@@ -221,10 +221,8 @@ export default function JourneyPath({ dayStatuses, onDayClick, isLoading }: Jour
           const isCompleted = dayInfo.status === "completed";
           const radius = isActive ? todayNodeRadius : nodeRadius;
 
-          console.log(`CIRCLE Day ${dayInfo.day}: status=${dayInfo.status}, title=${dayInfo.title}`);
-
           return (
-            <g key={`node-${dayInfo.day}`}>
+            <g key={`journey-day-${dayInfo.day}-${idx}`}>
               {isActive && (
                 <motion.circle
                   cx={pos.x}

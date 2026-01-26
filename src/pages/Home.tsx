@@ -25,6 +25,17 @@ export default function Home() {
 
   const { isLoading: isLoadingOnboarding, needsOnboarding } = useOnboardingStatus();
 
+  // Use hook for all workout progress data - single source of truth
+  const {
+    dayStatuses,
+    currentDay,
+    completedDays,
+    userStats,
+    isLoading: isLoadingProgress,
+    error: progressError,
+    getWorkoutForDay,
+  } = useWorkoutProgress();
+
   useEffect(() => {
     if (!isLoadingOnboarding && needsOnboarding) {
       navigate("/onboarding");
@@ -38,17 +49,6 @@ export default function Home() {
       </div>
     );
   }
-
-  // Use hook for all workout progress data - single source of truth
-  const {
-    dayStatuses,
-    currentDay,
-    completedDays,
-    userStats,
-    isLoading: isLoadingProgress,
-    error: progressError,
-    getWorkoutForDay,
-  } = useWorkoutProgress();
 
   const defaultWorkoutDetails = {
     12: { name: "Chest & Triceps", muscles: "Chest, Triceps", time: "35 min", exercises: 5, focus: "Chest" },
