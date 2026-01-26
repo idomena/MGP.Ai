@@ -136,7 +136,7 @@ export default function WorkoutPage() {
 
   const workoutStatus = validationResult?.status || "active";
   const canStartWorkout = validationResult?.canStart ?? true;
-  const currentDay = validationResult?.currentDay || dayNumber;
+  const currentDay = programCurrentDay || 1;
 
   const handleStartWorkout = () => {
     if (!canStartWorkout) {
