@@ -1,61 +1,47 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Check, Bot, User } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { Bot, User, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
-const DAYS_OF_WEEK = [
-  { id: "Mon", label: "Monday" },
-  { id: "Tue", label: "Tuesday" },
-  { id: "Wed", label: "Wednesday" },
-  { id: "Thu", label: "Thursday" },
-  { id: "Fri", label: "Friday" },
-  { id: "Sat", label: "Saturday" },
-  { id: "Sun", label: "Sunday" },
-];
+import {
+  QUESTIONS,
+  ASSISTANT_NAME,
+  getDefaultSelections,
+  UserSelections,
+  Question,
+} from "@/components/onboarding/ConversationManager";
 
-const WORKOUT_TEMPLATES = [
-  { id: "push", name: "Push", description: "Chest, Shoulders, Triceps" },
-  { id: "pull", name: "Pull", description: "Back, Biceps" },
-  { id: "legs", name: "Legs", description: "Quads, Hamstrings, Calves" },
-  { id: "upper", name: "Upper Body", description: "Chest, Back, Arms" },
-  { id: "lower", name: "Lower Body", description: "Legs, Glutes" },
-  { id: "full", name: "Full Body", description: "Complete workout" },
-  { id: "core", name: "Core", description: "Abs, Obliques" },
-  { id: "cardio", name: "Cardio", description: "HIIT, Conditioning" },
-];
+import NameInput from "@/components/onboarding/NameInput";
+import AssistantSelector from "@/components/onboarding/AssistantSelector";
+import WeightSelector from "@/components/onboarding/WeightSelector";
+import OptionSelector from "@/components/onboarding/OptionSelector";
+import YesNoSelector from "@/components/onboarding/YesNoSelector";
+import AdditionalInfo from "@/components/onboarding/AdditionalInfo";
+import ReviewSelections from "@/components/onboarding/ReviewSelections";
 
 interface Message {
   id: string;
   type: "bot" | "user";
   content: string;
-  options?: { id: string; label: string; description?: string }[];
-  multiSelect?: boolean;
+  showComponent?: boolean;
+  questionIndex?: number;
 }
-
-type OnboardingStep =
-  | "welcome"
-  | "name"
-  | "days"
-  | "workouts"
-  | "generating"
-  | "complete";
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>("welcome");
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
-  const [userName, setUserName] = useState("");
-  const [inputValue, setInputValue] = useState("");
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const [selectedWorkouts, setSelectedWorkouts] = useState<string[]>([]);
+  const [selections, setSelections] = useState<UserSelections>(getDefaultSelections());
+  const [showCurrentComponent, setShowCurrentComponent] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const timeoutRefs = useRef<NodeJS.Timeout[]>([]);
   const isMountedRef = useRef(true);
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -81,382 +67,339 @@ export default function Onboarding() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping]);
+  }, [messages, isTyping, showCurrentComponent]);
 
-  const addBotMessage = (
-    content: string,
-    options?: Message["options"],
-    multiSelect?: boolean,
-  ) => {
+  const addBotMessage = useCallback((content: string, showComponent = false, questionIndex?: number) => {
     const newMessage: Message = {
       id: Date.now().toString(),
       type: "bot",
       content,
-      options,
-      multiSelect,
+      showComponent,
+      questionIndex,
     };
-    setMessages((prev) => [...prev, newMessage]);
-  };
+    setMessages(prev => [...prev, newMessage]);
+  }, []);
 
-  const addUserMessage = (content: string) => {
+  const addUserMessage = useCallback((content: string) => {
     const newMessage: Message = {
       id: Date.now().toString(),
       type: "user",
       content,
     };
-    setMessages((prev) => [...prev, newMessage]);
-  };
+    setMessages(prev => [...prev, newMessage]);
+  }, []);
 
-  const simulateTyping = useCallback(
-    (callback: () => void, delay = 1000) => {
+  const simulateTyping = useCallback((callback: () => void, delay = 1000) => {
+    if (!isMountedRef.current) return;
+    setIsTyping(true);
+    safeSetTimeout(() => {
       if (!isMountedRef.current) return;
-      setIsTyping(true);
+      setIsTyping(false);
+      callback();
+    }, delay);
+  }, [safeSetTimeout]);
+
+  const askNextQuestion = useCallback((questionIndex: number) => {
+    if (questionIndex >= QUESTIONS.length) {
+      return;
+    }
+
+    const question = QUESTIONS[questionIndex];
+    setCurrentQuestionIndex(questionIndex);
+    setShowCurrentComponent(false);
+
+    simulateTyping(() => {
+      if (!isMountedRef.current) return;
+      
+      let message = question.botMessage;
+      if (message.includes('{name}')) {
+        message = message.replace('{name}', selections.name);
+      }
+      
+      addBotMessage(message, true, questionIndex);
+      
       safeSetTimeout(() => {
-        if (!isMountedRef.current) return;
-        setIsTyping(false);
-        callback();
-      }, delay);
-    },
-    [safeSetTimeout],
-  );
+        if (isMountedRef.current) {
+          setShowCurrentComponent(true);
+        }
+      }, 300);
+    }, 800);
+  }, [simulateTyping, addBotMessage, safeSetTimeout, selections.name]);
 
   useEffect(() => {
-    if (currentStep === "welcome") {
-      simulateTyping(() => {
-        if (!isMountedRef.current) return;
-        addBotMessage(
-          "Hey there! I'm your MGP AI fitness coach. I'm here to help you create a personalized 21-day workout plan.",
-        );
-        safeSetTimeout(() => {
-          simulateTyping(() => {
-            if (!isMountedRef.current) return;
-            addBotMessage("What's your name?");
-            setCurrentStep("name");
-          }, 800);
-        }, 500);
-      }, 1200);
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      askNextQuestion(0);
     }
-  }, [simulateTyping, safeSetTimeout]);
+  }, [askNextQuestion]);
 
-  const handleNameSubmit = () => {
-    if (!inputValue.trim()) return;
+  const handleAnswer = useCallback((questionId: string, answer: string, displayText: string) => {
+    addUserMessage(displayText);
+    setShowCurrentComponent(false);
 
-    const name = inputValue.trim();
-    setUserName(name);
-    addUserMessage(name);
-    setInputValue("");
+    const nextIndex = currentQuestionIndex + 1;
+    
+    if (questionId === 'injuries' && answer === 'no') {
+      const additionalInfoIndex = QUESTIONS.findIndex(q => q.id === 'additionalInfo');
+      safeSetTimeout(() => askNextQuestion(additionalInfoIndex), 500);
+    } else if (nextIndex < QUESTIONS.length) {
+      safeSetTimeout(() => askNextQuestion(nextIndex), 500);
+    }
+  }, [currentQuestionIndex, addUserMessage, askNextQuestion, safeSetTimeout]);
 
+  const handleNameSubmit = (name: string) => {
+    setSelections(prev => ({ ...prev, name }));
+    handleAnswer('name', name, name);
+  };
+
+  const handleAssistantSelect = (type: 'coach' | 'nutritionist' | 'trainer') => {
+    setSelections(prev => ({ ...prev, assistantType: type }));
+    const labels = { coach: 'Coach', nutritionist: 'Nutritionist', trainer: 'Fitness Trainer' };
+    handleAnswer('assistant', type, labels[type]);
+  };
+
+  const handleWeightSelect = (weight: number, unit: 'kg' | 'lbs') => {
+    setSelections(prev => ({ ...prev, weight: { value: weight, unit } }));
+    handleAnswer('weight', `${weight}`, `${weight} ${unit}`);
+  };
+
+  const handleGoalsSelect = (goals: string[]) => {
+    setSelections(prev => ({ ...prev, goals }));
+    const labels = goals.map(id => QUESTIONS.find(q => q.id === 'goals')?.options?.find(o => o.id === id)?.label || id);
+    handleAnswer('goals', goals.join(','), labels.join(', '));
+  };
+
+  const handleExperienceSelect = (experience: string[]) => {
+    const exp = experience[0];
+    setSelections(prev => ({ ...prev, experience: exp }));
+    const label = QUESTIONS.find(q => q.id === 'experience')?.options?.find(o => o.id === exp)?.label || exp;
+    handleAnswer('experience', exp, label);
+  };
+
+  const handleTrainingDaysSelect = (days: string[]) => {
+    setSelections(prev => ({ ...prev, trainingDays: days }));
+    handleAnswer('trainingDays', days.join(','), days.join(', '));
+  };
+
+  const handleWorkoutTypesSelect = (types: string[]) => {
+    setSelections(prev => ({ ...prev, workoutTypes: types }));
+    const labels = types.map(id => QUESTIONS.find(q => q.id === 'workoutTypes')?.options?.find(o => o.id === id)?.label || id);
+    handleAnswer('workoutTypes', types.join(','), labels.join(', '));
+  };
+
+  const handleInjuriesSelect = (hasInjuries: boolean) => {
+    setSelections(prev => ({ ...prev, hasInjuries }));
+    handleAnswer('injuries', hasInjuries ? 'yes' : 'no', hasInjuries ? 'Yes' : 'No');
+  };
+
+  const handleAdditionalInfoSubmit = (text: string) => {
+    setSelections(prev => ({ ...prev, additionalInfo: text }));
+    handleAnswer('additionalInfo', text, text || 'Skipped');
+  };
+
+  const handleAdditionalInfoSkip = () => {
+    handleAnswer('additionalInfo', '', 'Skipped');
+  };
+
+  const handleReviewConfirm = () => {
+    const preferences = {
+      trainingDays: selections.trainingDays,
+      selectedWorkouts: selections.workoutTypes,
+      startDate: new Date().toISOString(),
+      userName: selections.name,
+      assistantType: selections.assistantType,
+      weight: selections.weight,
+      goals: selections.goals,
+      experience: selections.experience,
+      hasInjuries: selections.hasInjuries,
+      additionalInfo: selections.additionalInfo,
+    };
+
+    localStorage.setItem("mgp_workout_preferences", JSON.stringify(preferences));
+    setIsComplete(true);
+    
+    addUserMessage("Let's go!");
+    
     simulateTyping(() => {
       if (!isMountedRef.current) return;
-      addBotMessage(
-        `Nice to meet you, ${name}! Let's build your perfect workout schedule.`,
-      );
+      addBotMessage(`Awesome, ${selections.name}! Your personalized 21-day workout plan is ready. Let's crush it together!`);
+      
       safeSetTimeout(() => {
-        simulateTyping(() => {
-          if (!isMountedRef.current) return;
-          addBotMessage(
-            "Which days would you like to train? Tap all that apply, then hit confirm.",
-            DAYS_OF_WEEK.map((d) => ({ id: d.id, label: d.label })),
-            true,
-          );
-          setCurrentStep("days");
-        }, 800);
-      }, 500);
+        toast.success("Your 21-day workout plan is ready!");
+        navigate("/");
+      }, 2000);
     }, 1000);
   };
 
-  const handleDaysConfirm = () => {
-    if (selectedDays.length === 0) {
-      toast.error("Please select at least one training day");
-      return;
+  const handleReviewEdit = (field: string) => {
+    const questionIndex = QUESTIONS.findIndex(q => q.id === field);
+    if (questionIndex >= 0) {
+      setShowCurrentComponent(false);
+      safeSetTimeout(() => askNextQuestion(questionIndex), 300);
     }
-
-    const dayLabels = selectedDays.map(
-      (id) => DAYS_OF_WEEK.find((d) => d.id === id)?.label || id,
-    );
-    addUserMessage(dayLabels.join(", "));
-
-    simulateTyping(() => {
-      if (!isMountedRef.current) return;
-      addBotMessage(
-        `${selectedDays.length} day${selectedDays.length > 1 ? "s" : ""} per week - solid commitment!`,
-      );
-      safeSetTimeout(() => {
-        simulateTyping(() => {
-          if (!isMountedRef.current) return;
-          addBotMessage(
-            "Now, what types of workouts do you want to include in your plan?",
-            WORKOUT_TEMPLATES.map((w) => ({
-              id: w.id,
-              label: w.name,
-              description: w.description,
-            })),
-            true,
-          );
-          setCurrentStep("workouts");
-        }, 800);
-      }, 500);
-    }, 1000);
   };
 
-  const handleWorkoutsConfirm = () => {
-    if (selectedWorkouts.length === 0) {
-      toast.error("Please select at least one workout type");
-      return;
-    }
+  const getCurrentQuestion = (): Question | null => {
+    return QUESTIONS[currentQuestionIndex] || null;
+  };
 
-    if (!user?.id) {
-      toast.error("Please log in to continue");
-      return;
-    }
+  const renderInputComponent = () => {
+    const question = getCurrentQuestion();
+    if (!question || !showCurrentComponent || isComplete) return null;
 
-    const workoutLabels = selectedWorkouts.map(
-      (id) => WORKOUT_TEMPLATES.find((w) => w.id === id)?.name || id,
-    );
-    addUserMessage(workoutLabels.join(", "));
-    setCurrentStep("generating");
-
-    simulateTyping(() => {
-      if (!isMountedRef.current) return;
-      addBotMessage(
-        "Great choices! Let me put together your personalized 21-day plan...",
-      );
-
-      safeSetTimeout(() => {
-        if (!isMountedRef.current) return;
-        try {
-          const preferences = {
-            trainingDays: selectedDays,
-            selectedWorkouts: selectedWorkouts,
-            startDate: new Date().toISOString(),
-            userName: userName,
-          };
-
-          localStorage.setItem(
-            "mgp_workout_preferences",
-            JSON.stringify(preferences),
-          );
-
-          setIsTyping(true);
-          safeSetTimeout(() => {
-            if (!isMountedRef.current) return;
-            setIsTyping(false);
-
-            addBotMessage(
-              `Your plan is ready, ${userName}! You've got ${selectedDays.length} training days per week with ${selectedWorkouts.length} different workout types. Let's crush it!`,
-            );
-            setCurrentStep("complete");
-
-            safeSetTimeout(() => {
-              if (!isMountedRef.current) return;
-              toast.success("Your 21-day workout plan is ready!");
-              navigate("/");
-            }, 2000);
-          }, 2000);
-        } catch (err) {
-          console.error("Error generating plan:", err);
-          toast.error("Something went wrong. Please try again.");
-          setCurrentStep("workouts");
+    switch (question.componentType) {
+      case 'name':
+        return <NameInput onSubmit={handleNameSubmit} placeholder="Enter your name..." />;
+      
+      case 'assistant':
+        return <AssistantSelector onSelect={handleAssistantSelect} />;
+      
+      case 'weight':
+        return <WeightSelector onSelect={handleWeightSelect} />;
+      
+      case 'options':
+        if (question.id === 'goals') {
+          return <OptionSelector options={question.options || []} multiSelect={true} onSelect={handleGoalsSelect} />;
         }
-      }, 1500);
-    }, 1000);
-  };
-
-  const toggleDay = (dayId: string) => {
-    setSelectedDays((prev) =>
-      prev.includes(dayId) ? prev.filter((d) => d !== dayId) : [...prev, dayId],
-    );
-  };
-
-  const toggleWorkout = (workoutId: string) => {
-    setSelectedWorkouts((prev) =>
-      prev.includes(workoutId)
-        ? prev.filter((w) => w !== workoutId)
-        : [...prev, workoutId],
-    );
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && currentStep === "name") {
-      handleNameSubmit();
+        if (question.id === 'experience') {
+          return <OptionSelector options={question.options || []} multiSelect={false} onSelect={handleExperienceSelect} />;
+        }
+        if (question.id === 'trainingDays') {
+          return <OptionSelector options={question.options || []} multiSelect={true} onSelect={handleTrainingDaysSelect} />;
+        }
+        if (question.id === 'workoutTypes') {
+          return <OptionSelector options={question.options || []} multiSelect={true} onSelect={handleWorkoutTypesSelect} />;
+        }
+        return null;
+      
+      case 'yesno':
+        return <YesNoSelector onSelect={handleInjuriesSelect} />;
+      
+      case 'textarea':
+        return <AdditionalInfo onSubmit={handleAdditionalInfoSubmit} onSkip={handleAdditionalInfoSkip} />;
+      
+      case 'review':
+        return (
+          <ReviewSelections
+            selections={{
+              Name: selections.name,
+              "Coaching Style": selections.assistantType === 'coach' ? 'Coach' : selections.assistantType === 'nutritionist' ? 'Nutritionist' : 'Fitness Trainer',
+              Weight: `${selections.weight.value} ${selections.weight.unit}`,
+              Goals: selections.goals.join(', '),
+              Experience: selections.experience,
+              "Training Days": selections.trainingDays.join(', '),
+              "Workout Types": selections.workoutTypes.join(', '),
+              Injuries: selections.hasInjuries ? 'Yes' : 'No',
+              "Additional Info": selections.additionalInfo || 'None',
+            }}
+            onConfirm={handleReviewConfirm}
+            onEdit={handleReviewEdit}
+          />
+        );
+      
+      default:
+        return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1a2e] flex flex-col">
-      <header className="px-6 pt-6 pb-4 border-b border-white/10">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] bg-clip-text text-transparent text-center">
-          MGP·AI Coach
-        </h1>
+    <div className="min-h-screen bg-[#0f0f1a] flex flex-col">
+      <header className="sticky top-0 z-50 px-4 py-4 border-b border-white/10 bg-[#0f0f1a]/80 backdrop-blur-lg">
+        <div className="flex items-center justify-center gap-2">
+          <Sparkles className="w-5 h-5 text-[#7c57ff]" />
+          <h1 className="text-xl font-bold bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] bg-clip-text text-transparent">
+            {ASSISTANT_NAME} - AI Coach
+          </h1>
+        </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 pb-32">
-        <AnimatePresence>
-          {messages.map((message) => (
+      <main className="flex-1 overflow-y-auto px-4 py-6 pb-24">
+        <div className="max-w-md mx-auto space-y-4">
+          <AnimatePresence mode="popLayout">
+            {messages.map((message) => (
+              <motion.div
+                key={message.id}
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className={`flex items-start gap-3 ${message.type === 'user' ? 'flex-row-reverse' : ''}`}
+              >
+                <div className={`
+                  w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
+                  ${message.type === 'bot' 
+                    ? 'bg-gradient-to-br from-[#7c57ff] to-[#60a5fa]' 
+                    : 'bg-white/10'
+                  }
+                `}>
+                  {message.type === 'bot' ? (
+                    <Bot className="w-5 h-5 text-white" />
+                  ) : (
+                    <User className="w-5 h-5 text-white/70" />
+                  )}
+                </div>
+
+                <div className={`
+                  max-w-[80%] px-4 py-3 rounded-2xl
+                  ${message.type === 'bot'
+                    ? 'bg-white/5 rounded-tl-sm'
+                    : 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] rounded-tr-sm'
+                  }
+                `}>
+                  <p className="text-white text-sm leading-relaxed">{message.content}</p>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          {isTyping && (
             <motion.div
-              key={message.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className={`flex gap-3 ${message.type === "user" ? "flex-row-reverse" : ""}`}
+              className="flex items-start gap-3"
             >
-              <div
-                className={`
-                flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center
-                ${
-                  message.type === "bot"
-                    ? "bg-gradient-to-br from-[#7c57ff] to-[#60a5fa]"
-                    : "bg-white/20"
-                }
-              `}
-              >
-                {message.type === "bot" ? (
-                  <Bot className="w-4 h-4 text-white" />
-                ) : (
-                  <User className="w-4 h-4 text-white" />
-                )}
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
+                <Bot className="w-5 h-5 text-white" />
               </div>
-
-              <div
-                className={`
-                max-w-[80%] rounded-2xl px-4 py-3
-                ${
-                  message.type === "bot"
-                    ? "bg-white/10 text-white rounded-tl-sm"
-                    : "bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] text-white rounded-tr-sm"
-                }
-              `}
-              >
-                <p className="text-sm leading-relaxed">{message.content}</p>
-
-                {message.options && (
-                  <div className="mt-3 space-y-2">
-                    <div className="flex flex-wrap gap-2">
-                      {message.options.map((option) => {
-                        const isSelected =
-                          currentStep === "days"
-                            ? selectedDays.includes(option.id)
-                            : selectedWorkouts.includes(option.id);
-
-                        return (
-                          <button
-                            key={option.id}
-                            onClick={() => {
-                              if (currentStep === "days") {
-                                toggleDay(option.id);
-                              } else if (currentStep === "workouts") {
-                                toggleWorkout(option.id);
-                              }
-                            }}
-                            disabled={
-                              currentStep === "generating" ||
-                              currentStep === "complete"
-                            }
-                            className={`
-                              px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2
-                              ${
-                                isSelected
-                                  ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg"
-                                  : "bg-white/10 text-white/80 hover:bg-white/20"
-                              }
-                              ${currentStep === "generating" || currentStep === "complete" ? "opacity-50 cursor-not-allowed" : ""}
-                            `}
-                            data-testid={`option-${option.id}`}
-                          >
-                            {isSelected && <Check className="w-3 h-3" />}
-                            <span>{option.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {message.multiSelect &&
-                      currentStep !== "generating" &&
-                      currentStep !== "complete" && (
-                        <button
-                          onClick={() => {
-                            if (currentStep === "days") {
-                              handleDaysConfirm();
-                            } else if (currentStep === "workouts") {
-                              handleWorkoutsConfirm();
-                            }
-                          }}
-                          className="mt-3 w-full py-2 rounded-xl bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white text-sm font-semibold shadow-lg shadow-[#7c57ff]/30"
-                          data-testid="button-confirm"
-                        >
-                          Confirm Selection
-                        </button>
-                      )}
-                  </div>
-                )}
+              <div className="bg-white/5 px-4 py-3 rounded-2xl rounded-tl-sm">
+                <div className="flex gap-1">
+                  <motion.span
+                    animate={{ opacity: [0.4, 1, 0.4] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: 0 }}
+                    className="w-2 h-2 bg-white/60 rounded-full"
+                  />
+                  <motion.span
+                    animate={{ opacity: [0.4, 1, 0.4] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
+                    className="w-2 h-2 bg-white/60 rounded-full"
+                  />
+                  <motion.span
+                    animate={{ opacity: [0.4, 1, 0.4] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
+                    className="w-2 h-2 bg-white/60 rounded-full"
+                  />
+                </div>
               </div>
             </motion.div>
-          ))}
-        </AnimatePresence>
+          )}
 
-        {isTyping && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex gap-3"
-          >
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
-              <Bot className="w-4 h-4 text-white" />
-            </div>
-            <div className="bg-white/10 rounded-2xl rounded-tl-sm px-4 py-3">
-              <div className="flex gap-1">
-                <span
-                  className="w-2 h-2 bg-white/60 rounded-full animate-bounce"
-                  style={{ animationDelay: "0ms" }}
-                />
-                <span
-                  className="w-2 h-2 bg-white/60 rounded-full animate-bounce"
-                  style={{ animationDelay: "150ms" }}
-                />
-                <span
-                  className="w-2 h-2 bg-white/60 rounded-full animate-bounce"
-                  style={{ animationDelay: "300ms" }}
-                />
-              </div>
-            </div>
-          </motion.div>
-        )}
+          <AnimatePresence>
+            {showCurrentComponent && !isTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="mt-4"
+              >
+                {renderInputComponent()}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        <div ref={messagesEndRef} />
-      </div>
-
-      {currentStep === "name" && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#1a1a2e] via-[#1a1a2e] to-transparent">
-          <div className="flex gap-2 bg-white/10 rounded-2xl p-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your name..."
-              className="flex-1 bg-transparent px-4 py-3 text-white placeholder-white/40 focus:outline-none"
-              autoFocus
-              data-testid="input-name"
-            />
-            <button
-              onClick={handleNameSubmit}
-              disabled={!inputValue.trim()}
-              className={`
-                p-3 rounded-xl transition-all
-                ${
-                  inputValue.trim()
-                    ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white"
-                    : "bg-white/10 text-white/40"
-                }
-              `}
-              data-testid="button-send"
-            >
-              <Send className="w-5 h-5" />
-            </button>
-          </div>
+          <div ref={messagesEndRef} />
         </div>
-      )}
+      </main>
     </div>
   );
 }
