@@ -65,18 +65,22 @@ function calculateDayStatus(
   }
 }
 
-function calculateCurrentDay(startDate: string): number {
-  const start = new Date(startDate);
-  const now = new Date();
+function calculateCurrentDay(completedDays: number[]): number {
+  // Current day is the first uncompleted day (starting from 1)
+  // If days 1, 2, 3 are completed, current day is 4
+  if (completedDays.length === 0) return 1;
   
-  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const startClean = startOfDay(start);
-  const nowClean = startOfDay(now);
+  const sortedCompleted = [...completedDays].sort((a, b) => a - b);
   
-  const diffTime = nowClean.getTime() - startClean.getTime();
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  // Find the first gap or next day after the highest completed
+  for (let day = 1; day <= TOTAL_PROGRAM_DAYS; day++) {
+    if (!sortedCompleted.includes(day)) {
+      return day;
+    }
+  }
   
-  return Math.max(1, Math.min(diffDays + 1, TOTAL_PROGRAM_DAYS));
+  // All days completed
+  return TOTAL_PROGRAM_DAYS;
 }
 
 export function useWorkoutProgress(): WorkoutProgressData {
@@ -99,25 +103,6 @@ export function useWorkoutProgress(): WorkoutProgressData {
     try {
       setIsLoading(true);
       setError(null);
-
-      // Get profile for start date
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("created_at")
-        .eq("user_id", user.id)
-        .single();
-
-      let startDate: string;
-
-      if (profileError || !profile) {
-        // Fall back to today if no profile found
-        startDate = new Date().toISOString().split("T")[0];
-      } else {
-        startDate = profile.created_at.split("T")[0];
-      }
-
-      const calculatedCurrentDay = calculateCurrentDay(startDate);
-      setCurrentDay(calculatedCurrentDay);
 
       // Fetch workout completions for this user
       let completedDayNumbers: number[] = [];
@@ -142,7 +127,11 @@ export function useWorkoutProgress(): WorkoutProgressData {
       console.log("COMPLETED DAYS FROM DB:", completedDayNumbers);
       setCompletedDays(completedDayNumbers);
 
-      // Build day statuses for all 30 days
+      // Calculate current day based on completions (first uncompleted day)
+      const calculatedCurrentDay = calculateCurrentDay(completedDayNumbers);
+      setCurrentDay(calculatedCurrentDay);
+
+      // Build day statuses for all 21 days
       const statuses: DayStatus[] = [];
       for (let day = 1; day <= TOTAL_PROGRAM_DAYS; day++) {
         statuses.push({
