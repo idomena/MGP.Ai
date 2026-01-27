@@ -537,3 +537,34 @@ export function getExercisesForWorkoutType(workoutType: string, dayNumber: numbe
       return FULL_VARIATIONS[variationIndex]();
   }
 }
+
+export function getAlternativesForMuscleGroup(exercise: Exercise): Exercise[] {
+  const musclesLower = exercise.muscles.toLowerCase();
+  const alternatives: Exercise[] = [];
+  
+  if (musclesLower.includes("chest") || musclesLower.includes("triceps")) {
+    alternatives.push(...CHEST_EXERCISES);
+  }
+  if (musclesLower.includes("back") || musclesLower.includes("lats")) {
+    alternatives.push(...BACK_EXERCISES);
+  }
+  if (musclesLower.includes("quad") || musclesLower.includes("glute") || musclesLower.includes("hamstring") || musclesLower.includes("leg") || musclesLower.includes("calf")) {
+    alternatives.push(...LEGS_EXERCISES);
+  }
+  if (musclesLower.includes("shoulder") || musclesLower.includes("deltoid")) {
+    alternatives.push(...SHOULDERS_EXERCISES);
+  }
+  if (musclesLower.includes("bicep") || musclesLower.includes("forearm") || musclesLower.includes("arm")) {
+    alternatives.push(...ARMS_EXERCISES);
+  }
+  if (musclesLower.includes("core") || musclesLower.includes("abs") || musclesLower.includes("oblique")) {
+    alternatives.push(...CORE_EXERCISES);
+  }
+  
+  const seen = new Set<number>();
+  return alternatives.filter(ex => {
+    if (seen.has(ex.id)) return false;
+    seen.add(ex.id);
+    return true;
+  });
+}

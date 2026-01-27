@@ -1,8 +1,9 @@
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
 import JourneyPath from "@/components/JourneyPath";
+import SchedulingAIAssistant from "@/components/SchedulingAIAssistant";
 import { useState, useEffect } from "react";
-import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock, Moon } from "lucide-react";
+import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock, Moon, MessageCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +22,7 @@ export default function Home() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [showSchedulingAI, setShowSchedulingAI] = useState(false);
   const [customSchedule, setCustomSchedule] = useState<Record<number, any>>({});
 
   const { isLoading: isLoadingOnboarding, needsOnboarding } = useOnboardingStatus();
@@ -34,6 +36,7 @@ export default function Home() {
     isLoading: isLoadingProgress,
     error: progressError,
     getWorkoutForDay,
+    moveWorkout,
   } = useWorkoutProgress();
 
   useEffect(() => {
@@ -423,6 +426,36 @@ export default function Home() {
           })()}
         </DialogContent>
       </Dialog>
+
+      {/* Scheduling AI Button */}
+      <button
+        onClick={() => setShowSchedulingAI(true)}
+        className="fixed bottom-24 right-4 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center shadow-lg shadow-[#7c57ff]/30"
+        data-testid="button-scheduling-ai"
+        aria-label="Open scheduling assistant"
+      >
+        <MessageCircle className="w-6 h-6 text-white" />
+      </button>
+
+      {/* Scheduling AI Assistant */}
+      <SchedulingAIAssistant
+        isOpen={showSchedulingAI}
+        onClose={() => setShowSchedulingAI(false)}
+        currentDay={currentDay}
+        dayStatuses={dayStatuses.map(ds => ({
+          day: ds.day,
+          title: ds.title,
+          workoutType: ds.workoutType,
+          date: ds.date,
+        }))}
+        onMoveWorkout={async (fromDay, toDay) => {
+          const success = await moveWorkout(fromDay, toDay);
+          if (success) {
+            toast.success(`Workout moved from Day ${fromDay} to Day ${toDay}`);
+          }
+          return success;
+        }}
+      />
 
       <NavigationBar />
     </div>

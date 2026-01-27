@@ -37,6 +37,8 @@ interface WorkoutProgressData {
   refetch: () => Promise<void>;
   completeWorkout: (dayNumber: number) => Promise<boolean>;
   swapWorkouts: (fromDay: number, toDay: number) => Promise<boolean>;
+  changeWorkoutType: (dayNumber: number, newType: string, newTitle: string) => Promise<boolean>;
+  moveWorkout: (fromDay: number, toDay: number) => Promise<boolean>;
   getWorkoutForDay: (day: number) => WorkoutTemplate;
   exerciseTemplates: WorkoutTemplate[];
 }
@@ -399,6 +401,115 @@ export function useWorkoutProgress(): WorkoutProgressData {
     }
   }, [user?.id, currentDay, completedDays, dayStatuses]);
 
+  const changeWorkoutType = useCallback(async (dayNumber: number, newType: string, newTitle: string): Promise<boolean> => {
+    if (!user?.id) {
+      console.error("No user logged in");
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("workout_completions")
+        .update({ 
+          title: newTitle, 
+          workout_type: newType 
+        })
+        .eq("user_id", user.id)
+        .eq("day_number", dayNumber);
+
+      if (error) {
+        console.error("Error updating workout type in Supabase:", error);
+        return false;
+      }
+
+      setDayStatuses(prev => prev.map(ds => {
+        if (ds.day === dayNumber) {
+          return {
+            ...ds,
+            title: newTitle,
+            workoutType: newType,
+          };
+        }
+        return ds;
+      }));
+
+      console.log(`Changed Day ${dayNumber} to ${newTitle} in Supabase`);
+      return true;
+    } catch (err) {
+      console.error("Error changing workout type:", err);
+      return false;
+    }
+  }, [user?.id]);
+
+  const moveWorkout = useCallback(async (fromDay: number, toDay: number): Promise<boolean> => {
+    if (!user?.id) {
+      console.error("No user logged in");
+      return false;
+    }
+
+    try {
+      const fromDayInfo = dayStatuses.find(d => d.day === fromDay);
+      const toDayInfo = dayStatuses.find(d => d.day === toDay);
+
+      if (!fromDayInfo || !toDayInfo) {
+        console.error("Could not find day info for move");
+        return false;
+      }
+
+      const { error: error1 } = await supabase
+        .from("workout_completions")
+        .update({ 
+          title: fromDayInfo.title, 
+          workout_type: fromDayInfo.workoutType 
+        })
+        .eq("user_id", user.id)
+        .eq("day_number", toDay);
+
+      if (error1) {
+        console.error("Error updating toDay in Supabase:", error1);
+        return false;
+      }
+
+      const { error: error2 } = await supabase
+        .from("workout_completions")
+        .update({ 
+          title: "Rest Day", 
+          workout_type: "rest" 
+        })
+        .eq("user_id", user.id)
+        .eq("day_number", fromDay);
+
+      if (error2) {
+        console.error("Error updating fromDay to rest in Supabase:", error2);
+        return false;
+      }
+
+      setDayStatuses(prev => prev.map(ds => {
+        if (ds.day === fromDay) {
+          return {
+            ...ds,
+            title: "Rest Day",
+            workoutType: "rest",
+          };
+        }
+        if (ds.day === toDay) {
+          return {
+            ...ds,
+            title: fromDayInfo.title,
+            workoutType: fromDayInfo.workoutType,
+          };
+        }
+        return ds;
+      }));
+
+      console.log(`Moved workout from Day ${fromDay} to Day ${toDay} in Supabase`);
+      return true;
+    } catch (err) {
+      console.error("Error moving workout:", err);
+      return false;
+    }
+  }, [user?.id, dayStatuses]);
+
   return {
     dayStatuses,
     currentDay,
@@ -409,6 +520,8 @@ export function useWorkoutProgress(): WorkoutProgressData {
     refetch: fetchProgress,
     completeWorkout,
     swapWorkouts,
+    changeWorkoutType,
+    moveWorkout,
     getWorkoutForDay,
     exerciseTemplates: [],
   };

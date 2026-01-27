@@ -83,11 +83,24 @@ Unique constraint: (user_id, day_number)
 - **Email Verification**: Users receive verification email on signup
 - **Logout**: Log out button on Profile page with session cleanup
 
+### January 2026 - AI Scheduling Assistant
+- **SchedulingAIAssistant**: Natural language chat to move workouts (e.g., "move today's workout to Sunday")
+- **Date Parsing**: Understands day names, "tomorrow", "day after tomorrow", "day 15", etc.
+- **moveWorkout Function**: Moves workout to target day and turns source day into Rest Day
+- **Confirmation UI**: Shows preview of the move before confirming
+- **Accessible from Home and Workout pages**: Chat button on home page, AI Schedule button on workout page
+
+### January 2026 - Workout Customization Features
+- **ChangeWorkoutTypeModal**: Change any workout to different type (Upper Body, Lower Body, Full Body, Cardio, Rest)
+- **SwapExerciseModal**: Swap individual exercises for alternatives from the same muscle group
+- **changeWorkoutType Function**: Updates workout_type and title in Supabase
+- **getAlternativesForMuscleGroup**: Helper function to find similar exercises
+
 ### January 2026 - Workout Rescheduling Feature
 - **Reschedule Button**: New button on workout page to swap workouts between days
 - **RescheduleModal**: Bottom sheet modal showing all 21 days as selectable cards
 - **Swap Preview**: Shows which workouts will be swapped before confirming
-- **LocalStorage Persistence**: Workout swaps saved to localStorage for persistence
+- **Supabase Persistence**: Workout swaps saved to Supabase for cross-device persistence
 - **Confirmation Toast**: Success message shown after rescheduling
 
 ### January 2026 - Targeted Muscles Visual

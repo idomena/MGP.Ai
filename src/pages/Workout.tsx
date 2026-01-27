@@ -11,8 +11,9 @@ import {
   CheckCircle2,
   ChevronRight,
   Eye,
-  Calendar,
   CalendarDays,
+  RefreshCw,
+  ArrowRightLeft,
 } from "lucide-react";
 import NavigationBar from "@/components/NavigationBar";
 import { motion } from "framer-motion";
@@ -22,11 +23,15 @@ import WorkoutAIAssistant from "@/components/WorkoutAIAssistant";
 import ExerciseDetailsModal from "@/components/ExerciseDetailsModal";
 import MuscleAnatomyDiagram from "@/components/MuscleAnatomyDiagram";
 import RescheduleModal from "@/components/RescheduleModal";
+import ChangeWorkoutTypeModal from "@/components/ChangeWorkoutTypeModal";
+import SwapExerciseModal from "@/components/SwapExerciseModal";
+import SchedulingAIAssistant from "@/components/SchedulingAIAssistant";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
 import { useExercises } from "@/hooks/useExercises";
 import {
   getExercisesForWorkoutType,
+  getAlternativesForMuscleGroup,
   type Exercise,
 } from "@/data/workoutExercises";
 
@@ -37,6 +42,8 @@ export default function WorkoutPage() {
   const {
     completeWorkout,
     swapWorkouts,
+    changeWorkoutType,
+    moveWorkout,
     currentDay: programCurrentDay,
     completedDays,
     dayStatuses,
@@ -46,8 +53,13 @@ export default function WorkoutPage() {
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
+  const [isChangeTypeOpen, setIsChangeTypeOpen] = useState(false);
+  const [isSwapExerciseOpen, setIsSwapExerciseOpen] = useState(false);
+  const [isSchedulingAIOpen, setIsSchedulingAIOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [exerciseToSwap, setExerciseToSwap] = useState<Exercise | null>(null);
   const [showExerciseModal, setShowExerciseModal] = useState(false);
+  const [customExercises, setCustomExercises] = useState<Record<number, Exercise>>({});
 
   const dayNumber = id ? parseInt(id, 10) : 1;
 
@@ -58,10 +70,14 @@ export default function WorkoutPage() {
     workoutTemplate.workoutType,
     dayNumber,
   );
-  const exercises =
+  const baseExercises =
     dbExercises && dbExercises.length > 0
       ? dbExercises
       : getExercisesForWorkoutType(workoutTemplate.workoutType, dayNumber);
+  
+  const exercises = useMemo(() => {
+    return baseExercises.map(ex => customExercises[ex.id] || ex);
+  }, [baseExercises, customExercises]);
 
   const currentDay = programCurrentDay || 1;
   const isToday = dayNumber === currentDay;
@@ -142,6 +158,37 @@ export default function WorkoutPage() {
     } else {
       toast.error("Failed to reschedule workout. Please try again.");
     }
+  };
+
+  const handleChangeWorkoutType = async (newType: string, newTitle: string) => {
+    const success = await changeWorkoutType(dayNumber, newType, newTitle);
+    if (success) {
+      toast.success(`Day ${dayNumber} changed to ${newTitle}`);
+    } else {
+      toast.error("Failed to change workout type. Please try again.");
+    }
+    return success;
+  };
+
+  const handleOpenSwapExercise = (exercise: Exercise) => {
+    setExerciseToSwap(exercise);
+    setIsSwapExerciseOpen(true);
+  };
+
+  const handleSwapExercise = (newExercise: Exercise) => {
+    if (!exerciseToSwap) return;
+    
+    setCustomExercises(prev => ({
+      ...prev,
+      [exerciseToSwap.id]: newExercise,
+    }));
+    
+    const swapKey = `custom_exercises_${user?.id}_${dayNumber}`;
+    const current = JSON.parse(localStorage.getItem(swapKey) || "{}");
+    current[exerciseToSwap.id] = newExercise;
+    localStorage.setItem(swapKey, JSON.stringify(current));
+    
+    toast.success(`Swapped to ${newExercise.name}`);
   };
 
   const currentDayInfo = {
@@ -331,14 +378,30 @@ export default function WorkoutPage() {
             </div>
 
             {/* Secondary Action Buttons */}
-            <div className="flex gap-3 mt-3">
+            <div className="grid grid-cols-3 gap-2 mt-3">
+              <button
+                onClick={() => setIsChangeTypeOpen(true)}
+                className="bg-[#1a1a2e]/60 backdrop-blur-sm py-3 rounded-2xl font-medium text-white flex flex-col items-center justify-center gap-1 border border-white/10"
+                data-testid="button-change-type"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span className="text-xs">Change</span>
+              </button>
               <button
                 onClick={() => setIsRescheduleOpen(true)}
-                className="flex-1 bg-[#1a1a2e]/60 backdrop-blur-sm py-3 rounded-2xl font-medium text-white flex items-center justify-center gap-2 border border-white/10"
+                className="bg-[#1a1a2e]/60 backdrop-blur-sm py-3 rounded-2xl font-medium text-white flex flex-col items-center justify-center gap-1 border border-white/10"
                 data-testid="button-reschedule"
               >
                 <CalendarDays className="w-4 h-4" />
-                Reschedule
+                <span className="text-xs">Reschedule</span>
+              </button>
+              <button
+                onClick={() => setIsSchedulingAIOpen(true)}
+                className="bg-gradient-to-br from-[#7c57ff]/20 to-[#60a5fa]/20 backdrop-blur-sm py-3 rounded-2xl font-medium text-white flex flex-col items-center justify-center gap-1 border border-[#7c57ff]/30"
+                data-testid="button-scheduling-ai"
+              >
+                <Sparkles className="w-4 h-4 text-[#7c57ff]" />
+                <span className="text-xs">AI Schedule</span>
               </button>
             </div>
           </div>
@@ -417,15 +480,24 @@ export default function WorkoutPage() {
                     </div>
                   </div>
 
-                  {/* View Details Button */}
-                  <button
-                    onClick={() => handleViewDetails(exercise)}
-                    className="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-3 flex items-center justify-center gap-2 transition-colors"
-                    data-testid={`button-details-${exercise.id}`}
-                  >
-                    <span className="text-white/80 font-medium">View Details</span>
-                    <ChevronRight className="w-4 h-4 text-white/50" />
-                  </button>
+                  {/* Action Buttons */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleViewDetails(exercise)}
+                      className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-3 flex items-center justify-center gap-2 transition-colors"
+                      data-testid={`button-details-${exercise.id}`}
+                    >
+                      <span className="text-white/80 font-medium">View Details</span>
+                      <ChevronRight className="w-4 h-4 text-white/50" />
+                    </button>
+                    <button
+                      onClick={() => handleOpenSwapExercise(exercise)}
+                      className="w-14 bg-[#7c57ff]/20 hover:bg-[#7c57ff]/30 border border-[#7c57ff]/30 rounded-xl py-3 flex items-center justify-center transition-colors"
+                      data-testid={`button-swap-${exercise.id}`}
+                    >
+                      <ArrowRightLeft className="w-4 h-4 text-[#7c57ff]" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -473,6 +545,49 @@ export default function WorkoutPage() {
           date: ds.date,
         }))}
         onReschedule={handleReschedule}
+      />
+
+      {/* Change Workout Type Modal */}
+      <ChangeWorkoutTypeModal
+        isOpen={isChangeTypeOpen}
+        onClose={() => setIsChangeTypeOpen(false)}
+        currentType={workoutTemplate.workoutType}
+        dayNumber={dayNumber}
+        onChangeType={handleChangeWorkoutType}
+      />
+
+      {/* Swap Exercise Modal */}
+      {exerciseToSwap && (
+        <SwapExerciseModal
+          isOpen={isSwapExerciseOpen}
+          onClose={() => {
+            setIsSwapExerciseOpen(false);
+            setExerciseToSwap(null);
+          }}
+          currentExercise={exerciseToSwap}
+          alternatives={getAlternativesForMuscleGroup(exerciseToSwap)}
+          onSwap={handleSwapExercise}
+        />
+      )}
+
+      {/* Scheduling AI Assistant */}
+      <SchedulingAIAssistant
+        isOpen={isSchedulingAIOpen}
+        onClose={() => setIsSchedulingAIOpen(false)}
+        currentDay={currentDay}
+        dayStatuses={dayStatuses.map(ds => ({
+          day: ds.day,
+          title: ds.title,
+          workoutType: ds.workoutType,
+          date: ds.date,
+        }))}
+        onMoveWorkout={async (fromDay, toDay) => {
+          const success = await moveWorkout(fromDay, toDay);
+          if (success) {
+            toast.success(`Workout moved from Day ${fromDay} to Day ${toDay}`);
+          }
+          return success;
+        }}
       />
     </div>
   );
