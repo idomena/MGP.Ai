@@ -88,6 +88,15 @@ export default function WorkoutPage() {
     return type.charAt(0).toUpperCase() + type.slice(1);
   }, [workoutTemplate.workoutType]);
 
+  const targetedMuscles = useMemo(() => {
+    const allMuscles = exercises.map(ex => ex.muscles).join(", ");
+    const muscleArray = allMuscles.split(/,\s*/).map(m => m.trim()).filter(m => m);
+    const uniqueMuscles = [...new Set(muscleArray)];
+    return uniqueMuscles.slice(0, 5);
+  }, [exercises]);
+
+  const [showMuscles, setShowMuscles] = useState(false);
+
   const handleStartWorkout = () => {
     if (!canStartWorkout) {
       toast.error("You can only start today's workout");
@@ -206,7 +215,7 @@ export default function WorkoutPage() {
             </div>
 
             {/* Stats Row */}
-            <div className="flex gap-3 mb-5">
+            <div className="flex gap-3 mb-4">
               <div className="flex-1 bg-white/20 backdrop-blur-sm rounded-2xl p-3 text-center">
                 <div className="flex items-center justify-center gap-1.5 text-white/80 text-xs mb-1">
                   <Dumbbell className="w-3.5 h-3.5" />
@@ -229,6 +238,42 @@ export default function WorkoutPage() {
                 <p className="text-white text-lg font-bold">{focusArea}</p>
               </div>
             </div>
+
+            {/* Targeted Muscles Row */}
+            <button
+              onClick={() => setShowMuscles(!showMuscles)}
+              className="w-full bg-[#1a1a2e]/60 backdrop-blur-sm rounded-2xl p-3.5 mb-4 flex items-center justify-between"
+              data-testid="button-targeted-muscles"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                  <Target className="w-4 h-4 text-[#00d9ff]" />
+                </div>
+                <span className="text-white font-medium">Targeted Muscles</span>
+              </div>
+              <ChevronRight className={`w-5 h-5 text-white/50 transition-transform ${showMuscles ? 'rotate-90' : ''}`} />
+            </button>
+
+            {/* Muscles List (expandable) */}
+            {showMuscles && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-[#1a1a2e]/60 backdrop-blur-sm rounded-2xl p-4 mb-4"
+              >
+                <div className="flex flex-wrap gap-2">
+                  {targetedMuscles.map((muscle, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1.5 bg-white/10 rounded-full text-white/90 text-sm"
+                    >
+                      {muscle}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex gap-3">
