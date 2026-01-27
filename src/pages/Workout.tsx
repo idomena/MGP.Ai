@@ -57,7 +57,8 @@ export default function WorkoutPage() {
   const [showExerciseModal, setShowExerciseModal] = useState(false);
   const [customExercises, setCustomExercises] = useState<Record<number, Exercise>>({});
 
-  const dayNumber = id ? parseInt(id, 10) : 1;
+  const currentDay = programCurrentDay || 1;
+  const dayNumber = id ? parseInt(id, 10) : currentDay;
   const workoutTemplate = getWorkoutForDay(dayNumber);
   const workoutName = workoutTemplate.title;
 
@@ -70,7 +71,6 @@ export default function WorkoutPage() {
     return baseExercises.map(ex => customExercises[ex.id] || ex);
   }, [baseExercises, customExercises]);
 
-  const currentDay = programCurrentDay || 1;
   const isToday = dayNumber === currentDay;
   const isCompleted = completedDays.includes(dayNumber);
   const isPast = dayNumber < currentDay;
