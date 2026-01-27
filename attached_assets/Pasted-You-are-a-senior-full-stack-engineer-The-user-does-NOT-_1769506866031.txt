@@ -1,0 +1,126 @@
+You are a senior full-stack engineer.
+The user does NOT understand backend or data flow.
+You must implement the FULL connection between onboarding, database, and app UI.
+
+----------------------------------------
+CURRENT STATE
+----------------------------------------
+- Login page exists (Supabase Auth)
+- Onboarding page UI exists
+- Workout circles UI exists
+- Database tables exist:
+  - workout_templates
+  - exercise_templates
+  - workout_completions
+
+----------------------------------------
+GOAL
+----------------------------------------
+When a user finishes onboarding:
+1. Their choices are saved
+2. A 21-day workout plan is created automatically
+3. Circles render from database
+4. Completing a workout turns the circle green
+5. Exercises show correctly
+
+----------------------------------------
+STEP 1 — SAVE ONBOARDING DATA
+----------------------------------------
+
+Create a table if missing:
+
+TABLE: user_preferences
+- user_id
+- training_days (array)
+- selected_workouts (array)
+- created_at
+
+When user clicks "Continue" on onboarding:
+- Save training_days
+- Save selected_workouts
+- Use current logged-in user_id
+
+----------------------------------------
+STEP 2 — GENERATE 21-DAY PLAN
+----------------------------------------
+
+Immediately after saving preferences:
+
+- Generate workouts for 21 days
+- Only create workouts on selected days
+- Rotate selected workouts
+- Rest days = no workout row
+
+Insert into workout_completions:
+- user_id
+- day_number (1–21)
+- date
+- title
+- workout_type
+- workout_template_id
+- exercise_template_id
+- completed = false
+
+IMPORTANT:
+- This runs ONLY ONCE per user
+- Do NOT regenerate on every login
+
+----------------------------------------
+STEP 3 — APP START LOGIC
+----------------------------------------
+
+On app load:
+- Check if workout_completions exist for user
+- If yes → load circles from DB
+- If no → redirect to onboarding
+
+----------------------------------------
+STEP 4 — CIRCLES UI
+----------------------------------------
+
+Circles must:
+- Render from workout_completions
+- Show workout title
+- Green if completed = true
+- Gray if completed = false
+- Active / Preview based on day_number
+
+NO hardcoded data.
+
+----------------------------------------
+STEP 5 — WORKOUT SCREEN
+----------------------------------------
+
+When user opens a workout:
+- Load workout_completions row
+- Fetch exercise_templates using exercise_template_id
+- Render exercises list
+
+----------------------------------------
+STEP 6 — COMPLETE WORKOUT
+----------------------------------------
+
+When user clicks "Finish Workout":
+- Update workout_completions.completed = true
+- UI updates automatically
+- Data persists after refresh
+
+----------------------------------------
+RULES (CRITICAL)
+----------------------------------------
+
+- Database is the single source of truth
+- UI never creates workouts
+- UI only reads DB
+- No mock data
+- No duplication
+- Clean readable code
+
+----------------------------------------
+FINAL RESULT
+----------------------------------------
+
+User flow:
+Login → Onboarding → Auto Plan Creation → Circles → Workout → Completion
+
+Implement EVERYTHING end-to-end.

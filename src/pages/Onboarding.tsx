@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bot, User, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { saveOnboardingAndGeneratePlan } from "@/services/workoutPlanService";
 
 import {
   QUESTIONS,
@@ -219,35 +220,52 @@ export default function Onboarding() {
     handleAnswer('additionalInfo', '', 'Skipped');
   };
 
-  const handleReviewConfirm = () => {
-    const preferences = {
+  const handleReviewConfirm = async () => {
+    if (!user?.id) {
+      toast.error("Please log in to continue");
+      return;
+    }
+
+    setIsComplete(true);
+    addUserMessage("Let's go!");
+
+    const onboardingData = {
       coachName: selections.coachName,
-      trainingDays: selections.trainingDays,
-      selectedWorkouts: selections.workoutTypes,
-      startDate: new Date().toISOString(),
       userName: selections.name,
       gender: selections.gender,
       assistantType: selections.assistantType,
       weight: selections.weight,
       goals: selections.goals,
       experience: selections.experience,
+      trainingDays: selections.trainingDays,
+      selectedWorkouts: selections.workoutTypes,
       hasInjuries: selections.hasInjuries,
       additionalInfo: selections.additionalInfo,
     };
 
-    localStorage.setItem("mgp_workout_preferences", JSON.stringify(preferences));
-    setIsComplete(true);
-    
-    addUserMessage("Let's go!");
-    
-    simulateTyping(() => {
+    const localPrefs = {
+      ...onboardingData,
+      startDate: new Date().toISOString(),
+    };
+    localStorage.setItem("mgp_workout_preferences", JSON.stringify(localPrefs));
+
+    simulateTyping(async () => {
       if (!isMountedRef.current) return;
-      addBotMessage(`Awesome, ${selections.name}! I'm ${selections.coachName}, and your personalized 21-day workout plan is ready. Let's crush it together!`);
-      
-      safeSetTimeout(() => {
-        toast.success("Your 21-day workout plan is ready!");
-        navigate("/");
-      }, 2000);
+
+      const result = await saveOnboardingAndGeneratePlan(user.id, onboardingData);
+
+      if (result.success) {
+        addBotMessage(`Awesome, ${selections.name}! I'm ${selections.coachName}, and your personalized 21-day workout plan is ready. Let's crush it together!`);
+        
+        safeSetTimeout(() => {
+          toast.success("Your 21-day workout plan is ready!");
+          navigate("/");
+        }, 2000);
+      } else {
+        addBotMessage(`Oops! Something went wrong while creating your plan. Let's try again.`);
+        toast.error("Failed to create workout plan. Please try again.");
+        setIsComplete(false);
+      }
     }, 1000);
   };
 
