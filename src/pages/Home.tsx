@@ -482,6 +482,7 @@ export default function Home() {
         isOpen={showSchedulingAI}
         onClose={() => setShowSchedulingAI(false)}
         currentDay={currentDay}
+        selectedDay={selectedDay}
         dayStatuses={dayStatuses.map(ds => ({
           day: ds.day,
           title: ds.title,

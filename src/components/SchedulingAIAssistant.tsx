@@ -26,6 +26,7 @@ interface SchedulingAIAssistantProps {
   isOpen: boolean;
   onClose: () => void;
   currentDay: number;
+  selectedDay?: number | null;
   dayStatuses: DayInfo[];
   onMoveWorkout: (fromDay: number, toDay: number) => Promise<boolean>;
 }
@@ -34,9 +35,11 @@ export default function SchedulingAIAssistant({
   isOpen,
   onClose,
   currentDay,
+  selectedDay,
   dayStatuses,
   onMoveWorkout,
 }: SchedulingAIAssistantProps) {
+  const sourceDay = selectedDay || currentDay;
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -59,16 +62,19 @@ export default function SchedulingAIAssistant({
   }, [isOpen]);
 
   useEffect(() => {
-    const todayInfo = dayStatuses.find((d) => d.day === currentDay);
+    const sourceDayInfo = dayStatuses.find((d) => d.day === sourceDay);
+    const isSelectedDifferent = selectedDay && selectedDay !== currentDay;
     setMessages([
       {
         id: "welcome",
         role: "assistant",
-        content: `Hi! I'm your scheduling assistant. I can help you move workouts around your 21-day plan.\n\nToday is **Day ${currentDay}** (${todayInfo?.title || "Workout"}).\n\nJust tell me what you'd like to do, like:\n• "Move today's workout to Sunday"\n• "I can't workout today, reschedule to day 15"\n• "Push my workout to tomorrow"`,
+        content: isSelectedDifferent 
+          ? `I can help you reschedule **Day ${sourceDay}** (${sourceDayInfo?.title || "Workout"}).\n\nTell me where you'd like to move it:\n• "Move to Sunday"\n• "Move to day 15"\n• "Move to tomorrow"`
+          : `Hi! I'm your scheduling assistant. I can help you move workouts around your 21-day plan.\n\nToday is **Day ${currentDay}** (${sourceDayInfo?.title || "Workout"}).\n\nJust tell me what you'd like to do, like:\n• "Move today's workout to Sunday"\n• "I can't workout today, reschedule to day 15"\n• "Push my workout to tomorrow"`,
       },
     ]);
     setPendingAction(null);
-  }, [isOpen, currentDay, dayStatuses]);
+  }, [isOpen, currentDay, selectedDay, sourceDay, dayStatuses]);
 
   const parseDateFromText = (text: string): number | null => {
     const lowerText = text.toLowerCase();
@@ -138,11 +144,11 @@ export default function SchedulingAIAssistant({
     return null;
   };
 
-  const parseSourceDay = (text: string): number => {
+  const parseSourceDayFromText = (text: string): number => {
     const lowerText = text.toLowerCase();
     
     if (lowerText.includes("today") || lowerText.includes("my workout") || lowerText.includes("this workout")) {
-      return currentDay;
+      return sourceDay;
     }
     
     const dayMatch = lowerText.match(/day\s*(\d+)/g);
@@ -153,7 +159,7 @@ export default function SchedulingAIAssistant({
       }
     }
     
-    return currentDay;
+    return sourceDay;
   };
 
   const processUserInput = async (userInput: string) => {
@@ -170,16 +176,16 @@ export default function SchedulingAIAssistant({
     
     if (isSchedulingRequest) {
       const targetDay = parseDateFromText(userInput);
-      const sourceDay = parseSourceDay(userInput);
+      const parsedSourceDay = parseSourceDayFromText(userInput);
       
-      if (targetDay && targetDay !== sourceDay) {
-        const sourceDayInfo = dayStatuses.find((d) => d.day === sourceDay);
+      if (targetDay && targetDay !== parsedSourceDay) {
+        const sourceDayInfo = dayStatuses.find((d) => d.day === parsedSourceDay);
         const targetDayInfo = dayStatuses.find((d) => d.day === targetDay);
         
         if (sourceDayInfo && targetDayInfo) {
           const action: Message["action"] = {
             type: "move_workout",
-            fromDay: sourceDay,
+            fromDay: parsedSourceDay,
             toDay: targetDay,
             fromTitle: sourceDayInfo.title,
           };
@@ -187,7 +193,7 @@ export default function SchedulingAIAssistant({
           setPendingAction(action);
           
           return {
-            content: `I'll move your **${sourceDayInfo.title}** from Day ${sourceDay} to Day ${targetDay}.\n\nDay ${sourceDay} will become a Rest Day, and Day ${targetDay} will get the ${sourceDayInfo.title} workout.\n\nShould I make this change?`,
+            content: `I'll move your **${sourceDayInfo.title}** from Day ${parsedSourceDay} to Day ${targetDay}.\n\nDay ${parsedSourceDay} will become a Rest Day, and Day ${targetDay} will get the ${sourceDayInfo.title} workout.\n\nShould I make this change?`,
             action,
           };
         }
