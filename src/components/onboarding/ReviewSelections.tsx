@@ -73,7 +73,7 @@ const fieldConfig: Record<string, { label: string; icon: React.ReactNode }> = {
 };
 
 export default function ReviewSelections({ selections, onConfirm, onEdit }: ReviewSelectionsProps) {
-  const [expandedSections, setExpandedSections] = useState<string[]>(['personal', 'fitness', 'training']);
+  const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
   const formatValue = (value: unknown): string => {
     if (value === undefined || value === null || value === '') return 'Not set';
