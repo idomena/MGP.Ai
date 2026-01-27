@@ -165,32 +165,23 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Stats Row - Clean & Minimal */}
+            {/* Floating Stats Pills */}
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center gap-6"
+              className="flex items-center justify-center gap-3"
             >
-              <div className="flex flex-col items-center">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#7c57ff]/20 to-[#60a5fa]/20 flex items-center justify-center mb-1">
-                  <Target className="w-5 h-5 text-[#7c57ff]" />
-                </div>
-                <span className="text-white font-bold text-base">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</span>
-                <span className="text-white/40 text-[10px]">Workouts</span>
+              <div className="bg-white/10 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 shadow-lg">
+                <Target className="w-4 h-4 text-[#7c57ff]" />
+                <span className="text-white font-semibold text-sm">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</span>
               </div>
-              <div className="flex flex-col items-center">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center mb-1">
-                  <Flame className="w-5 h-5 text-orange-500" />
-                </div>
-                <span className="text-white font-bold text-base">{userStats.streak}</span>
-                <span className="text-white/40 text-[10px]">Streak</span>
+              <div className="bg-white/10 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 shadow-lg">
+                <Flame className="w-4 h-4 text-orange-500" />
+                <span className="text-white font-semibold text-sm">{userStats.streak}</span>
               </div>
-              <div className="flex flex-col items-center">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-yellow-500/20 to-amber-500/20 flex items-center justify-center mb-1">
-                  <Zap className="w-5 h-5 text-yellow-500" />
-                </div>
-                <span className="text-white font-bold text-base">{userStats.xp.toLocaleString()}</span>
-                <span className="text-white/40 text-[10px]">XP</span>
+              <div className="bg-white/10 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 shadow-lg">
+                <Zap className="w-4 h-4 text-yellow-500" />
+                <span className="text-white font-semibold text-sm">{userStats.xp.toLocaleString()}</span>
               </div>
             </motion.div>
           </div>
