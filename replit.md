@@ -83,6 +83,13 @@ Unique constraint: (user_id, day_number)
 - **Email Verification**: Users receive verification email on signup
 - **Logout**: Log out button on Profile page with session cleanup
 
+### January 2026 - Workout Page Redesign
+- **Gradient Summary Card**: Beautiful gradient header showing workout name, status badge, and 3 stat boxes (Exercises, Duration, Focus)
+- **Status Badges**: Today (gradient), Completed (green), Missed (orange), Locked (gray)
+- **Exercise Cards**: Modern card design with number badge, image placeholder, difficulty badge, muscle group, stats row (Sets/Reps/Time), View Details button
+- **Difficulty Colors**: Beginner (green), Intermediate (yellow), Advanced (red)
+- **Cleaner Header**: Back button, day number, workout title, AI help sparkles button
+
 ### January 2026 - UI/UX Polish Update
 - **Journey Path Redesign**: Infinite S-curve visualization with dynamic path segments, 3 node states (completed/today/upcoming), auto-scroll to today. All nodes are now clickable to view workout details.
 - **Workout Viewing Permissions**: Users can VIEW any workout (past/today/future) but can only START today's workout. Status badges show: Completed (green), TODAY (purple pulsing), Coming Soon (gray), Missed (orange for past uncompleted)
