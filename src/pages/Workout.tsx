@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   ChevronRight,
   Eye,
-  CalendarDays,
   RefreshCw,
   ArrowRightLeft,
 } from "lucide-react";
@@ -22,7 +21,6 @@ import WorkoutSession from "@/components/WorkoutSession";
 import WorkoutAIAssistant from "@/components/WorkoutAIAssistant";
 import ExerciseDetailsModal from "@/components/ExerciseDetailsModal";
 import MuscleAnatomyDiagram from "@/components/MuscleAnatomyDiagram";
-import RescheduleModal from "@/components/RescheduleModal";
 import ChangeWorkoutTypeModal from "@/components/ChangeWorkoutTypeModal";
 import SwapExerciseModal from "@/components/SwapExerciseModal";
 import SchedulingAIAssistant from "@/components/SchedulingAIAssistant";
@@ -52,7 +50,6 @@ export default function WorkoutPage() {
 
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
-  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [isChangeTypeOpen, setIsChangeTypeOpen] = useState(false);
   const [isSwapExerciseOpen, setIsSwapExerciseOpen] = useState(false);
   const [isSchedulingAIOpen, setIsSchedulingAIOpen] = useState(false);
@@ -149,15 +146,6 @@ export default function WorkoutPage() {
 
   const handleGoBack = () => {
     navigate("/");
-  };
-
-  const handleReschedule = async (fromDay: number, toDay: number) => {
-    const success = await swapWorkouts(fromDay, toDay);
-    if (success) {
-      toast.success(`Workout rescheduled! Day ${fromDay} and Day ${toDay} have been swapped.`);
-    } else {
-      toast.error("Failed to reschedule workout. Please try again.");
-    }
   };
 
   const handleChangeWorkoutType = async (newType: string, newTitle: string) => {
@@ -378,7 +366,7 @@ export default function WorkoutPage() {
             </div>
 
             {/* Secondary Action Buttons */}
-            <div className="grid grid-cols-3 gap-2 mt-3">
+            <div className="grid grid-cols-2 gap-2 mt-3">
               <button
                 onClick={() => setIsChangeTypeOpen(true)}
                 className="bg-[#1a1a2e]/60 backdrop-blur-sm py-3 rounded-2xl font-medium text-white flex flex-col items-center justify-center gap-1 border border-white/10"
@@ -386,14 +374,6 @@ export default function WorkoutPage() {
               >
                 <RefreshCw className="w-4 h-4" />
                 <span className="text-xs">Change</span>
-              </button>
-              <button
-                onClick={() => setIsRescheduleOpen(true)}
-                className="bg-[#1a1a2e]/60 backdrop-blur-sm py-3 rounded-2xl font-medium text-white flex flex-col items-center justify-center gap-1 border border-white/10"
-                data-testid="button-reschedule"
-              >
-                <CalendarDays className="w-4 h-4" />
-                <span className="text-xs">Reschedule</span>
               </button>
               <button
                 onClick={() => setIsSchedulingAIOpen(true)}
@@ -532,20 +512,6 @@ export default function WorkoutPage() {
           }}
         />
       )}
-
-      {/* Reschedule Modal */}
-      <RescheduleModal
-        isOpen={isRescheduleOpen}
-        onClose={() => setIsRescheduleOpen(false)}
-        currentDay={currentDayInfo}
-        allDays={dayStatuses.map(ds => ({
-          day: ds.day,
-          title: ds.title,
-          workoutType: ds.workoutType,
-          date: ds.date,
-        }))}
-        onReschedule={handleReschedule}
-      />
 
       {/* Change Workout Type Modal */}
       <ChangeWorkoutTypeModal
