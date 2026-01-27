@@ -4,7 +4,7 @@ import JourneyPath from "@/components/JourneyPath";
 import SchedulingAIAssistant from "@/components/SchedulingAIAssistant";
 import ChangeWorkoutTypeModal from "@/components/ChangeWorkoutTypeModal";
 import { useState, useEffect } from "react";
-import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock, Moon, MessageCircle, RefreshCw, Sparkles } from "lucide-react";
+import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock, Moon, MessageCircle, RefreshCw, Sparkles, Zap } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
@@ -165,28 +165,32 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Weekly Progress Card - Compact */}
+            {/* Stats Row - Clean & Minimal */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-4"
+              className="flex items-center justify-center gap-6"
             >
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-white font-semibold text-sm">Weekly Progress</h4>
-                <TrendingUp className="w-4 h-4 text-[#7c57ff]" />
+              <div className="flex flex-col items-center">
+                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#7c57ff]/20 to-[#60a5fa]/20 flex items-center justify-center mb-1">
+                  <Target className="w-5 h-5 text-[#7c57ff]" />
+                </div>
+                <span className="text-white font-bold text-base">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</span>
+                <span className="text-white/40 text-[10px]">Workouts</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="backdrop-blur-sm bg-white/5 rounded-lg px-3 py-1.5 border border-white/10 flex items-center gap-1.5">
-                  <span className="text-white font-semibold text-sm">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</span>
+              <div className="flex flex-col items-center">
+                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center mb-1">
+                  <Flame className="w-5 h-5 text-orange-500" />
                 </div>
-                <div className="backdrop-blur-sm bg-white/5 rounded-lg px-3 py-1.5 border border-white/10 flex items-center gap-1.5">
-                  <span className="text-sm">🔥</span>
-                  <span className="text-white font-semibold text-sm">{userStats.streak}</span>
+                <span className="text-white font-bold text-base">{userStats.streak}</span>
+                <span className="text-white/40 text-[10px]">Streak</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-yellow-500/20 to-amber-500/20 flex items-center justify-center mb-1">
+                  <Zap className="w-5 h-5 text-yellow-500" />
                 </div>
-                <div className="backdrop-blur-sm bg-white/5 rounded-lg px-3 py-1.5 border border-white/10 flex items-center gap-1.5">
-                  <span className="text-sm">⚡</span>
-                  <span className="text-white font-semibold text-sm">{userStats.xp.toLocaleString()}</span>
-                </div>
+                <span className="text-white font-bold text-base">{userStats.xp.toLocaleString()}</span>
+                <span className="text-white/40 text-[10px]">XP</span>
               </div>
             </motion.div>
           </div>
