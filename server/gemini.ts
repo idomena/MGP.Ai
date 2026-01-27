@@ -187,6 +187,140 @@ export async function generateCoachResponse(
   return text;
 }
 
+export interface ExerciseFromDB {
+  id: string;
+  title: string;
+  muscle_group: string;
+  secondary_muscles?: string[];
+  equipment: string;
+  difficulty: string;
+  exercise_type: string;
+  movement_pattern: string;
+  is_safe: boolean;
+  description?: string;
+}
+
+export interface SelectedExercise {
+  exercise_id: string;
+  name: string;
+  muscle_group: string;
+  movement_pattern: string;
+  equipment: string;
+  sets?: number;
+  reps?: string;
+}
+
+const EXERCISE_SELECTION_PROMPT = `You are a deterministic Exercise Selection Engine.
+
+You are NOT allowed to invent exercises.
+You are NOT allowed to fetch data from the internet.
+You MUST select exercises ONLY from the provided list.
+
+--------------------
+SELECTION RULES (MANDATORY)
+--------------------
+
+1. Variety rule:
+- Do NOT repeat the same exercise in consecutive workouts.
+- Prefer exercises that were NOT used in the last 2 workouts (if history is available).
+
+2. Movement balance:
+- Do NOT select two exercises with the same movement_pattern back-to-back.
+- If multiple exercises match, rotate movement_pattern first, then equipment.
+
+3. Equipment variation:
+- Avoid using the same equipment more than twice in the same workout if alternatives exist.
+
+4. Muscle targeting:
+- Each workout must include exercises from at least 2 different muscle_group values.
+- Do NOT use "full_body" (it does not exist in the database).
+
+5. Difficulty:
+- Match exercises to the user difficulty level.
+- If not enough exercises exist, allow one level lower, never higher.
+
+6. Randomization (controlled):
+- When multiple valid exercises exist, choose randomly.
+- Randomization must stay within the rules above.
+
+--------------------
+OUTPUT FORMAT (STRICT)
+--------------------
+
+Return a JSON array ONLY.
+Each item must include:
+- exercise_id
+- name
+- muscle_group
+- movement_pattern
+- equipment
+- sets (number)
+- reps (string like "8-10")
+
+Do NOT explain.
+Do NOT comment.
+Do NOT add text outside the JSON.`;
+
+export async function selectExercisesWithAI(
+  availableExercises: ExerciseFromDB[],
+  workoutType: string,
+  userDifficulty: string = "beginner",
+  recentExerciseIds: string[] = [],
+  exerciseCount: number = 5
+): Promise<SelectedExercise[]> {
+  if (!apiKey) {
+    throw new Error("Gemini API key is not configured");
+  }
+
+  const exerciseList = availableExercises.map(e => ({
+    id: e.id,
+    name: e.title,
+    muscle_group: e.muscle_group,
+    movement_pattern: e.movement_pattern,
+    equipment: e.equipment,
+    difficulty: e.difficulty,
+    exercise_type: e.exercise_type
+  }));
+
+  const userMessage = `
+WORKOUT TYPE: ${workoutType}
+USER DIFFICULTY LEVEL: ${userDifficulty}
+NUMBER OF EXERCISES TO SELECT: ${exerciseCount}
+${recentExerciseIds.length > 0 ? `EXERCISES TO AVOID (used recently): ${recentExerciseIds.join(", ")}` : ""}
+
+AVAILABLE EXERCISES:
+${JSON.stringify(exerciseList, null, 2)}
+
+Select ${exerciseCount} exercises following all the rules above. Return ONLY the JSON array.`;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: `${EXERCISE_SELECTION_PROMPT}\n\n${userMessage}` }],
+      },
+    ],
+  });
+
+  const text = response.text || "[]";
+  
+  // Extract JSON from response
+  const jsonMatch = text.match(/\[[\s\S]*\]/);
+  if (!jsonMatch) {
+    console.error("No valid JSON array in AI response:", text);
+    return [];
+  }
+
+  try {
+    const selectedExercises: SelectedExercise[] = JSON.parse(jsonMatch[0]);
+    return selectedExercises;
+  } catch (err) {
+    console.error("Failed to parse AI exercise selection:", err);
+    return [];
+  }
+}
+
 export async function extractTextFromImage(
   base64Image: string,
   mimeType: string = "image/jpeg"

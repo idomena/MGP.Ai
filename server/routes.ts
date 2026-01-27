@@ -1,6 +1,26 @@
 import type { Express } from "express";
-import { generateContent, generateCoachResponse, extractTextFromImage } from "./gemini";
+import { generateContent, generateCoachResponse, extractTextFromImage, selectExercisesWithAI, type ExerciseFromDB } from "./gemini";
 import { generateRequestSchema, ocrRequestSchema, completeWorkoutRequestSchema, userPrograms, workoutCompletions } from "../shared/schema";
+import { z } from "zod";
+
+const exerciseSelectionSchema = z.object({
+  workoutType: z.string(),
+  userDifficulty: z.enum(["beginner", "intermediate", "advanced"]).default("beginner"),
+  recentExerciseIds: z.array(z.string()).optional().default([]),
+  exerciseCount: z.number().min(1).max(10).optional().default(5),
+  availableExercises: z.array(z.object({
+    id: z.string(),
+    title: z.string(),
+    muscle_group: z.string(),
+    secondary_muscles: z.array(z.string()).optional(),
+    equipment: z.string(),
+    difficulty: z.string(),
+    exercise_type: z.string(),
+    movement_pattern: z.string(),
+    is_safe: z.boolean(),
+    description: z.string().optional(),
+  })),
+});
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 
@@ -52,6 +72,42 @@ export function registerRoutes(app: Express): void {
       });
     } catch (error) {
       console.error("Error generating content:", error);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({
+        success: false,
+        error: message,
+      });
+    }
+  });
+
+  // AI-powered exercise selection endpoint
+  app.post("/api/select-exercises", async (req, res) => {
+    try {
+      const validation = exerciseSelectionSchema.safeParse(req.body);
+
+      if (!validation.success) {
+        return res.status(400).json({
+          success: false,
+          error: validation.error.errors[0].message,
+        });
+      }
+
+      const { workoutType, userDifficulty, recentExerciseIds, exerciseCount, availableExercises } = validation.data;
+
+      const selectedExercises = await selectExercisesWithAI(
+        availableExercises as ExerciseFromDB[],
+        workoutType,
+        userDifficulty,
+        recentExerciseIds,
+        exerciseCount
+      );
+
+      res.json({
+        success: true,
+        exercises: selectedExercises,
+      });
+    } catch (error) {
+      console.error("Error selecting exercises:", error);
       const message = error instanceof Error ? error.message : "Unknown error";
       res.status(500).json({
         success: false,
