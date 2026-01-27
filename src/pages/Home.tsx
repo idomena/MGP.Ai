@@ -165,23 +165,23 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Floating Stats Pills */}
+            {/* Floating Stats Buttons */}
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center gap-3"
+              className="flex items-center justify-center gap-4"
             >
-              <div className="bg-white/10 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 shadow-lg">
+              <div className="bg-[#2a2a3e] rounded-full px-5 py-2.5 flex items-center gap-2 shadow-[0_8px_30px_rgba(0,0,0,0.4)] border border-white/5">
                 <Target className="w-4 h-4 text-[#7c57ff]" />
-                <span className="text-white font-semibold text-sm">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</span>
+                <span className="text-white font-bold text-sm">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</span>
               </div>
-              <div className="bg-white/10 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 shadow-lg">
+              <div className="bg-[#2a2a3e] rounded-full px-5 py-2.5 flex items-center gap-2 shadow-[0_8px_30px_rgba(0,0,0,0.4)] border border-white/5">
                 <Flame className="w-4 h-4 text-orange-500" />
-                <span className="text-white font-semibold text-sm">{userStats.streak}</span>
+                <span className="text-white font-bold text-sm">{userStats.streak}</span>
               </div>
-              <div className="bg-white/10 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 shadow-lg">
+              <div className="bg-[#2a2a3e] rounded-full px-5 py-2.5 flex items-center gap-2 shadow-[0_8px_30px_rgba(0,0,0,0.4)] border border-white/5">
                 <Zap className="w-4 h-4 text-yellow-500" />
-                <span className="text-white font-semibold text-sm">{userStats.xp.toLocaleString()}</span>
+                <span className="text-white font-bold text-sm">{userStats.xp.toLocaleString()}</span>
               </div>
             </motion.div>
           </div>
