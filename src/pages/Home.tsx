@@ -150,65 +150,28 @@ export default function Home() {
         </div>
       </nav>
 
-        {/* Weekly Program Header and Stats - Fixed */}
+        {/* Floating Stats Button - Always visible in weekly view */}
         {activeView === "weekly" && (
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-                <BarChart3 className="w-5 h-5" />
-                Your Program
-              </h3>
-              <button 
-                onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-                className="text-muted-foreground text-sm flex items-center gap-1 hover:text-white transition-colors hover:gap-2"
-              >
-                View Stats →
-              </button>
-            </div>
-
-            {/* Floating Stats Button - Expands on tap */}
+          <div className="mt-4 flex justify-center">
             <motion.button
               onClick={() => setShowStatsExpanded(!showStatsExpanded)}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-[#2a2a3e] rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.5)] border border-white/10 flex items-center gap-3 px-4 py-2.5 mx-auto"
+              className="bg-[#2a2a3e] rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.5)] border border-white/10 flex items-center gap-3 px-4 py-2"
             >
-              <AnimatePresence mode="wait">
-                {showStatsExpanded ? (
-                  <motion.div
-                    key="expanded"
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: "auto" }}
-                    exit={{ opacity: 0, width: 0 }}
-                    className="flex items-center gap-4"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <Target className="w-4 h-4 text-[#7c57ff]" />
-                      <span className="text-white font-bold text-sm">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Flame className="w-4 h-4 text-orange-500" />
-                      <span className="text-white font-bold text-sm">{userStats.streak}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Zap className="w-4 h-4 text-yellow-500" />
-                      <span className="text-white font-bold text-sm">{userStats.xp.toLocaleString()}</span>
-                    </div>
-                    <X className="w-4 h-4 text-white/50 ml-1" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="collapsed"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center gap-2"
-                  >
-                    <BarChart3 className="w-5 h-5 text-[#7c57ff]" />
-                    <span className="text-white font-semibold text-sm">Stats</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <div className="flex items-center gap-1.5">
+                <Target className="w-4 h-4 text-[#7c57ff]" />
+                <span className="text-white font-bold text-sm">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Flame className="w-4 h-4 text-orange-500" />
+                <span className="text-white font-bold text-sm">{userStats.streak}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-yellow-500" />
+                <span className="text-white font-bold text-sm">{userStats.xp.toLocaleString()}</span>
+              </div>
+              <X className="w-3.5 h-3.5 text-white/40" />
             </motion.button>
           </div>
         )}
