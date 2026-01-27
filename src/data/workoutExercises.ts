@@ -354,11 +354,13 @@ export function getExercisesForWorkoutType(workoutType: string): Exercise[] {
   const normalizedType = workoutType.toLowerCase().trim();
   
   switch (normalizedType) {
+    // Specific muscle groups
     case "chest":
       return CHEST_EXERCISES;
     case "back":
       return BACK_EXERCISES;
     case "legs":
+    case "lower":
       return LEGS_EXERCISES;
     case "shoulders":
       return SHOULDERS_EXERCISES;
@@ -366,10 +368,68 @@ export function getExercisesForWorkoutType(workoutType: string): Exercise[] {
       return ARMS_EXERCISES;
     case "core":
       return CORE_EXERCISES;
+    
+    // Workout types - combine exercises
+    case "upper":
+    case "upper body":
+      return [
+        CHEST_EXERCISES[0],    // Bench Press
+        CHEST_EXERCISES[1],    // Incline DB Press
+        BACK_EXERCISES[1],     // Lat Pull Down
+        SHOULDERS_EXERCISES[1], // Lateral Raises
+        ARMS_EXERCISES[2],     // Tricep Pushdowns
+      ];
+    
+    case "cardio":
+      return [
+        LEGS_EXERCISES[0],     // Squats (bodyweight version)
+        CORE_EXERCISES[0],     // Plank
+        CORE_EXERCISES[1],     // Crunches
+        LEGS_EXERCISES[4],     // Calf Raises
+      ];
+    
+    case "full":
+    case "full body":
+      return [
+        CHEST_EXERCISES[0],    // Bench Press
+        BACK_EXERCISES[0],     // T-bar Row
+        LEGS_EXERCISES[0],     // Squats
+        SHOULDERS_EXERCISES[0], // Overhead Press
+        CORE_EXERCISES[0],     // Plank
+      ];
+    
+    case "push":
+      return [
+        CHEST_EXERCISES[0],    // Bench Press
+        CHEST_EXERCISES[1],    // Incline Press
+        SHOULDERS_EXERCISES[0], // Overhead Press
+        SHOULDERS_EXERCISES[1], // Lateral Raises
+        ARMS_EXERCISES[2],     // Tricep Pushdowns
+      ];
+    
+    case "pull":
+      return [
+        BACK_EXERCISES[0],     // T-bar Row
+        BACK_EXERCISES[1],     // Lat Pull Down
+        BACK_EXERCISES[3],     // Dumbbell Rows
+        ARMS_EXERCISES[0],     // Barbell Curls
+        ARMS_EXERCISES[1],     // Hammer Curls
+      ];
+    
+    // Rest/Recovery
+    case "rest":
     case "rest day":
     case "recovery":
       return REST_DAY_EXERCISES;
+    
     default:
-      return CHEST_EXERCISES;
+      // Default to full body workout
+      return [
+        CHEST_EXERCISES[0],
+        BACK_EXERCISES[1],
+        LEGS_EXERCISES[1],
+        SHOULDERS_EXERCISES[1],
+        CORE_EXERCISES[0],
+      ];
   }
 }
