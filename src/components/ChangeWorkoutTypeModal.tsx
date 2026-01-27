@@ -66,17 +66,8 @@ export default function ChangeWorkoutTypeModal({
     }
   }, [isOpen]);
 
-  // Debug: Log selectedType changes
-  useEffect(() => {
-    console.log("selectedType changed to:", selectedType);
-  }, [selectedType]);
-
   const handleConfirm = async () => {
-    console.log("handleConfirm called, selectedType:", selectedType);
-    if (!selectedType) {
-      console.log("selectedType is null, returning early");
-      return;
-    }
+    if (!selectedType) return;
 
     const selected = WORKOUT_TYPES.find((t) => t.type === selectedType);
     if (!selected) return;
@@ -111,11 +102,11 @@ export default function ChangeWorkoutTypeModal({
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="w-full max-w-md bg-[#1a1a2e] rounded-t-3xl max-h-[80vh] overflow-hidden"
+          className="w-full max-w-md bg-[#1a1a2e] rounded-t-3xl max-h-[85vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
                 <Dumbbell className="w-5 h-5 text-white" />
@@ -156,7 +147,7 @@ export default function ChangeWorkoutTypeModal({
           ) : (
             <>
               {/* Workout Type Options */}
-              <div className="p-4 space-y-3 overflow-y-auto max-h-[50vh]">
+              <div className="p-4 space-y-3 overflow-y-auto flex-1 min-h-0">
                 <p className="text-white/60 text-sm mb-2">
                   Select a new workout type:
                 </p>
@@ -170,13 +161,7 @@ export default function ChangeWorkoutTypeModal({
                   return (
                     <button
                       key={workout.type}
-                      onClick={() => {
-                        console.log("Button clicked:", workout.type, "isCurrentType:", isCurrentType);
-                        if (!isCurrentType) {
-                          console.log("Setting selectedType to:", workout.type);
-                          setSelectedType(workout.type);
-                        }
-                      }}
+                      onClick={() => !isCurrentType && setSelectedType(workout.type)}
                       disabled={isCurrentType}
                       className={`
                         w-full p-4 rounded-2xl border transition-all flex items-center gap-4
@@ -226,7 +211,7 @@ export default function ChangeWorkoutTypeModal({
               </div>
 
               {/* Action Buttons */}
-              <div className="p-4 border-t border-white/10 flex gap-3">
+              <div className="p-4 border-t border-white/10 flex gap-3 flex-shrink-0">
                 <button
                   onClick={onClose}
                   className="flex-1 py-3.5 rounded-2xl bg-white/10 text-white font-medium"
