@@ -29,78 +29,41 @@ export async function saveOnboardingAndGeneratePlan(
   data: OnboardingData
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const { data: existingPrefs } = await supabase
+    const { error: prefsError } = await supabase
       .from("user_preferences")
-      .select("id")
-      .eq("user_id", userId)
-      .single();
-
-    if (existingPrefs) {
-      const { error: updateError } = await supabase
-        .from("user_preferences")
-        .update({
-          training_days: data.trainingDays,
-          selected_workouts: data.selectedWorkouts,
-          onboarding_completed: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId);
-
-      if (updateError) {
-        console.error("Error updating preferences:", updateError);
-        return { success: false, error: updateError.message };
-      }
-    } else {
-      const { error: insertError } = await supabase
-        .from("user_preferences")
-        .insert({
+      .upsert(
+        {
           user_id: userId,
           training_days: data.trainingDays,
           selected_workouts: data.selectedWorkouts,
-          onboarding_completed: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
+          onboarding_completed: false,
+        },
+        { onConflict: "user_id" }
+      );
 
-      if (insertError) {
-        console.error("Error inserting preferences:", insertError);
-        return { success: false, error: insertError.message };
-      }
+    if (prefsError) {
+      console.error("Error upserting preferences:", prefsError);
+      return { success: false, error: prefsError.message };
     }
-
-    const { data: existingProgram } = await supabase
-      .from("user_programs")
-      .select("id")
-      .eq("user_id", userId)
-      .single();
 
     const startDate = new Date();
     startDate.setHours(0, 0, 0, 0);
+    const startDateStr = startDate.toISOString().split("T")[0];
 
-    if (!existingProgram) {
-      const { error: programError } = await supabase
-        .from("user_programs")
-        .insert({
+    const { error: programError } = await supabase
+      .from("user_programs")
+      .upsert(
+        {
           user_id: userId,
-          start_date: startDate.toISOString().split("T")[0],
+          start_date: startDateStr,
           total_days: TOTAL_PROGRAM_DAYS,
-        });
+        },
+        { onConflict: "user_id" }
+      );
 
-      if (programError) {
-        console.error("Error creating program:", programError);
-        return { success: false, error: programError.message };
-      }
-    }
-
-    const { data: existingCompletions } = await supabase
-      .from("workout_completions")
-      .select("id")
-      .eq("user_id", userId)
-      .limit(1);
-
-    if (existingCompletions && existingCompletions.length > 0) {
-      console.log("Workout plan already exists for user, skipping generation");
-      return { success: true };
+    if (programError) {
+      console.error("Error upserting program:", programError);
+      return { success: false, error: programError.message };
     }
 
     const plan = generate21DayPlan(startDate, data.trainingDays, data.selectedWorkouts);
@@ -108,7 +71,6 @@ export async function saveOnboardingAndGeneratePlan(
     const completionRows = plan.map((day) => ({
       user_id: userId,
       day_number: day.dayNumber,
-      date: day.date,
       title: day.title,
       workout_type: day.workoutType,
       completed: false,
@@ -116,14 +78,38 @@ export async function saveOnboardingAndGeneratePlan(
 
     const { error: completionsError } = await supabase
       .from("workout_completions")
-      .insert(completionRows);
+      .upsert(completionRows, { 
+        onConflict: "user_id,day_number",
+        ignoreDuplicates: true 
+      });
 
     if (completionsError) {
       console.error("Error inserting workout completions:", completionsError);
       return { success: false, error: completionsError.message };
     }
 
-    console.log("Successfully generated 21-day workout plan");
+    const { count, error: countError } = await supabase
+      .from("workout_completions")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
+
+    if (countError || count !== TOTAL_PROGRAM_DAYS) {
+      console.error("Workout plan incomplete:", { count, expected: TOTAL_PROGRAM_DAYS });
+      return { success: false, error: "Failed to create complete workout plan" };
+    }
+
+    console.log("Successfully ensured 21-day workout plan exists");
+
+    const { error: finalUpdateError } = await supabase
+      .from("user_preferences")
+      .update({ onboarding_completed: true })
+      .eq("user_id", userId);
+
+    if (finalUpdateError) {
+      console.error("Error marking onboarding complete:", finalUpdateError);
+      return { success: false, error: finalUpdateError.message };
+    }
+
     return { success: true };
   } catch (err) {
     console.error("Error in saveOnboardingAndGeneratePlan:", err);
@@ -135,9 +121,9 @@ function generate21DayPlan(
   startDate: Date,
   trainingDays: string[],
   selectedWorkouts: string[]
-): Array<{ dayNumber: number; date: string; title: string; workoutType: string }> {
+): Array<{ dayNumber: number; title: string; workoutType: string }> {
   const dayOrder = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const plan: Array<{ dayNumber: number; date: string; title: string; workoutType: string }> = [];
+  const plan: Array<{ dayNumber: number; title: string; workoutType: string }> = [];
 
   let workoutIndex = 0;
 
@@ -145,14 +131,12 @@ function generate21DayPlan(
     const currentDate = new Date(startDate);
     currentDate.setDate(startDate.getDate() + dayNum - 1);
     const dayOfWeek = dayOrder[currentDate.getDay()];
-    const dateStr = currentDate.toISOString().split("T")[0];
 
     if (trainingDays.includes(dayOfWeek)) {
       const workoutType = selectedWorkouts[workoutIndex % selectedWorkouts.length];
       const info = WORKOUT_INFO[workoutType] || { name: workoutType };
       plan.push({
         dayNumber: dayNum,
-        date: dateStr,
         title: info.name,
         workoutType,
       });
@@ -160,7 +144,6 @@ function generate21DayPlan(
     } else {
       plan.push({
         dayNumber: dayNum,
-        date: dateStr,
         title: "Rest Day",
         workoutType: "rest",
       });
@@ -172,18 +155,25 @@ function generate21DayPlan(
 
 export async function checkUserHasWorkoutPlan(userId: string): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from("workout_completions")
-      .select("id")
+    const { data: prefs } = await supabase
+      .from("user_preferences")
+      .select("onboarding_completed")
       .eq("user_id", userId)
-      .limit(1);
+      .single();
 
-    if (error) {
-      console.error("Error checking workout plan:", error);
-      return false;
+    if (prefs?.onboarding_completed) {
+      const { data: completions } = await supabase
+        .from("workout_completions")
+        .select("id")
+        .eq("user_id", userId)
+        .limit(1);
+
+      if (completions && completions.length > 0) {
+        return true;
+      }
     }
 
-    return data && data.length > 0;
+    return false;
   } catch (err) {
     console.error("Error checking workout plan:", err);
     return false;
@@ -219,7 +209,6 @@ export async function getUserPreferences(userId: string): Promise<{
 
 export async function getWorkoutPlan(userId: string): Promise<Array<{
   dayNumber: number;
-  date: string;
   title: string;
   workoutType: string;
   completed: boolean;
@@ -227,7 +216,7 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
   try {
     const { data, error } = await supabase
       .from("workout_completions")
-      .select("day_number, date, title, workout_type, completed")
+      .select("day_number, title, workout_type, completed")
       .eq("user_id", userId)
       .order("day_number", { ascending: true });
 
@@ -238,7 +227,6 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
 
     return (data || []).map((row) => ({
       dayNumber: row.day_number,
-      date: row.date || "",
       title: row.title || "Workout",
       workoutType: row.workout_type || "full",
       completed: row.completed || false,
