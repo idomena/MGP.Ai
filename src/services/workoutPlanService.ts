@@ -67,16 +67,26 @@ export async function saveOnboardingAndGeneratePlan(
       completed: false,
     }));
 
-    const { error: completionsError } = await supabase
+    // Check if user already has workout completions
+    const { data: existing } = await supabase
       .from("workout_completions")
-      .upsert(completionRows, { 
-        onConflict: "user_id,day_number",
-        ignoreDuplicates: true 
-      });
+      .select("id")
+      .eq("user_id", userId)
+      .limit(1);
 
-    if (completionsError) {
-      console.error("Error inserting workout completions:", completionsError);
-      return { success: false, error: completionsError.message };
+    if (existing && existing.length > 0) {
+      // User already has a plan, don't overwrite
+      console.log("User already has workout plan, skipping insert");
+    } else {
+      // Insert new plan
+      const { error: completionsError } = await supabase
+        .from("workout_completions")
+        .insert(completionRows);
+
+      if (completionsError) {
+        console.error("Error inserting workout completions:", completionsError);
+        return { success: false, error: completionsError.message };
+      }
     }
 
     const { count, error: countError } = await supabase
