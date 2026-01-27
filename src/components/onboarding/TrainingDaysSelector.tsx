@@ -6,13 +6,13 @@ interface TrainingDaysSelectorProps {
 }
 
 const days = [
+  { id: 'Sun', label: 'S', fullName: 'Sunday' },
   { id: 'Mon', label: 'M', fullName: 'Monday' },
   { id: 'Tue', label: 'T', fullName: 'Tuesday' },
   { id: 'Wed', label: 'W', fullName: 'Wednesday' },
   { id: 'Thu', label: 'T', fullName: 'Thursday' },
   { id: 'Fri', label: 'F', fullName: 'Friday' },
   { id: 'Sat', label: 'S', fullName: 'Saturday' },
-  { id: 'Sun', label: 'S', fullName: 'Sunday' },
 ];
 
 export function TrainingDaysSelector({ onSelect }: TrainingDaysSelectorProps) {
