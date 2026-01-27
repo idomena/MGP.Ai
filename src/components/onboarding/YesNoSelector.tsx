@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 
@@ -6,36 +7,127 @@ interface YesNoSelectorProps {
 }
 
 export default function YesNoSelector({ onSelect }: YesNoSelectorProps) {
+  const [selected, setSelected] = useState<boolean | null>(null);
+
+  const handleSelect = (value: boolean) => {
+    setSelected(value);
+  };
+
+  const handleContinue = () => {
+    if (selected !== null) {
+      onSelect(selected);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex gap-4 justify-center"
+      className="w-full max-w-md mx-auto space-y-3"
     >
       <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => onSelect(true)}
-        className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border-2 border-emerald-500/50 hover:border-emerald-400 transition-all group"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0 }}
+        onClick={() => handleSelect(true)}
+        className={`
+          w-full flex items-center justify-between p-4 rounded-2xl
+          transition-all duration-200 border-2
+          ${selected === true
+            ? 'bg-emerald-500/10 border-emerald-500'
+            : 'bg-white/5 border-transparent hover:bg-white/10'
+          }
+        `}
         data-testid="button-yes"
       >
-        <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center group-hover:bg-emerald-500/30 transition-colors">
-          <Check className="w-5 h-5 text-emerald-400" />
+        <div className="flex items-center gap-4">
+          <div className={`
+            w-12 h-12 rounded-xl flex items-center justify-center
+            ${selected === true ? 'bg-emerald-500/20' : 'bg-white/10'}
+          `}>
+            <Check className={`w-6 h-6 ${selected === true ? 'text-emerald-400' : 'text-white/60'}`} />
+          </div>
+          <span className={`text-lg font-semibold ${selected === true ? 'text-white' : 'text-white/90'}`}>
+            Yes, I have some
+          </span>
         </div>
-        <span className="text-lg font-semibold text-emerald-300">Yes</span>
+
+        <div className={`
+          w-6 h-6 rounded-full border-2 flex items-center justify-center
+          transition-all duration-200
+          ${selected === true
+            ? 'bg-emerald-500 border-emerald-500'
+            : 'border-white/30'
+          }
+        `}>
+          {selected === true && <Check className="w-4 h-4 text-white" />}
+        </div>
       </motion.button>
 
       <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => onSelect(false)}
-        className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-600/20 border-2 border-red-500/50 hover:border-red-400 transition-all group"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.1 }}
+        onClick={() => handleSelect(false)}
+        className={`
+          w-full flex items-center justify-between p-4 rounded-2xl
+          transition-all duration-200 border-2
+          ${selected === false
+            ? 'bg-[#7c57ff]/10 border-[#7c57ff]'
+            : 'bg-white/5 border-transparent hover:bg-white/10'
+          }
+        `}
         data-testid="button-no"
       >
-        <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/30 transition-colors">
-          <X className="w-5 h-5 text-red-400" />
+        <div className="flex items-center gap-4">
+          <div className={`
+            w-12 h-12 rounded-xl flex items-center justify-center
+            ${selected === false ? 'bg-[#7c57ff]/20' : 'bg-white/10'}
+          `}>
+            <X className={`w-6 h-6 ${selected === false ? 'text-[#7c57ff]' : 'text-white/60'}`} />
+          </div>
+          <span className={`text-lg font-semibold ${selected === false ? 'text-white' : 'text-white/90'}`}>
+            No, I'm injury-free
+          </span>
         </div>
-        <span className="text-lg font-semibold text-red-300">No</span>
+
+        <div className={`
+          w-6 h-6 rounded-full border-2 flex items-center justify-center
+          transition-all duration-200
+          ${selected === false
+            ? 'bg-[#7c57ff] border-[#7c57ff]'
+            : 'border-white/30'
+          }
+        `}>
+          {selected === false && <Check className="w-4 h-4 text-white" />}
+        </div>
+      </motion.button>
+
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        onClick={handleContinue}
+        disabled={selected === null}
+        className={`
+          w-full mt-6 py-4 rounded-2xl font-semibold text-lg
+          flex items-center justify-center gap-3
+          transition-all duration-200
+          ${selected !== null
+            ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-[#7c57ff]/30'
+            : 'bg-white/10 text-white/50 cursor-not-allowed'
+          }
+        `}
+        data-testid="button-continue-yesno"
+      >
+        <span>Continue</span>
+        {selected !== null && (
+          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        )}
       </motion.button>
     </motion.div>
   );

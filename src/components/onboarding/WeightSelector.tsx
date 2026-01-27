@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Scale, AlertTriangle } from "lucide-react";
 
 interface WeightSelectorProps {
   onSelect: (weight: number, unit: 'kg' | 'lbs') => void;
@@ -8,37 +7,53 @@ interface WeightSelectorProps {
 
 export default function WeightSelector({ onSelect }: WeightSelectorProps) {
   const [unit, setUnit] = useState<'kg' | 'lbs'>('kg');
-  const [weight, setWeight] = useState(unit === 'kg' ? 70 : 154);
+  const [weight, setWeight] = useState(70);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const minWeight = unit === 'kg' ? 40 : 88;
+  const minWeight = unit === 'kg' ? 30 : 66;
   const maxWeight = unit === 'kg' ? 200 : 440;
 
-  const convertWeight = (value: number, from: 'kg' | 'lbs', to: 'kg' | 'lbs'): number => {
-    if (from === to) return value;
-    return from === 'kg' ? Math.round(value * 2.205) : Math.round(value / 2.205);
-  };
+  const weights = Array.from(
+    { length: maxWeight - minWeight + 1 },
+    (_, i) => minWeight + i
+  );
 
-  const handleUnitToggle = () => {
-    const newUnit = unit === 'kg' ? 'lbs' : 'kg';
-    const newWeight = convertWeight(weight, unit, newUnit);
-    setUnit(newUnit);
-    setWeight(newWeight);
-  };
-
-  const getWarning = (): string | null => {
-    const weightInKg = unit === 'kg' ? weight : Math.round(weight / 2.205);
-    if (weightInKg < 50) {
-      return "This weight seems low. Please ensure this is accurate for your safety.";
+  useEffect(() => {
+    if (scrollRef.current) {
+      const index = weight - minWeight;
+      const itemWidth = 16;
+      const containerWidth = scrollRef.current.offsetWidth;
+      const scrollPosition = (index * itemWidth) - (containerWidth / 2) + (itemWidth / 2);
+      scrollRef.current.scrollLeft = scrollPosition;
     }
-    if (weightInKg > 150) {
-      return "This weight is above average. We'll customize your plan accordingly.";
+  }, [weight, minWeight]);
+
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const containerWidth = scrollRef.current.offsetWidth;
+      const scrollPosition = scrollRef.current.scrollLeft + (containerWidth / 2);
+      const itemWidth = 16;
+      const index = Math.round(scrollPosition / itemWidth);
+      const newWeight = Math.max(minWeight, Math.min(maxWeight, minWeight + index));
+      if (newWeight !== weight) {
+        setWeight(newWeight);
+      }
     }
-    return null;
   };
 
-  const warning = getWarning();
+  const handleUnitChange = (newUnit: 'kg' | 'lbs') => {
+    if (newUnit !== unit) {
+      const newMinWeight = newUnit === 'kg' ? 30 : 66;
+      const newMaxWeight = newUnit === 'kg' ? 200 : 440;
+      const convertedWeight = newUnit === 'lbs'
+        ? Math.round(weight * 2.205)
+        : Math.round(weight / 2.205);
+      setUnit(newUnit);
+      setWeight(Math.max(newMinWeight, Math.min(newMaxWeight, convertedWeight)));
+    }
+  };
 
-  const handleConfirm = () => {
+  const handleContinue = () => {
     onSelect(weight, unit);
   };
 
@@ -46,87 +61,120 @@ export default function WeightSelector({ onSelect }: WeightSelectorProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
+      className="w-full max-w-md mx-auto space-y-8"
     >
-      <div className="flex items-center justify-center gap-3 mb-4">
-        <Scale className="w-6 h-6 text-[#7c57ff]" />
-        <span className="text-white/80 text-sm">Select your weight</span>
-      </div>
-
-      <div className="flex justify-center gap-2 mb-6">
+      <div className="flex justify-center gap-4">
         <button
-          onClick={handleUnitToggle}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-            unit === 'kg'
-              ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white'
-              : 'bg-white/10 text-white/60 hover:bg-white/20'
-          }`}
+          onClick={() => handleUnitChange('kg')}
+          className={`
+            px-10 py-3 rounded-full font-semibold text-lg transition-all duration-200 border-2
+            ${unit === 'kg'
+              ? 'bg-white text-[#0f0f1a] border-white'
+              : 'bg-transparent text-white/70 border-white/20 hover:border-white/40'
+            }
+          `}
           data-testid="button-unit-kg"
         >
-          kg
+          Kg
         </button>
         <button
-          onClick={handleUnitToggle}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-            unit === 'lbs'
-              ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white'
-              : 'bg-white/10 text-white/60 hover:bg-white/20'
-          }`}
+          onClick={() => handleUnitChange('lbs')}
+          className={`
+            px-10 py-3 rounded-full font-semibold text-lg transition-all duration-200 border-2
+            ${unit === 'lbs'
+              ? 'bg-white text-[#0f0f1a] border-white'
+              : 'bg-transparent text-white/70 border-white/20 hover:border-white/40'
+            }
+          `}
           data-testid="button-unit-lbs"
         >
-          lbs
+          Lbs
         </button>
       </div>
 
-      <div className="text-center mb-6">
-        <motion.span
+      <div className="text-center py-8">
+        <motion.div
           key={weight}
-          initial={{ scale: 0.8, opacity: 0 }}
+          initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="text-5xl font-bold bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] bg-clip-text text-transparent"
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          className="inline-flex items-baseline gap-2"
         >
-          {weight}
-        </motion.span>
-        <span className="text-2xl text-white/60 ml-2">{unit}</span>
+          <span className="text-7xl font-bold text-white">{weight}</span>
+          <span className="text-3xl font-medium text-white/60">{unit}</span>
+        </motion.div>
       </div>
 
-      <div className="px-4">
-        <input
-          type="range"
-          min={minWeight}
-          max={maxWeight}
-          value={weight}
-          onChange={(e) => setWeight(Number(e.target.value))}
-          className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#7c57ff]"
-          style={{
-            background: `linear-gradient(to right, #7c57ff 0%, #60a5fa ${((weight - minWeight) / (maxWeight - minWeight)) * 100}%, rgba(255,255,255,0.1) ${((weight - minWeight) / (maxWeight - minWeight)) * 100}%, rgba(255,255,255,0.1) 100%)`
-          }}
-          data-testid="slider-weight"
-        />
-        <div className="flex justify-between text-xs text-white/40 mt-2">
-          <span>{minWeight} {unit}</span>
-          <span>{maxWeight} {unit}</span>
+      <div className="relative h-24">
+        <div className="absolute left-1/2 top-0 w-1 h-16 bg-[#7c57ff] transform -translate-x-1/2 z-10 rounded-full" />
+        <div className="absolute left-1/2 top-14 transform -translate-x-1/2 z-10">
+          <div className="w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-[#7c57ff]" />
+        </div>
+
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="overflow-x-auto hide-scrollbar h-full flex items-end pb-4"
+        >
+          <div
+            className="flex items-end"
+            style={{
+              width: `${weights.length * 16 + 400}px`,
+              paddingLeft: '50%',
+              paddingRight: '50%'
+            }}
+          >
+            {weights.map((w) => {
+              const isMajor = w % 10 === 0;
+              const isMid = w % 5 === 0 && !isMajor;
+              const distance = Math.abs(w - weight);
+              const opacity = distance === 0 ? 1 : distance < 5 ? 0.6 : 0.3;
+
+              return (
+                <div
+                  key={w}
+                  className="flex flex-col items-center justify-end"
+                  style={{ width: '16px' }}
+                >
+                  <div
+                    className="w-0.5 rounded-full transition-all duration-150"
+                    style={{
+                      height: isMajor ? '40px' : isMid ? '24px' : '12px',
+                      backgroundColor: `rgba(255, 255, 255, ${opacity})`,
+                    }}
+                  />
+                  {isMajor && (
+                    <span
+                      className="text-xs mt-2 font-medium transition-all"
+                      style={{ color: `rgba(255, 255, 255, ${opacity})` }}
+                    >
+                      {w}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {warning && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-start gap-2 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20"
+      <div className="space-y-3 pt-4">
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          onClick={handleContinue}
+          className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white font-semibold text-lg shadow-lg shadow-[#7c57ff]/30 hover:shadow-[#7c57ff]/50 transition-all flex items-center justify-center gap-3"
+          data-testid="button-continue-weight"
         >
-          <AlertTriangle className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-yellow-200/80">{warning}</p>
-        </motion.div>
-      )}
-
-      <button
-        onClick={handleConfirm}
-        className="w-full py-3 rounded-xl bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white font-semibold shadow-lg shadow-[#7c57ff]/30 hover:shadow-[#7c57ff]/50 transition-all"
-        data-testid="button-confirm-weight"
-      >
-        Confirm Weight
-      </button>
+          <span>Continue</span>
+          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </motion.button>
+      </div>
     </motion.div>
   );
 }
