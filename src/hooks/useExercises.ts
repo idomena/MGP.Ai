@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { type Exercise, getExercisesForWorkoutType } from "@/data/workoutExercises";
 
-export function useExercises(workoutType: string) {
+export function useExercises(workoutType: string, dayNumber: number = 1) {
   return useQuery({
-    queryKey: ["exercises", workoutType],
+    queryKey: ["exercises", workoutType, dayNumber],
     enabled: !!workoutType,
     queryFn: async () => {
-      // Get exercises from local data based on workout type
-      const exercises = getExercisesForWorkoutType(workoutType);
-      console.log("Loaded", exercises.length, "exercises for:", workoutType);
+      // Get exercises from local data based on workout type and day (for variety)
+      const exercises = getExercisesForWorkoutType(workoutType, dayNumber);
+      console.log("Loaded", exercises.length, "exercises for:", workoutType, "day:", dayNumber);
       return exercises;
     },
     staleTime: 1000 * 60 * 5,

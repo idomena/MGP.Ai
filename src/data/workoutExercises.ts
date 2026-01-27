@@ -350,70 +350,180 @@ const REST_DAY_EXERCISES: Exercise[] = [
   },
 ];
 
-export function getExercisesForWorkoutType(workoutType: string): Exercise[] {
+// Helper to pick exercises with rotation based on day
+function pickWithRotation(exercises: Exercise[], count: number, dayNumber: number): Exercise[] {
+  const result: Exercise[] = [];
+  const offset = (dayNumber - 1) % exercises.length;
+  
+  for (let i = 0; i < count && i < exercises.length; i++) {
+    const index = (offset + i) % exercises.length;
+    result.push(exercises[index]);
+  }
+  return result;
+}
+
+// Upper body exercise variations for different days
+const UPPER_VARIATIONS = [
+  // Variation 1: Chest focus
+  () => [
+    CHEST_EXERCISES[0],    // Bench Press
+    CHEST_EXERCISES[1],    // Incline DB Press
+    BACK_EXERCISES[1],     // Lat Pull Down
+    SHOULDERS_EXERCISES[1], // Lateral Raises
+    ARMS_EXERCISES[2],     // Tricep Pushdowns
+  ],
+  // Variation 2: Back focus
+  () => [
+    BACK_EXERCISES[0],     // T-bar Row
+    BACK_EXERCISES[1],     // Lat Pull Down
+    CHEST_EXERCISES[2],    // Cable Flyes
+    SHOULDERS_EXERCISES[3], // Rear Delt Flyes
+    ARMS_EXERCISES[0],     // Barbell Curls
+  ],
+  // Variation 3: Shoulder focus
+  () => [
+    SHOULDERS_EXERCISES[0], // Overhead Press
+    SHOULDERS_EXERCISES[1], // Lateral Raises
+    CHEST_EXERCISES[3],    // Push-Ups
+    BACK_EXERCISES[3],     // Dumbbell Rows
+    ARMS_EXERCISES[3],     // Skull Crushers
+  ],
+];
+
+// Lower body exercise variations
+const LOWER_VARIATIONS = [
+  // Variation 1: Quad focus
+  () => [
+    LEGS_EXERCISES[0],     // Squats
+    LEGS_EXERCISES[1],     // Leg Press
+    LEGS_EXERCISES[3],     // Leg Curls
+    LEGS_EXERCISES[4],     // Calf Raises
+    CORE_EXERCISES[0],     // Plank
+  ],
+  // Variation 2: Hamstring focus
+  () => [
+    LEGS_EXERCISES[2],     // Romanian Deadlifts
+    LEGS_EXERCISES[3],     // Leg Curls
+    LEGS_EXERCISES[0],     // Squats
+    LEGS_EXERCISES[4],     // Calf Raises
+    CORE_EXERCISES[3],     // Leg Raises
+  ],
+  // Variation 3: Glute focus
+  () => [
+    LEGS_EXERCISES[0],     // Squats
+    LEGS_EXERCISES[2],     // Romanian Deadlifts
+    LEGS_EXERCISES[1],     // Leg Press
+    CORE_EXERCISES[2],     // Russian Twists
+    LEGS_EXERCISES[4],     // Calf Raises
+  ],
+];
+
+// Full body exercise variations
+const FULL_VARIATIONS = [
+  // Variation 1
+  () => [
+    CHEST_EXERCISES[0],    // Bench Press
+    BACK_EXERCISES[0],     // T-bar Row
+    LEGS_EXERCISES[0],     // Squats
+    SHOULDERS_EXERCISES[0], // Overhead Press
+    CORE_EXERCISES[0],     // Plank
+  ],
+  // Variation 2
+  () => [
+    CHEST_EXERCISES[1],    // Incline Press
+    BACK_EXERCISES[1],     // Lat Pull Down
+    LEGS_EXERCISES[1],     // Leg Press
+    SHOULDERS_EXERCISES[1], // Lateral Raises
+    CORE_EXERCISES[1],     // Crunches
+  ],
+  // Variation 3
+  () => [
+    CHEST_EXERCISES[3],    // Push-Ups
+    BACK_EXERCISES[3],     // Dumbbell Rows
+    LEGS_EXERCISES[2],     // Romanian Deadlifts
+    SHOULDERS_EXERCISES[2], // Front Raises
+    CORE_EXERCISES[2],     // Russian Twists
+  ],
+];
+
+// Cardio exercise variations
+const CARDIO_VARIATIONS = [
+  // Variation 1
+  () => [
+    LEGS_EXERCISES[0],     // Squats
+    CORE_EXERCISES[0],     // Plank
+    CORE_EXERCISES[1],     // Crunches
+    LEGS_EXERCISES[4],     // Calf Raises
+  ],
+  // Variation 2
+  () => [
+    LEGS_EXERCISES[1],     // Leg Press
+    CORE_EXERCISES[2],     // Russian Twists
+    CORE_EXERCISES[3],     // Leg Raises
+    CHEST_EXERCISES[3],    // Push-Ups
+  ],
+  // Variation 3
+  () => [
+    LEGS_EXERCISES[2],     // Romanian Deadlifts
+    CORE_EXERCISES[0],     // Plank
+    SHOULDERS_EXERCISES[1], // Lateral Raises
+    CORE_EXERCISES[1],     // Crunches
+  ],
+];
+
+export function getExercisesForWorkoutType(workoutType: string, dayNumber: number = 1): Exercise[] {
   const normalizedType = workoutType.toLowerCase().trim();
+  const variationIndex = (dayNumber - 1) % 3;
   
   switch (normalizedType) {
-    // Specific muscle groups
+    // Specific muscle groups - rotate through exercises
     case "chest":
-      return CHEST_EXERCISES;
+      return pickWithRotation(CHEST_EXERCISES, 4, dayNumber);
     case "back":
-      return BACK_EXERCISES;
+      return pickWithRotation(BACK_EXERCISES, 4, dayNumber);
     case "legs":
-    case "lower":
-      return LEGS_EXERCISES;
+      return pickWithRotation(LEGS_EXERCISES, 5, dayNumber);
     case "shoulders":
-      return SHOULDERS_EXERCISES;
+      return pickWithRotation(SHOULDERS_EXERCISES, 4, dayNumber);
     case "arms":
-      return ARMS_EXERCISES;
+      return pickWithRotation(ARMS_EXERCISES, 5, dayNumber);
     case "core":
-      return CORE_EXERCISES;
+      return pickWithRotation(CORE_EXERCISES, 4, dayNumber);
     
-    // Workout types - combine exercises
+    // Workout types - use variations based on day
     case "upper":
     case "upper body":
-      return [
-        CHEST_EXERCISES[0],    // Bench Press
-        CHEST_EXERCISES[1],    // Incline DB Press
-        BACK_EXERCISES[1],     // Lat Pull Down
-        SHOULDERS_EXERCISES[1], // Lateral Raises
-        ARMS_EXERCISES[2],     // Tricep Pushdowns
-      ];
+      return UPPER_VARIATIONS[variationIndex]();
+    
+    case "lower":
+    case "lower body":
+      return LOWER_VARIATIONS[variationIndex]();
     
     case "cardio":
-      return [
-        LEGS_EXERCISES[0],     // Squats (bodyweight version)
-        CORE_EXERCISES[0],     // Plank
-        CORE_EXERCISES[1],     // Crunches
-        LEGS_EXERCISES[4],     // Calf Raises
-      ];
+      return CARDIO_VARIATIONS[variationIndex]();
     
     case "full":
     case "full body":
-      return [
-        CHEST_EXERCISES[0],    // Bench Press
-        BACK_EXERCISES[0],     // T-bar Row
-        LEGS_EXERCISES[0],     // Squats
-        SHOULDERS_EXERCISES[0], // Overhead Press
-        CORE_EXERCISES[0],     // Plank
-      ];
+      return FULL_VARIATIONS[variationIndex]();
     
     case "push":
-      return [
-        CHEST_EXERCISES[0],    // Bench Press
-        CHEST_EXERCISES[1],    // Incline Press
-        SHOULDERS_EXERCISES[0], // Overhead Press
-        SHOULDERS_EXERCISES[1], // Lateral Raises
-        ARMS_EXERCISES[2],     // Tricep Pushdowns
+      // Rotate push exercises
+      return variationIndex === 0 ? [
+        CHEST_EXERCISES[0], CHEST_EXERCISES[1], SHOULDERS_EXERCISES[0], SHOULDERS_EXERCISES[1], ARMS_EXERCISES[2],
+      ] : variationIndex === 1 ? [
+        CHEST_EXERCISES[1], CHEST_EXERCISES[2], SHOULDERS_EXERCISES[2], SHOULDERS_EXERCISES[0], ARMS_EXERCISES[3],
+      ] : [
+        CHEST_EXERCISES[3], CHEST_EXERCISES[0], SHOULDERS_EXERCISES[1], SHOULDERS_EXERCISES[3], ARMS_EXERCISES[2],
       ];
     
     case "pull":
-      return [
-        BACK_EXERCISES[0],     // T-bar Row
-        BACK_EXERCISES[1],     // Lat Pull Down
-        BACK_EXERCISES[3],     // Dumbbell Rows
-        ARMS_EXERCISES[0],     // Barbell Curls
-        ARMS_EXERCISES[1],     // Hammer Curls
+      // Rotate pull exercises
+      return variationIndex === 0 ? [
+        BACK_EXERCISES[0], BACK_EXERCISES[1], BACK_EXERCISES[3], ARMS_EXERCISES[0], ARMS_EXERCISES[1],
+      ] : variationIndex === 1 ? [
+        BACK_EXERCISES[1], BACK_EXERCISES[2], BACK_EXERCISES[0], ARMS_EXERCISES[1], ARMS_EXERCISES[0],
+      ] : [
+        BACK_EXERCISES[3], BACK_EXERCISES[0], BACK_EXERCISES[2], ARMS_EXERCISES[0], ARMS_EXERCISES[4],
       ];
     
     // Rest/Recovery
@@ -423,13 +533,7 @@ export function getExercisesForWorkoutType(workoutType: string): Exercise[] {
       return REST_DAY_EXERCISES;
     
     default:
-      // Default to full body workout
-      return [
-        CHEST_EXERCISES[0],
-        BACK_EXERCISES[1],
-        LEGS_EXERCISES[1],
-        SHOULDERS_EXERCISES[1],
-        CORE_EXERCISES[0],
-      ];
+      // Default to full body with variation
+      return FULL_VARIATIONS[variationIndex]();
   }
 }

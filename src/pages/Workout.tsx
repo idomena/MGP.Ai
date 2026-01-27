@@ -53,11 +53,12 @@ export default function WorkoutPage() {
 
   const { data: dbExercises, isLoading: exercisesLoading } = useExercises(
     workoutTemplate.workoutType,
+    dayNumber,
   );
   const exercises =
     dbExercises && dbExercises.length > 0
       ? dbExercises
-      : getExercisesForWorkoutType(workoutTemplate.workoutType);
+      : getExercisesForWorkoutType(workoutTemplate.workoutType, dayNumber);
 
   // Derive workout status from database state only
   const currentDay = programCurrentDay || 1;
