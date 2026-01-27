@@ -2,7 +2,7 @@ import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
 import JourneyPath from "@/components/JourneyPath";
 import { useState, useEffect } from "react";
-import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock } from "lucide-react";
+import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock, Moon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
@@ -356,16 +356,33 @@ export default function Home() {
               </div>
 
               {(() => {
+                const isRestDay = workout.workoutType === "rest";
+                
                 // Completed workouts show completed state
                 if (isCompleted) {
                   return (
                     <div className="space-y-3">
                       <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-green-500/20 text-green-400 border border-green-500/30">
                         <CheckCircle2 className="w-5 h-5" />
-                        Workout Completed
+                        {isRestDay ? "Rest Day Complete" : "Workout Completed"}
                       </div>
                       <p className="text-white/40 text-center text-sm">
-                        Great job on completing this workout!
+                        {isRestDay ? "You earned this rest!" : "Great job on completing this workout!"}
+                      </p>
+                    </div>
+                  );
+                }
+                
+                // Active rest day - auto-complete message
+                if (isActive && isRestDay) {
+                  return (
+                    <div className="space-y-3">
+                      <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                        <Moon className="w-5 h-5" />
+                        Rest Day - Relax!
+                      </div>
+                      <p className="text-white/40 text-center text-sm">
+                        Take it easy today. Your body needs recovery to grow stronger!
                       </p>
                     </div>
                   );

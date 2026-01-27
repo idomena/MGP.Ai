@@ -107,7 +107,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
     setError(null);
 
     try {
-      const plan = await getWorkoutPlan(user.id);
+      let plan = await getWorkoutPlan(user.id);
 
       if (plan.length === 0) {
         setDayStatuses([]);
@@ -130,22 +130,41 @@ export function useWorkoutProgress(): WorkoutProgressData {
       
       setCompletedDays(completedDayNumbers);
 
-      // Find the first uncompleted day (including rest days)
+      // Find the first uncompleted day and auto-complete rest days that user has reached
       let activeDay = 1;
+      let needsRefetch = false;
+      
       for (const day of plan) {
         if (!day.completed) {
-          activeDay = day.dayNumber;
-          // If it's a rest day, auto-mark it complete and continue to next
           if (day.workoutType === "rest") {
-            // We'll handle this in the UI - rest days show as active briefly then complete
-            break;
+            // Auto-complete rest days when user reaches them
+            console.log(`Auto-completing rest day ${day.dayNumber}`);
+            try {
+              await markWorkoutComplete(user.id, day.dayNumber);
+              needsRefetch = true;
+            } catch (err) {
+              console.error("Failed to auto-complete rest day:", err);
+            }
+            continue; // Move to next day
           }
+          activeDay = day.dayNumber;
           break;
         }
+        activeDay = day.dayNumber + 1; // Move past completed days
         if (day.dayNumber === TOTAL_PROGRAM_DAYS) {
           activeDay = TOTAL_PROGRAM_DAYS;
         }
       }
+      
+      // If we auto-completed rest days, refetch to get updated data
+      if (needsRefetch) {
+        const updatedPlan = await getWorkoutPlan(user.id);
+        plan = updatedPlan;
+        // Recalculate completed days
+        const updatedCompletedDays = plan.filter(p => p.completed).map(p => p.dayNumber);
+        setCompletedDays(updatedCompletedDays);
+      }
+      
       setCurrentDay(activeDay);
 
       const statuses: DayStatus[] = plan.map(p => {
@@ -153,14 +172,11 @@ export function useWorkoutProgress(): WorkoutProgressData {
 
         if (p.completed) {
           status = "completed";
-        } else if (p.workoutType === "rest" && p.dayNumber < activeDay) {
-          // Rest days before the active day are auto-completed
-          status = "completed";
         } else if (p.dayNumber === activeDay) {
           status = "active";
-        } else if (p.workoutType === "rest" && p.dayNumber === activeDay) {
-          // Today's rest day - show as active so user can see it
-          status = "active";
+        } else if (p.dayNumber < activeDay) {
+          // Days before active day should be completed (catches edge cases)
+          status = "completed";
         } else {
           status = "locked";
         }
