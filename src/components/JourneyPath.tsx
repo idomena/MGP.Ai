@@ -352,23 +352,25 @@ export default function JourneyPath({ dayStatuses, onDayClick, isLoading }: Jour
                 y={pos.y + radius + 34}
                 textAnchor="middle"
                 fontSize="11"
-                fill={isActive ? "#7c57ff" : "rgba(255,255,255,0.4)"}
+                fill={isActive ? "#60a5fa" : "rgba(255,255,255,0.4)"}
+              >
+                {dayInfo.workoutType === 'upper' ? 'Upper Body' : 
+                 dayInfo.workoutType === 'lower' ? 'Lower Body' : 
+                 dayInfo.workoutType === 'full' ? 'Full Body' : 
+                 dayInfo.workoutType === 'cardio' ? 'Cardio' : 
+                 dayInfo.workoutType === 'rest' ? 'Rest Day' : 
+                 dayInfo.workoutType}
+              </text>
+              
+              <text
+                x={pos.x}
+                y={pos.y + radius + 48}
+                textAnchor="middle"
+                fontSize="10"
+                fill="rgba(255,255,255,0.35)"
               >
                 {dayInfo.date ? formatDate(dayInfo.date) : ""}
               </text>
-              
-              {isActive && (
-                <text
-                  x={pos.x}
-                  y={pos.y + radius + 50}
-                  textAnchor="middle"
-                  fontSize="11"
-                  fill="#7c57ff"
-                  fontWeight="500"
-                >
-                  {dayInfo.title}
-                </text>
-              )}
             </g>
           );
         })}
