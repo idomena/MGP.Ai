@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 
 interface GenderOption {
-  id: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+  id: 'male' | 'female' | 'other';
   label: string;
   emoji: string;
 }
@@ -12,11 +12,10 @@ const genderOptions: GenderOption[] = [
   { id: 'female', label: 'Female', emoji: '👩' },
   { id: 'male', label: 'Male', emoji: '👨' },
   { id: 'other', label: 'Other', emoji: '🧑' },
-  { id: 'prefer_not_to_say', label: 'Prefer not to say', emoji: '🤫' },
 ];
 
 interface GenderSelectorProps {
-  onSelect: (gender: 'male' | 'female' | 'other' | 'prefer_not_to_say') => void;
+  onSelect: (gender: 'male' | 'female' | 'other') => void;
 }
 
 export function GenderSelector({ onSelect }: GenderSelectorProps) {
@@ -28,7 +27,7 @@ export function GenderSelector({ onSelect }: GenderSelectorProps) {
 
   const handleContinue = () => {
     if (selected) {
-      onSelect(selected as 'male' | 'female' | 'other' | 'prefer_not_to_say');
+      onSelect(selected as 'male' | 'female' | 'other');
     }
   };
 
@@ -84,7 +83,7 @@ export function GenderSelector({ onSelect }: GenderSelectorProps) {
       <motion.button
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
+        transition={{ delay: 0.4 }}
         onClick={handleContinue}
         disabled={!selected}
         className={`

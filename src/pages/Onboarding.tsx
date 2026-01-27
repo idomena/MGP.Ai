@@ -18,6 +18,7 @@ import { GenderSelector } from "@/components/onboarding/GenderSelector";
 import AssistantSelector from "@/components/onboarding/AssistantSelector";
 import WeightSelector from "@/components/onboarding/WeightSelector";
 import OptionSelector from "@/components/onboarding/OptionSelector";
+import { TrainingDaysSelector } from "@/components/onboarding/TrainingDaysSelector";
 import YesNoSelector from "@/components/onboarding/YesNoSelector";
 import AdditionalInfo from "@/components/onboarding/AdditionalInfo";
 import ReviewSelections from "@/components/onboarding/ReviewSelections";
@@ -159,13 +160,12 @@ export default function Onboarding() {
     handleAnswer('name', name, name);
   };
 
-  const handleGenderSelect = (gender: 'male' | 'female' | 'other' | 'prefer_not_to_say') => {
+  const handleGenderSelect = (gender: 'male' | 'female' | 'other') => {
     setSelections(prev => ({ ...prev, gender }));
     const labels = { 
       male: 'Male', 
       female: 'Female', 
-      other: 'Other', 
-      prefer_not_to_say: 'Prefer not to say' 
+      other: 'Other'
     };
     handleAnswer('gender', gender, labels[gender]);
   };
@@ -285,18 +285,18 @@ export default function Onboarding() {
       
       case 'options':
         if (question.id === 'goals') {
-          return <OptionSelector options={question.options || []} multiSelect={true} onSelect={handleGoalsSelect} />;
+          return <OptionSelector options={question.options || []} multiSelect={false} onSelect={handleGoalsSelect} />;
         }
         if (question.id === 'experience') {
           return <OptionSelector options={question.options || []} multiSelect={false} onSelect={handleExperienceSelect} />;
-        }
-        if (question.id === 'trainingDays') {
-          return <OptionSelector options={question.options || []} multiSelect={true} onSelect={handleTrainingDaysSelect} />;
         }
         if (question.id === 'workoutTypes') {
           return <OptionSelector options={question.options || []} multiSelect={true} onSelect={handleWorkoutTypesSelect} />;
         }
         return null;
+      
+      case 'trainingDays':
+        return <TrainingDaysSelector onSelect={handleTrainingDaysSelect} />;
       
       case 'yesno':
         return <YesNoSelector onSelect={handleInjuriesSelect} />;
@@ -308,8 +308,7 @@ export default function Onboarding() {
         const genderLabels: Record<string, string> = { 
           male: 'Male', 
           female: 'Female', 
-          other: 'Other', 
-          prefer_not_to_say: 'Prefer not to say',
+          other: 'Other',
           '': 'Not set'
         };
         return (

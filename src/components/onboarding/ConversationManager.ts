@@ -15,7 +15,7 @@ export type QuestionType =
 export interface Question {
   id: QuestionType;
   botMessage: string;
-  componentType: 'name' | 'coachName' | 'gender' | 'assistant' | 'weight' | 'options' | 'yesno' | 'textarea' | 'review';
+  componentType: 'name' | 'coachName' | 'gender' | 'assistant' | 'weight' | 'options' | 'trainingDays' | 'yesno' | 'textarea' | 'review';
   options?: { id: string; label: string; icon?: string; description?: string }[];
   multiSelect?: boolean;
   required?: boolean;
@@ -56,17 +56,14 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 'goals',
-    botMessage: "Alright {name}, this is the exciting part! What do you want to achieve? Dream big and pick all that apply!",
+    botMessage: "Alright {name}, this is the exciting part! What's your main goal?",
     componentType: 'options',
-    multiSelect: true,
+    multiSelect: false,
     required: true,
     options: [
       { id: 'lose_weight', label: 'Lose Weight', icon: 'TrendingDown', description: 'Burn fat and slim down' },
       { id: 'build_muscle', label: 'Build Muscle', icon: 'Dumbbell', description: 'Gain strength and size' },
       { id: 'improve_endurance', label: 'Improve Endurance', icon: 'Heart', description: 'Build stamina and cardio' },
-      { id: 'increase_flexibility', label: 'Flexibility', icon: 'Stretch', description: 'Improve mobility' },
-      { id: 'general_fitness', label: 'General Fitness', icon: 'Activity', description: 'Stay healthy and active' },
-      { id: 'stress_relief', label: 'Stress Relief', icon: 'Wind', description: 'Mental wellness' },
     ],
   },
   {
@@ -83,19 +80,10 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 'trainingDays',
-    botMessage: "Alright, let's plan your week! Which days work best for you to train? Pick as many as you'd like!",
-    componentType: 'options',
+    botMessage: "Alright, let's plan your week! Which days work best for you to train?",
+    componentType: 'trainingDays',
     multiSelect: true,
     required: true,
-    options: [
-      { id: 'Mon', label: 'Monday', icon: 'Calendar' },
-      { id: 'Tue', label: 'Tuesday', icon: 'Calendar' },
-      { id: 'Wed', label: 'Wednesday', icon: 'Calendar' },
-      { id: 'Thu', label: 'Thursday', icon: 'Calendar' },
-      { id: 'Fri', label: 'Friday', icon: 'Calendar' },
-      { id: 'Sat', label: 'Saturday', icon: 'Calendar' },
-      { id: 'Sun', label: 'Sunday', icon: 'Calendar' },
-    ],
   },
   {
     id: 'workoutTypes',
@@ -137,7 +125,7 @@ export const QUESTIONS: Question[] = [
 export interface UserSelections {
   coachName: string;
   name: string;
-  gender: 'male' | 'female' | 'other' | 'prefer_not_to_say' | '';
+  gender: 'male' | 'female' | 'other' | '';
   assistantType: 'coach' | 'nutritionist' | 'trainer';
   weight: { value: number; unit: 'kg' | 'lbs' };
   goals: string[];
