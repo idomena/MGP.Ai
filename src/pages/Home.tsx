@@ -388,7 +388,7 @@ export default function Home() {
                 <button
                   onClick={() => {
                     setShowWorkoutModal(false);
-                    setShowSchedulingAI(true);
+                    setTimeout(() => setShowSchedulingAI(true), 150);
                   }}
                   className="bg-gradient-to-br from-[#7c57ff]/20 to-[#60a5fa]/20 backdrop-blur-sm py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2 border border-[#7c57ff]/30"
                   data-testid="button-ai-schedule-modal"
