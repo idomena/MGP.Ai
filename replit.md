@@ -6,6 +6,19 @@ MGP.AI is an AI-powered fitness and nutrition mobile web application built with 
 
 ## Recent Changes
 
+### January 2026 - iPhone-Optimized Workout Page Redesign
+- **Compact Header**: Day number and status inline, reduced header height with icon buttons
+- **Quick Stats Bar**: Horizontal compact bar showing exercises count, duration, and workout type
+- **Simplified Exercise Cards**: Removed large image placeholders, compact cards with:
+  - Number badge (gradient background)
+  - Exercise name and muscle group (truncated for mobile)
+  - Inline stats (sets×reps and time)
+  - Compact action buttons (details/swap)
+- **Rest Day View**: Moon icon with option to change to workout
+- **Fixed Bottom Action Button**: Start Workout button fixed above navigation bar
+- **Scheduling Button**: Added calendar icon in header to access AI scheduling assistant
+- **Proper Button Components**: All buttons use shadcn Button component for consistent sizing
+
 ### January 2026 - Conversational Onboarding Chat
 - **Chatbot Experience**: Full conversational onboarding with animated message bubbles and typing indicators
 - **Custom Coach Naming**: Users can name their AI coach (displayed in header throughout app)
