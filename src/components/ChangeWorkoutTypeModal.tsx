@@ -11,41 +11,11 @@ interface ChangeWorkoutTypeModalProps {
 }
 
 const WORKOUT_TYPES = [
-  {
-    type: "upper",
-    title: "Upper Body",
-    icon: Dumbbell,
-    color: "from-blue-500 to-blue-600",
-    description: "Chest, back, shoulders, and arms",
-  },
-  {
-    type: "lower",
-    title: "Lower Body",
-    icon: Activity,
-    color: "from-green-500 to-green-600",
-    description: "Quads, hamstrings, glutes, and calves",
-  },
-  {
-    type: "full",
-    title: "Full Body",
-    icon: Zap,
-    color: "from-purple-500 to-purple-600",
-    description: "Complete body workout",
-  },
-  {
-    type: "cardio",
-    title: "Cardio",
-    icon: Heart,
-    color: "from-red-500 to-red-600",
-    description: "Heart-pumping cardio session",
-  },
-  {
-    type: "rest",
-    title: "Rest Day",
-    icon: Moon,
-    color: "from-gray-500 to-gray-600",
-    description: "Recovery and stretching",
-  },
+  { type: "upper", title: "Upper Body", icon: Dumbbell, color: "from-blue-500 to-blue-600" },
+  { type: "lower", title: "Lower Body", icon: Activity, color: "from-green-500 to-green-600" },
+  { type: "full", title: "Full Body", icon: Zap, color: "from-purple-500 to-purple-600" },
+  { type: "cardio", title: "Cardio", icon: Heart, color: "from-red-500 to-red-600" },
+  { type: "rest", title: "Rest Day", icon: Moon, color: "from-gray-500 to-gray-600" },
 ];
 
 export default function ChangeWorkoutTypeModal({
@@ -73,16 +43,20 @@ export default function ChangeWorkoutTypeModal({
     if (!selected) return;
 
     setIsLoading(true);
-    const success = await onChangeType(selected.type, selected.title);
-    setIsLoading(false);
-
-    if (success) {
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-        setSelectedType(null);
-        onClose();
-      }, 1500);
+    try {
+      const success = await onChangeType(selected.type, selected.title);
+      if (success) {
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+          setSelectedType(null);
+          onClose();
+        }, 1000);
+      }
+    } catch (err) {
+      console.error("Error changing workout type:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -94,36 +68,33 @@ export default function ChangeWorkoutTypeModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
         onClick={onClose}
       >
         <motion.div
-          initial={{ y: "100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "100%" }}
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="w-full max-w-md bg-[#1a1a2e] rounded-t-3xl max-h-[85vh] flex flex-col"
+          className="w-full max-w-sm bg-[#1a1a2e] rounded-2xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
-                <Dumbbell className="w-5 h-5 text-white" />
+          <div className="flex items-center justify-between p-3 border-b border-white/10">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
+                <Dumbbell className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h2 className="text-white font-semibold text-lg">
-                  Change Workout
-                </h2>
-                <p className="text-white/50 text-sm">Day {dayNumber}</p>
+                <h2 className="text-white font-semibold text-sm">Day {dayNumber}</h2>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+              className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center"
               data-testid="button-close-change-type"
             >
-              <X className="w-4 h-4 text-white" />
+              <X className="w-3.5 h-3.5 text-white" />
             </button>
           </div>
 
@@ -131,26 +102,17 @@ export default function ChangeWorkoutTypeModal({
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="p-8 flex flex-col items-center justify-center"
+              className="p-6 flex flex-col items-center justify-center"
             >
-              <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center mb-4">
-                <Check className="w-8 h-8 text-white" />
+              <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center mb-3">
+                <Check className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-white font-semibold text-lg mb-2">
-                Workout Changed!
-              </h3>
-              <p className="text-white/60 text-center">
-                Day {dayNumber} is now{" "}
-                {WORKOUT_TYPES.find((t) => t.type === selectedType)?.title}
-              </p>
+              <h3 className="text-white font-semibold text-base">Done!</h3>
             </motion.div>
           ) : (
             <>
-              {/* Workout Type Options */}
-              <div className="p-4 space-y-3 overflow-y-auto flex-1 min-h-0">
-                <p className="text-white/60 text-sm mb-2">
-                  Select a new workout type:
-                </p>
+              {/* Compact Workout Options - Grid Layout */}
+              <div className="p-3 grid grid-cols-2 gap-2">
                 {WORKOUT_TYPES.map((workout) => {
                   const isCurrentType = currentType 
                     ? workout.type.toLowerCase() === currentType.toLowerCase()
@@ -164,45 +126,26 @@ export default function ChangeWorkoutTypeModal({
                       onClick={() => !isCurrentType && setSelectedType(workout.type)}
                       disabled={isCurrentType}
                       className={`
-                        w-full p-4 rounded-2xl border transition-all flex items-center gap-4
+                        p-3 rounded-xl border transition-all flex flex-col items-center gap-2
                         ${
                           isCurrentType
                             ? "bg-white/5 border-white/10 opacity-40 cursor-not-allowed"
                             : isSelected
-                              ? "bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] border-transparent"
-                              : "bg-white/5 border-white/10 hover:border-[#7c57ff]/50"
+                              ? "bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] border-transparent scale-105"
+                              : "bg-white/5 border-white/10 active:scale-95"
                         }
                       `}
                       data-testid={`workout-type-${workout.type}`}
                     >
-                      <div
-                        className={`
-                        w-12 h-12 rounded-xl flex items-center justify-center
-                        ${isSelected ? "bg-white/20" : `bg-gradient-to-br ${workout.color}`}
-                      `}
-                      >
-                        <Icon className="w-6 h-6 text-white" />
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isSelected ? "bg-white/20" : `bg-gradient-to-br ${workout.color}`}`}>
+                        <Icon className="w-5 h-5 text-white" />
                       </div>
-                      <div className="flex-1 text-left">
-                        <p
-                          className={`font-semibold ${isSelected ? "text-white" : "text-white/90"}`}
-                        >
-                          {workout.title}
-                          {isCurrentType && (
-                            <span className="ml-2 text-xs text-white/40">
-                              (Current)
-                            </span>
-                          )}
-                        </p>
-                        <p
-                          className={`text-sm ${isSelected ? "text-white/80" : "text-white/50"}`}
-                        >
-                          {workout.description}
-                        </p>
-                      </div>
+                      <span className={`text-xs font-medium ${isSelected ? "text-white" : "text-white/80"}`}>
+                        {workout.title}
+                      </span>
                       {isSelected && (
-                        <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
-                          <Check className="w-4 h-4 text-[#7c57ff]" />
+                        <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-white flex items-center justify-center">
+                          <Check className="w-2.5 h-2.5 text-[#7c57ff]" />
                         </div>
                       )}
                     </button>
@@ -210,34 +153,27 @@ export default function ChangeWorkoutTypeModal({
                 })}
               </div>
 
-              {/* Action Buttons */}
-              <div className="p-4 border-t border-white/10 flex gap-3 flex-shrink-0">
-                <button
-                  onClick={onClose}
-                  className="flex-1 py-3.5 rounded-2xl bg-white/10 text-white font-medium"
-                  data-testid="button-cancel-change-type"
-                >
-                  Cancel
-                </button>
+              {/* Floating Confirm Button */}
+              <div className="p-3 pt-0">
                 <button
                   onClick={handleConfirm}
                   disabled={selectedType === null || isLoading}
                   className={`
-                    flex-1 py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2
+                    w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all
                     ${
                       selectedType !== null && !isLoading
-                        ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white"
+                        ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-purple-500/30 active:scale-95"
                         : "bg-white/10 text-white/40 cursor-not-allowed"
                     }
                   `}
                   data-testid="button-confirm-change-type"
                 >
                   {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
                       <Check className="w-4 h-4" />
-                      Confirm
+                      Confirm Change
                     </>
                   )}
                 </button>
