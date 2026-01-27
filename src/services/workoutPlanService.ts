@@ -67,34 +67,30 @@ export async function saveOnboardingAndGeneratePlan(
       completed: false,
     }));
 
-    // Check if user already has complete workout plan (all 21 days)
-    const { count: existingCount } = await supabase
+    // Always delete existing workout data and create fresh plan
+    console.log("Clearing any existing workout data for user:", userId);
+    const { error: deleteError } = await supabase
       .from("workout_completions")
-      .select("*", { count: "exact", head: true })
+      .delete()
       .eq("user_id", userId);
 
-    if (existingCount === TOTAL_PROGRAM_DAYS) {
-      // User already has complete plan, skip insert
-      console.log("User already has complete 21-day workout plan");
-    } else {
-      // Delete any incomplete data and insert fresh
-      if (existingCount && existingCount > 0) {
-        console.log(`Clearing incomplete data (${existingCount} rows) and creating fresh plan`);
-        await supabase
-          .from("workout_completions")
-          .delete()
-          .eq("user_id", userId);
-      }
+    if (deleteError) {
+      console.error("Error deleting old workout data:", deleteError);
+      return { success: false, error: deleteError.message };
+    }
 
-      // Insert new plan
-      const { error: completionsError } = await supabase
-        .from("workout_completions")
-        .insert(completionRows);
+    // Wait a moment for delete to complete
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      if (completionsError) {
-        console.error("Error inserting workout completions:", completionsError);
-        return { success: false, error: completionsError.message };
-      }
+    // Insert new 21-day plan
+    console.log("Inserting 21-day workout plan...");
+    const { error: completionsError } = await supabase
+      .from("workout_completions")
+      .insert(completionRows);
+
+    if (completionsError) {
+      console.error("Error inserting workout completions:", completionsError);
+      return { success: false, error: completionsError.message };
     }
 
     // Verify the plan was created successfully
@@ -103,9 +99,11 @@ export async function saveOnboardingAndGeneratePlan(
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId);
 
+    console.log("Verification count:", count);
+
     if (countError || count !== TOTAL_PROGRAM_DAYS) {
       console.error("Workout plan incomplete:", { count, expected: TOTAL_PROGRAM_DAYS });
-      return { success: false, error: "Failed to create complete workout plan" };
+      return { success: false, error: `Expected ${TOTAL_PROGRAM_DAYS} workouts but found ${count}` };
     }
 
     console.log("Successfully ensured 21-day workout plan exists");
