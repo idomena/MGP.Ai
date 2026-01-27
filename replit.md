@@ -28,6 +28,8 @@ MGP.AI is an AI-powered fitness and nutrition mobile web application built with 
 - **Atomic onboarding flow**: onboarding_completed only set to true after verifying 21 rows exist
 - **Rest Day Skipping**: Active day automatically skips rest days and points to next training day
 - **Real-time updates**: UI updates automatically via Supabase realtime subscriptions
+- **Date Display**: Each journey circle shows Day number and actual date (e.g., "Day 1" + "Jan 27")
+- **Date Calculation**: Start date derived from Day 1's `created_at` timestamp in database
 
 ### January 2026 - Supabase Schema Requirements
 Required tables and columns:
