@@ -284,6 +284,35 @@ export function useWorkoutProgress(): WorkoutProgressData {
         return false;
       }
 
+      // Update Supabase: swap workout_type and title between the two days
+      const { error: error1 } = await supabase
+        .from("workout_completions")
+        .update({ 
+          title: toDayInfo.title, 
+          workout_type: toDayInfo.workoutType 
+        })
+        .eq("user_id", user.id)
+        .eq("day_number", fromDay);
+
+      if (error1) {
+        console.error("Error updating fromDay in Supabase:", error1);
+        return false;
+      }
+
+      const { error: error2 } = await supabase
+        .from("workout_completions")
+        .update({ 
+          title: fromDayInfo.title, 
+          workout_type: fromDayInfo.workoutType 
+        })
+        .eq("user_id", user.id)
+        .eq("day_number", toDay);
+
+      if (error2) {
+        console.error("Error updating toDay in Supabase:", error2);
+        return false;
+      }
+
       // Update local state to swap the workout types and titles
       setDayStatuses(prev => prev.map(ds => {
         if (ds.day === fromDay) {
@@ -303,14 +332,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
         return ds;
       }));
 
-      // Save to localStorage for persistence
-      const swapKey = `workout_swaps_${user.id}`;
-      const existingSwaps = JSON.parse(localStorage.getItem(swapKey) || "{}");
-      existingSwaps[fromDay] = { title: toDayInfo.title, workoutType: toDayInfo.workoutType };
-      existingSwaps[toDay] = { title: fromDayInfo.title, workoutType: fromDayInfo.workoutType };
-      localStorage.setItem(swapKey, JSON.stringify(existingSwaps));
-
-      console.log(`Swapped Day ${fromDay} with Day ${toDay}`);
+      console.log(`Swapped Day ${fromDay} with Day ${toDay} in Supabase`);
       return true;
     } catch (err) {
       console.error("Error swapping workouts:", err);
