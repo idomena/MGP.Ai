@@ -175,18 +175,17 @@ export default function Home() {
                 <h4 className="text-white font-semibold text-sm">Weekly Progress</h4>
                 <TrendingUp className="w-4 h-4 text-[#7c57ff]" />
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
-                  <p className="text-white/60 text-xs">Workouts</p>
-                  <p className="text-white font-bold text-lg">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</p>
+              <div className="flex items-center gap-2">
+                <div className="backdrop-blur-sm bg-white/5 rounded-md px-2 py-1 border border-white/10 flex items-center gap-1">
+                  <span className="text-white font-semibold text-xs">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</span>
                 </div>
-                <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
-                  <p className="text-white/60 text-xs">Streak</p>
-                  <p className="text-white font-bold text-lg">{userStats.streak} 🔥</p>
+                <div className="backdrop-blur-sm bg-white/5 rounded-md px-2 py-1 border border-white/10 flex items-center gap-1">
+                  <span className="text-xs">🔥</span>
+                  <span className="text-white font-semibold text-xs">{userStats.streak}</span>
                 </div>
-                <div className="backdrop-blur-sm bg-white/5 rounded-lg p-2 border border-white/10">
-                  <p className="text-white/60 text-xs">XP</p>
-                  <p className="text-white font-bold text-lg">{userStats.xp.toLocaleString()} ⚡</p>
+                <div className="backdrop-blur-sm bg-white/5 rounded-md px-2 py-1 border border-white/10 flex items-center gap-1">
+                  <span className="text-xs">⚡</span>
+                  <span className="text-white font-semibold text-xs">{userStats.xp.toLocaleString()}</span>
                 </div>
               </div>
             </motion.div>
