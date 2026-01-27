@@ -130,13 +130,16 @@ export function useWorkoutProgress(): WorkoutProgressData {
       
       setCompletedDays(completedDayNumbers);
 
+      // Find the first uncompleted day (including rest days)
       let activeDay = 1;
       for (const day of plan) {
-        if (day.workoutType === "rest") {
-          continue;
-        }
         if (!day.completed) {
           activeDay = day.dayNumber;
+          // If it's a rest day, auto-mark it complete and continue to next
+          if (day.workoutType === "rest") {
+            // We'll handle this in the UI - rest days show as active briefly then complete
+            break;
+          }
           break;
         }
         if (day.dayNumber === TOTAL_PROGRAM_DAYS) {
@@ -150,9 +153,13 @@ export function useWorkoutProgress(): WorkoutProgressData {
 
         if (p.completed) {
           status = "completed";
-        } else if (p.workoutType === "rest") {
+        } else if (p.workoutType === "rest" && p.dayNumber < activeDay) {
+          // Rest days before the active day are auto-completed
           status = "completed";
         } else if (p.dayNumber === activeDay) {
+          status = "active";
+        } else if (p.workoutType === "rest" && p.dayNumber === activeDay) {
+          // Today's rest day - show as active so user can see it
           status = "active";
         } else {
           status = "locked";
