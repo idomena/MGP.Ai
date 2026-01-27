@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import WorkoutSession from "@/components/WorkoutSession";
 import WorkoutAIAssistant from "@/components/WorkoutAIAssistant";
 import ExerciseDetailsModal from "@/components/ExerciseDetailsModal";
+import MuscleAnatomyDiagram from "@/components/MuscleAnatomyDiagram";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
 import { useExercises } from "@/hooks/useExercises";
@@ -254,15 +255,16 @@ export default function WorkoutPage() {
               <ChevronRight className={`w-5 h-5 text-white/50 transition-transform ${showMuscles ? 'rotate-90' : ''}`} />
             </button>
 
-            {/* Muscles List (expandable) */}
+            {/* Muscles Anatomy Diagram (expandable) */}
             {showMuscles && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="bg-[#1a1a2e]/60 backdrop-blur-sm rounded-2xl p-4 mb-4"
+                className="bg-[#1a1a2e]/80 backdrop-blur-sm rounded-2xl p-4 mb-4"
               >
-                <div className="flex flex-wrap gap-2">
+                <MuscleAnatomyDiagram targetedMuscles={targetedMuscles} />
+                <div className="flex flex-wrap gap-2 justify-center mt-2">
                   {targetedMuscles.map((muscle, index) => (
                     <span
                       key={index}
