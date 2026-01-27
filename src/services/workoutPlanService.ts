@@ -67,17 +67,25 @@ export async function saveOnboardingAndGeneratePlan(
       completed: false,
     }));
 
-    // Check if user already has workout completions
-    const { data: existing } = await supabase
+    // Check if user already has complete workout plan (all 21 days)
+    const { count: existingCount } = await supabase
       .from("workout_completions")
-      .select("id")
-      .eq("user_id", userId)
-      .limit(1);
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
 
-    if (existing && existing.length > 0) {
-      // User already has a plan, don't overwrite
-      console.log("User already has workout plan, skipping insert");
+    if (existingCount === TOTAL_PROGRAM_DAYS) {
+      // User already has complete plan, skip insert
+      console.log("User already has complete 21-day workout plan");
     } else {
+      // Delete any incomplete data and insert fresh
+      if (existingCount && existingCount > 0) {
+        console.log(`Clearing incomplete data (${existingCount} rows) and creating fresh plan`);
+        await supabase
+          .from("workout_completions")
+          .delete()
+          .eq("user_id", userId);
+      }
+
       // Insert new plan
       const { error: completionsError } = await supabase
         .from("workout_completions")
@@ -89,6 +97,7 @@ export async function saveOnboardingAndGeneratePlan(
       }
     }
 
+    // Verify the plan was created successfully
     const { count, error: countError } = await supabase
       .from("workout_completions")
       .select("*", { count: "exact", head: true })
