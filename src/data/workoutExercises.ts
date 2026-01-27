@@ -12,7 +12,7 @@ export interface Exercise {
 
 const CHEST_EXERCISES: Exercise[] = [
   {
-    id: 1,
+    id: 101,
     name: "Bench Press",
     muscles: "Chest, Triceps",
     sets: 4,
@@ -23,7 +23,7 @@ const CHEST_EXERCISES: Exercise[] = [
     instructions: "Lie on a flat bench with feet on the floor. Grip the bar slightly wider than shoulder-width. Lower the bar to your chest, then push up explosively.",
   },
   {
-    id: 2,
+    id: 102,
     name: "Incline Dumbbell Press",
     muscles: "Upper Chest, Shoulders",
     sets: 3,
@@ -34,7 +34,7 @@ const CHEST_EXERCISES: Exercise[] = [
     instructions: "Set bench to 30-45 degrees. Press dumbbells up from chest level, keeping elbows at 45 degrees from your body.",
   },
   {
-    id: 3,
+    id: 103,
     name: "Cable Flyes",
     muscles: "Chest",
     sets: 3,
@@ -45,7 +45,7 @@ const CHEST_EXERCISES: Exercise[] = [
     instructions: "Stand between cables with slight forward lean. Bring handles together in front of chest with slight bend in elbows.",
   },
   {
-    id: 4,
+    id: 104,
     name: "Push-Ups",
     muscles: "Chest, Triceps, Core",
     sets: 3,
@@ -59,7 +59,7 @@ const CHEST_EXERCISES: Exercise[] = [
 
 const BACK_EXERCISES: Exercise[] = [
   {
-    id: 1,
+    id: 201,
     name: "Machine T-bar Row",
     muscles: "Back, Lats",
     sets: 3,
@@ -70,7 +70,7 @@ const BACK_EXERCISES: Exercise[] = [
     instructions: "Grip the handles firmly, keep your back straight, and pull the weight towards your chest. Squeeze your back muscles at the top.",
   },
   {
-    id: 2,
+    id: 202,
     name: "Lat Pull Down",
     muscles: "Back, Shoulders",
     sets: 3,
@@ -81,7 +81,7 @@ const BACK_EXERCISES: Exercise[] = [
     instructions: "Sit down and grab the bar with a wide grip. Pull the bar down to your chest while keeping your back straight.",
   },
   {
-    id: 3,
+    id: 203,
     name: "Seated Cable Row",
     muscles: "Back, Biceps",
     sets: 3,
@@ -92,7 +92,7 @@ const BACK_EXERCISES: Exercise[] = [
     instructions: "Sit with feet on platform, knees slightly bent. Pull handles to your stomach, squeezing shoulder blades together.",
   },
   {
-    id: 4,
+    id: 204,
     name: "Dumbbell Rows",
     muscles: "Back, Lats",
     sets: 3,
@@ -106,7 +106,7 @@ const BACK_EXERCISES: Exercise[] = [
 
 const LEGS_EXERCISES: Exercise[] = [
   {
-    id: 1,
+    id: 301,
     name: "Barbell Squats",
     muscles: "Quads, Glutes, Hamstrings",
     sets: 4,
@@ -117,7 +117,7 @@ const LEGS_EXERCISES: Exercise[] = [
     instructions: "Stand with bar on upper back. Feet shoulder-width apart. Squat down until thighs are parallel to floor, then drive up.",
   },
   {
-    id: 2,
+    id: 302,
     name: "Leg Press",
     muscles: "Quads, Glutes",
     sets: 3,
@@ -128,7 +128,7 @@ const LEGS_EXERCISES: Exercise[] = [
     instructions: "Sit in machine with feet shoulder-width on platform. Lower weight until knees reach 90 degrees, then push back up.",
   },
   {
-    id: 3,
+    id: 303,
     name: "Romanian Deadlifts",
     muscles: "Hamstrings, Glutes, Lower Back",
     sets: 3,
@@ -139,7 +139,7 @@ const LEGS_EXERCISES: Exercise[] = [
     instructions: "Hold barbell with straight arms. Hinge at hips, lowering bar along legs while keeping back straight. Feel stretch in hamstrings.",
   },
   {
-    id: 4,
+    id: 304,
     name: "Leg Curls",
     muscles: "Hamstrings",
     sets: 3,
@@ -150,7 +150,7 @@ const LEGS_EXERCISES: Exercise[] = [
     instructions: "Lie face down on machine. Curl heels towards glutes, squeezing hamstrings at the top. Lower with control.",
   },
   {
-    id: 5,
+    id: 305,
     name: "Calf Raises",
     muscles: "Calves",
     sets: 4,
@@ -164,7 +164,7 @@ const LEGS_EXERCISES: Exercise[] = [
 
 const SHOULDERS_EXERCISES: Exercise[] = [
   {
-    id: 1,
+    id: 401,
     name: "Overhead Press",
     muscles: "Shoulders, Triceps",
     sets: 4,
@@ -175,7 +175,7 @@ const SHOULDERS_EXERCISES: Exercise[] = [
     instructions: "Stand with bar at shoulder level. Press bar overhead until arms are fully extended. Lower with control.",
   },
   {
-    id: 2,
+    id: 402,
     name: "Lateral Raises",
     muscles: "Side Deltoids",
     sets: 3,
@@ -186,7 +186,7 @@ const SHOULDERS_EXERCISES: Exercise[] = [
     instructions: "Stand with dumbbells at sides. Raise arms out to sides until parallel to floor. Keep slight bend in elbows.",
   },
   {
-    id: 3,
+    id: 403,
     name: "Front Raises",
     muscles: "Front Deltoids",
     sets: 3,
@@ -197,7 +197,7 @@ const SHOULDERS_EXERCISES: Exercise[] = [
     instructions: "Hold dumbbells in front of thighs. Raise one arm at a time to shoulder height, then lower. Alternate arms.",
   },
   {
-    id: 4,
+    id: 404,
     name: "Rear Delt Flyes",
     muscles: "Rear Deltoids",
     sets: 3,
@@ -211,7 +211,7 @@ const SHOULDERS_EXERCISES: Exercise[] = [
 
 const ARMS_EXERCISES: Exercise[] = [
   {
-    id: 1,
+    id: 501,
     name: "Barbell Curls",
     muscles: "Biceps",
     sets: 3,
@@ -222,7 +222,7 @@ const ARMS_EXERCISES: Exercise[] = [
     instructions: "Stand with barbell, arms extended. Curl bar up to shoulders, keeping elbows pinned to sides. Lower with control.",
   },
   {
-    id: 2,
+    id: 502,
     name: "Hammer Curls",
     muscles: "Biceps, Forearms",
     sets: 3,
@@ -233,7 +233,7 @@ const ARMS_EXERCISES: Exercise[] = [
     instructions: "Hold dumbbells with palms facing each other. Curl up while keeping wrists neutral. Lower slowly.",
   },
   {
-    id: 3,
+    id: 503,
     name: "Tricep Pushdowns",
     muscles: "Triceps",
     sets: 3,
@@ -244,7 +244,7 @@ const ARMS_EXERCISES: Exercise[] = [
     instructions: "Stand at cable machine with rope attachment. Push down until arms are fully extended. Squeeze triceps at bottom.",
   },
   {
-    id: 4,
+    id: 504,
     name: "Skull Crushers",
     muscles: "Triceps",
     sets: 3,
@@ -255,7 +255,7 @@ const ARMS_EXERCISES: Exercise[] = [
     instructions: "Lie on bench with bar overhead. Lower bar towards forehead by bending elbows. Extend arms back up.",
   },
   {
-    id: 5,
+    id: 505,
     name: "Wrist Curls",
     muscles: "Forearms",
     sets: 3,
@@ -269,7 +269,7 @@ const ARMS_EXERCISES: Exercise[] = [
 
 const CORE_EXERCISES: Exercise[] = [
   {
-    id: 1,
+    id: 601,
     name: "Plank",
     muscles: "Core, Abs",
     sets: 3,
@@ -280,7 +280,7 @@ const CORE_EXERCISES: Exercise[] = [
     instructions: "Hold push-up position on forearms. Keep body straight from head to heels. Engage core throughout.",
   },
   {
-    id: 2,
+    id: 602,
     name: "Crunches",
     muscles: "Abs",
     sets: 3,
@@ -291,7 +291,7 @@ const CORE_EXERCISES: Exercise[] = [
     instructions: "Lie on back with knees bent. Place hands behind head. Lift shoulders off floor, contracting abs. Lower slowly.",
   },
   {
-    id: 3,
+    id: 603,
     name: "Russian Twists",
     muscles: "Obliques, Abs",
     sets: 3,
@@ -302,7 +302,7 @@ const CORE_EXERCISES: Exercise[] = [
     instructions: "Sit with knees bent, feet off floor. Lean back slightly. Rotate torso side to side, touching floor each side.",
   },
   {
-    id: 4,
+    id: 604,
     name: "Leg Raises",
     muscles: "Lower Abs",
     sets: 3,
@@ -316,7 +316,7 @@ const CORE_EXERCISES: Exercise[] = [
 
 const REST_DAY_EXERCISES: Exercise[] = [
   {
-    id: 1,
+    id: 701,
     name: "Light Stretching",
     muscles: "Full Body",
     sets: 1,
@@ -327,7 +327,7 @@ const REST_DAY_EXERCISES: Exercise[] = [
     instructions: "Perform gentle stretches for all major muscle groups. Hold each stretch for 30 seconds. Focus on breathing.",
   },
   {
-    id: 2,
+    id: 702,
     name: "Foam Rolling",
     muscles: "Full Body",
     sets: 1,
@@ -338,7 +338,7 @@ const REST_DAY_EXERCISES: Exercise[] = [
     instructions: "Roll slowly over tight muscles. Pause on tender spots for 30-60 seconds. Cover legs, back, and shoulders.",
   },
   {
-    id: 3,
+    id: 703,
     name: "Walking",
     muscles: "Cardio, Legs",
     sets: 1,
