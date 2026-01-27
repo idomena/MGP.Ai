@@ -50,20 +50,11 @@ export async function saveOnboardingAndGeneratePlan(
     startDate.setHours(0, 0, 0, 0);
     const startDateStr = startDate.toISOString().split("T")[0];
 
-    const { error: programError } = await supabase
-      .from("user_programs")
-      .upsert(
-        {
-          user_id: userId,
-          start_date: startDateStr,
-          total_days: TOTAL_PROGRAM_DAYS,
-        },
-        { onConflict: "user_id" }
-      );
-
-    if (programError) {
-      console.error("Error upserting program:", programError);
-      return { success: false, error: programError.message };
+    // Store start date in localStorage as fallback (Supabase column may not exist)
+    try {
+      localStorage.setItem(`mgp_start_date_${userId}`, startDateStr);
+    } catch (e) {
+      // localStorage not available
     }
 
     const plan = generate21DayPlan(startDate, data.trainingDays, data.selectedWorkouts);
@@ -121,9 +112,9 @@ function generate21DayPlan(
   startDate: Date,
   trainingDays: string[],
   selectedWorkouts: string[]
-): Array<{ dayNumber: number; title: string; workoutType: string }> {
+): Array<{ dayNumber: number; title: string; workoutType: string; date: string }> {
   const dayOrder = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const plan: Array<{ dayNumber: number; title: string; workoutType: string }> = [];
+  const plan: Array<{ dayNumber: number; title: string; workoutType: string; date: string }> = [];
 
   let workoutIndex = 0;
 
@@ -131,6 +122,7 @@ function generate21DayPlan(
     const currentDate = new Date(startDate);
     currentDate.setDate(startDate.getDate() + dayNum - 1);
     const dayOfWeek = dayOrder[currentDate.getDay()];
+    const dateStr = currentDate.toISOString().split("T")[0];
 
     if (trainingDays.includes(dayOfWeek)) {
       const workoutType = selectedWorkouts[workoutIndex % selectedWorkouts.length];
@@ -139,6 +131,7 @@ function generate21DayPlan(
         dayNumber: dayNum,
         title: info.name,
         workoutType,
+        date: dateStr,
       });
       workoutIndex++;
     } else {
@@ -146,6 +139,7 @@ function generate21DayPlan(
         dayNumber: dayNum,
         title: "Rest Day",
         workoutType: "rest",
+        date: dateStr,
       });
     }
   }
@@ -212,11 +206,12 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
   title: string;
   workoutType: string;
   completed: boolean;
+  date: string;
 }>> {
   try {
     const { data, error } = await supabase
       .from("workout_completions")
-      .select("day_number, title, workout_type, completed")
+      .select("day_number, title, workout_type, completed, created_at")
       .eq("user_id", userId)
       .order("day_number", { ascending: true });
 
@@ -225,12 +220,43 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
       return [];
     }
 
-    return (data || []).map((row) => ({
-      dayNumber: row.day_number,
-      title: row.title || "Workout",
-      workoutType: row.workout_type || "full",
-      completed: row.completed || false,
-    }));
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    // Calculate start_date from Day 1's created_at (database is source of truth)
+    const day1 = data.find(d => d.day_number === 1);
+    let startDate: Date;
+    
+    if (day1?.created_at) {
+      // Day 1's created_at is the program start date
+      startDate = new Date(day1.created_at);
+      startDate.setHours(0, 0, 0, 0);
+    } else {
+      // Fallback: check localStorage, then default to today
+      let startDateStr: string | null = null;
+      try {
+        startDateStr = localStorage.getItem(`mgp_start_date_${userId}`);
+      } catch (e) {
+        // localStorage not available
+      }
+      startDate = startDateStr ? new Date(startDateStr) : new Date();
+    }
+
+    return data.map((row) => {
+      // Calculate date from day_number
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + row.day_number - 1);
+      const dateStr = date.toISOString().split("T")[0];
+      
+      return {
+        dayNumber: row.day_number,
+        title: row.title || "Workout",
+        workoutType: row.workout_type || "full",
+        completed: row.completed || false,
+        date: dateStr,
+      };
+    });
   } catch (err) {
     console.error("Error fetching workout plan:", err);
     return [];

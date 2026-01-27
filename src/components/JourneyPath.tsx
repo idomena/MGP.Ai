@@ -7,6 +7,12 @@ interface DayStatus {
   status: "completed" | "active" | "locked";
   title: string;
   workoutType: string;
+  date: string;
+}
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 interface JourneyPathProps {
@@ -69,7 +75,7 @@ export default function JourneyPath({ dayStatuses, onDayClick, isLoading }: Jour
     );
   }
 
-  const nodeSpacing = 120;
+  const nodeSpacing = 140;
   const nodeRadius = 32;
   const todayNodeRadius = 42;
   const padding = 80;
@@ -332,7 +338,7 @@ export default function JourneyPath({ dayStatuses, onDayClick, isLoading }: Jour
 
               <text
                 x={pos.x}
-                y={pos.y + radius + 20}
+                y={pos.y + radius + 18}
                 textAnchor="middle"
                 fontSize="13"
                 fill={isActive ? "#fff" : "rgba(255,255,255,0.5)"}
@@ -341,15 +347,26 @@ export default function JourneyPath({ dayStatuses, onDayClick, isLoading }: Jour
                 Day {dayInfo.day}
               </text>
               
+              <text
+                x={pos.x}
+                y={pos.y + radius + 34}
+                textAnchor="middle"
+                fontSize="11"
+                fill={isActive ? "#7c57ff" : "rgba(255,255,255,0.4)"}
+              >
+                {dayInfo.date ? formatDate(dayInfo.date) : ""}
+              </text>
+              
               {isActive && (
                 <text
                   x={pos.x}
-                  y={pos.y + radius + 36}
+                  y={pos.y + radius + 50}
                   textAnchor="middle"
                   fontSize="11"
                   fill="#7c57ff"
+                  fontWeight="500"
                 >
-                  {dayInfo.workoutType}
+                  {dayInfo.title}
                 </text>
               )}
             </g>

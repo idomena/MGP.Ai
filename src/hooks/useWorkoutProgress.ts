@@ -8,6 +8,7 @@ interface DayStatus {
   status: "completed" | "active" | "locked";
   title: string;
   workoutType: string;
+  date: string;
 }
 
 interface UserStats {
@@ -162,6 +163,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
           status,
           title: p.title,
           workoutType: p.workoutType,
+          date: p.date,
         };
       });
 
