@@ -2,8 +2,9 @@ import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
 import JourneyPath from "@/components/JourneyPath";
 import SchedulingAIAssistant from "@/components/SchedulingAIAssistant";
+import ChangeWorkoutTypeModal from "@/components/ChangeWorkoutTypeModal";
 import { useState, useEffect } from "react";
-import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock, Moon, MessageCircle } from "lucide-react";
+import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock, Moon, MessageCircle, RefreshCw, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +24,7 @@ export default function Home() {
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [showSchedulingAI, setShowSchedulingAI] = useState(false);
+  const [showChangeType, setShowChangeType] = useState(false);
   const [customSchedule, setCustomSchedule] = useState<Record<number, any>>({});
 
   const { isLoading: isLoadingOnboarding, needsOnboarding } = useOnboardingStatus();
@@ -37,6 +39,7 @@ export default function Home() {
     error: progressError,
     getWorkoutForDay,
     moveWorkout,
+    changeWorkoutType,
   } = useWorkoutProgress();
 
   useEffect(() => {
@@ -79,6 +82,17 @@ export default function Home() {
 
   const handleStartWorkout = (day: number) => {
     navigate(`/workout/${day}`);
+  };
+
+  const handleChangeWorkoutType = async (newType: string, newTitle: string) => {
+    if (!selectedDay) return false;
+    const success = await changeWorkoutType(selectedDay, newType, newTitle);
+    if (success) {
+      toast.success(`Day ${selectedDay} changed to ${newTitle}`);
+    } else {
+      toast.error("Failed to change workout type. Please try again.");
+    }
+    return success;
   };
 
   const handleRescheduleWorkout = async (fromDay: number, toDay: number) => {
@@ -358,6 +372,32 @@ export default function Home() {
                 <p className="text-white font-semibold">{workout.workoutType}</p>
               </div>
 
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    setShowWorkoutModal(false);
+                    setShowChangeType(true);
+                  }}
+                  className="bg-[#1a1a2e]/60 backdrop-blur-sm py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2 border border-white/10"
+                  data-testid="button-change-type-modal"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span className="text-sm">Change</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setShowWorkoutModal(false);
+                    setShowSchedulingAI(true);
+                  }}
+                  className="bg-gradient-to-br from-[#7c57ff]/20 to-[#60a5fa]/20 backdrop-blur-sm py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2 border border-[#7c57ff]/30"
+                  data-testid="button-ai-schedule-modal"
+                >
+                  <Sparkles className="w-4 h-4 text-[#7c57ff]" />
+                  <span className="text-sm">AI Schedule</span>
+                </button>
+              </div>
+
               {(() => {
                 const isRestDay = workout.workoutType === "rest";
                 
@@ -456,6 +496,17 @@ export default function Home() {
           return success;
         }}
       />
+
+      {/* Change Workout Type Modal */}
+      {selectedDay && (
+        <ChangeWorkoutTypeModal
+          isOpen={showChangeType}
+          onClose={() => setShowChangeType(false)}
+          currentType={getWorkoutForDay(selectedDay).workoutType}
+          dayNumber={selectedDay}
+          onChangeType={handleChangeWorkoutType}
+        />
+      )}
 
       <NavigationBar />
     </div>
