@@ -21,6 +21,8 @@ export function useExercises(workoutType: string) {
       try {
         const muscleGroups = WORKOUT_TO_MUSCLE_GROUP[workoutType.toLowerCase()] || ["chest", "back", "legs"];
         
+        console.log("Fetching exercises for muscle groups:", muscleGroups);
+        
         const { data, error } = await (supabase as any)
           .from("exercises_library")
           .select("*")
@@ -28,10 +30,17 @@ export function useExercises(workoutType: string) {
           .eq("is_safe", true)
           .order("exercise_type", { ascending: false }); // compounds first
 
-        if (error || !data || data.length === 0) {
-          console.log("Using local exercise data for:", workoutType);
+        if (error) {
+          console.error("Supabase error fetching exercises:", error);
           return getExercisesForWorkoutType(workoutType);
         }
+        
+        if (!data || data.length === 0) {
+          console.log("No exercises found in database for:", workoutType, "- using local data");
+          return getExercisesForWorkoutType(workoutType);
+        }
+        
+        console.log("Found", data.length, "exercises from database for:", workoutType);
 
         // Select a balanced workout: 1-2 compounds + 2-3 isolations
         const compounds = data.filter((e: any) => e.exercise_type === "compound").slice(0, 2);
