@@ -16,12 +16,14 @@ interface Exercise {
 }
 
 interface ExerciseDetailsModalProps {
-  exercise: Exercise;
+  exercise: Exercise | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export default function ExerciseDetailsModal({ exercise, isOpen, onClose }: ExerciseDetailsModalProps) {
+  if (!exercise) return null;
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-md mx-auto p-0 overflow-hidden">
