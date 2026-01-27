@@ -7,9 +7,9 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   action?: {
-    type: "move_workout";
+    type: "move_workout" | "skip_workout";
     fromDay: number;
-    toDay: number;
+    toDay?: number;
     fromTitle: string;
     confirmed?: boolean;
   };
@@ -29,6 +29,7 @@ interface SchedulingAIAssistantProps {
   selectedDay?: number | null;
   dayStatuses: DayInfo[];
   onMoveWorkout: (fromDay: number, toDay: number) => Promise<boolean>;
+  onSkipWorkout?: (day: number) => Promise<boolean>;
 }
 
 export default function SchedulingAIAssistant({
@@ -38,6 +39,7 @@ export default function SchedulingAIAssistant({
   selectedDay,
   dayStatuses,
   onMoveWorkout,
+  onSkipWorkout,
 }: SchedulingAIAssistantProps) {
   const sourceDay = selectedDay || currentDay;
   const [messages, setMessages] = useState<Message[]>([]);
@@ -175,11 +177,30 @@ export default function SchedulingAIAssistant({
       lowerInput.includes("skip");
     
     if (isSchedulingRequest) {
-      const targetDay = parseDateFromText(userInput);
+      const isSkipRequest = lowerInput.includes("skip");
       const parsedSourceDay = parseSourceDayFromText(userInput);
+      const sourceDayInfo = dayStatuses.find((d) => d.day === parsedSourceDay);
+      
+      // Handle skip requests - convert workout to rest day
+      if (isSkipRequest && sourceDayInfo && sourceDayInfo.workoutType !== "rest") {
+        const action: Message["action"] = {
+          type: "skip_workout",
+          fromDay: parsedSourceDay,
+          fromTitle: sourceDayInfo.title,
+        };
+        
+        setPendingAction(action);
+        
+        return {
+          content: `I'll skip your **${sourceDayInfo.title}** on Day ${parsedSourceDay} and turn it into a Rest Day.\n\nYou can always change it back later if needed.\n\nShould I skip this workout?`,
+          action,
+        };
+      }
+      
+      // Handle move requests
+      const targetDay = parseDateFromText(userInput);
       
       if (targetDay && targetDay !== parsedSourceDay) {
-        const sourceDayInfo = dayStatuses.find((d) => d.day === parsedSourceDay);
         const targetDayInfo = dayStatuses.find((d) => d.day === targetDay);
         
         if (sourceDayInfo && targetDayInfo) {
@@ -197,7 +218,7 @@ export default function SchedulingAIAssistant({
             action,
           };
         }
-      } else if (!targetDay) {
+      } else if (!targetDay && !isSkipRequest) {
         return {
           content: "I couldn't figure out which day you want to move the workout to. Could you try again? For example:\n• \"Move to Sunday\"\n• \"Reschedule to day 15\"\n• \"Push to tomorrow\"",
         };
@@ -280,16 +301,32 @@ If the user is asking about scheduling or moving workouts, explain how they can 
     if (!pendingAction) return;
     
     setIsLoading(true);
-    const success = await onMoveWorkout(pendingAction.fromDay, pendingAction.toDay);
+    
+    let success = false;
+    
+    if (pendingAction.type === "skip_workout") {
+      // Skip workout by calling onSkipWorkout
+      if (onSkipWorkout) {
+        success = await onSkipWorkout(pendingAction.fromDay);
+      }
+    } else if (pendingAction.type === "move_workout" && pendingAction.toDay) {
+      // Move workout
+      success = await onMoveWorkout(pendingAction.fromDay, pendingAction.toDay);
+    }
+    
     setIsLoading(false);
     
     if (success) {
+      const successMessage = pendingAction.type === "skip_workout"
+        ? `Done! I've skipped your ${pendingAction.fromTitle} on Day ${pendingAction.fromDay}. It's now a Rest Day.`
+        : `Done! I've moved your ${pendingAction.fromTitle} from Day ${pendingAction.fromDay} to Day ${pendingAction.toDay}. Day ${pendingAction.fromDay} is now a Rest Day.`;
+      
       setMessages((prev) => [
         ...prev,
         {
           id: `confirm-${Date.now()}`,
           role: "assistant",
-          content: `Done! I've moved your ${pendingAction.fromTitle} from Day ${pendingAction.fromDay} to Day ${pendingAction.toDay}. Day ${pendingAction.fromDay} is now a Rest Day.`,
+          content: successMessage,
         },
       ]);
     } else {
@@ -326,17 +363,16 @@ If the user is asking about scheduling or moving workouts, explain how they can 
   };
 
   const isSelectedDifferent = selectedDay && selectedDay !== currentDay;
+  const sourceDayInfo = dayStatuses.find((d) => d.day === sourceDay);
+  const isRestDay = sourceDayInfo?.workoutType === "rest";
+  
   const quickCommands = isSelectedDifferent
-    ? [
-        `Move to tomorrow`,
-        `Move to next week`,
-        `What's on this day?`,
-      ]
-    : [
-        "Move today to tomorrow",
-        "Skip today",
-        "What's my schedule?",
-      ];
+    ? isRestDay
+      ? [`What's on this day?`]
+      : [`Skip this workout`, `Move to tomorrow`, `Move to next week`]
+    : isRestDay
+      ? ["What's my schedule?"]
+      : ["Skip today", "Move today to tomorrow", "What's my schedule?"];
 
   return (
     <AnimatePresence>

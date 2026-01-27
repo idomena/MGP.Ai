@@ -496,6 +496,13 @@ export default function Home() {
           }
           return success;
         }}
+        onSkipWorkout={async (day) => {
+          const success = await changeWorkoutType(day, "rest", "Rest Day");
+          if (success) {
+            toast.success(`Day ${day} is now a Rest Day`);
+          }
+          return success;
+        }}
       />
 
       {/* Change Workout Type Modal */}
