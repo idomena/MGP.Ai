@@ -83,6 +83,19 @@ Unique constraint: (user_id, day_number)
 - **Email Verification**: Users receive verification email on signup
 - **Logout**: Log out button on Profile page with session cleanup
 
+### January 2026 - Workout Rescheduling Feature
+- **Reschedule Button**: New button on workout page to swap workouts between days
+- **RescheduleModal**: Bottom sheet modal showing all 21 days as selectable cards
+- **Swap Preview**: Shows which workouts will be swapped before confirming
+- **LocalStorage Persistence**: Workout swaps saved to localStorage for persistence
+- **Confirmation Toast**: Success message shown after rescheduling
+
+### January 2026 - Targeted Muscles Visual
+- **MuscleAnatomyDiagram**: SVG component showing front/back body views
+- **Highlighted Muscles**: Targeted muscles shown in red based on workout exercises
+- **Muscle Mapping**: Automatic mapping from exercise muscle names to body regions
+- **Expandable Section**: Click "Targeted Muscles" to reveal the diagram
+
 ### January 2026 - Workout Page Redesign
 - **Gradient Summary Card**: Beautiful gradient header showing workout name, status badge, and 3 stat boxes (Exercises, Duration, Focus)
 - **Status Badges**: Today (gradient), Completed (green), Missed (orange), Locked (gray)

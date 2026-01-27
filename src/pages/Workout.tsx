@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Eye,
   Calendar,
+  CalendarDays,
 } from "lucide-react";
 import NavigationBar from "@/components/NavigationBar";
 import { motion } from "framer-motion";
@@ -20,6 +21,7 @@ import WorkoutSession from "@/components/WorkoutSession";
 import WorkoutAIAssistant from "@/components/WorkoutAIAssistant";
 import ExerciseDetailsModal from "@/components/ExerciseDetailsModal";
 import MuscleAnatomyDiagram from "@/components/MuscleAnatomyDiagram";
+import RescheduleModal from "@/components/RescheduleModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
 import { useExercises } from "@/hooks/useExercises";
@@ -34,13 +36,16 @@ export default function WorkoutPage() {
   const { user } = useAuth();
   const {
     completeWorkout,
+    swapWorkouts,
     currentDay: programCurrentDay,
     completedDays,
+    dayStatuses,
     getWorkoutForDay,
   } = useWorkoutProgress();
 
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
+  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [showExerciseModal, setShowExerciseModal] = useState(false);
 
@@ -128,6 +133,22 @@ export default function WorkoutPage() {
 
   const handleGoBack = () => {
     navigate("/");
+  };
+
+  const handleReschedule = async (fromDay: number, toDay: number) => {
+    const success = await swapWorkouts(fromDay, toDay);
+    if (success) {
+      toast.success(`Workout rescheduled! Day ${fromDay} and Day ${toDay} have been swapped.`);
+    } else {
+      toast.error("Failed to reschedule workout. Please try again.");
+    }
+  };
+
+  const currentDayInfo = {
+    day: dayNumber,
+    title: workoutName,
+    workoutType: workoutTemplate.workoutType,
+    date: "",
   };
 
   if (isWorkoutActive) {
@@ -308,6 +329,18 @@ export default function WorkoutPage() {
                 <Eye className="w-6 h-6 text-white" />
               </button>
             </div>
+
+            {/* Secondary Action Buttons */}
+            <div className="flex gap-3 mt-3">
+              <button
+                onClick={() => setIsRescheduleOpen(true)}
+                className="flex-1 bg-[#1a1a2e]/60 backdrop-blur-sm py-3 rounded-2xl font-medium text-white flex items-center justify-center gap-2 border border-white/10"
+                data-testid="button-reschedule"
+              >
+                <CalendarDays className="w-4 h-4" />
+                Reschedule
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>
@@ -427,6 +460,20 @@ export default function WorkoutPage() {
           }}
         />
       )}
+
+      {/* Reschedule Modal */}
+      <RescheduleModal
+        isOpen={isRescheduleOpen}
+        onClose={() => setIsRescheduleOpen(false)}
+        currentDay={currentDayInfo}
+        allDays={dayStatuses.map(ds => ({
+          day: ds.day,
+          title: ds.title,
+          workoutType: ds.workoutType,
+          date: ds.date,
+        }))}
+        onReschedule={handleReschedule}
+      />
     </div>
   );
 }

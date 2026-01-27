@@ -36,6 +36,7 @@ interface WorkoutProgressData {
   error: string | null;
   refetch: () => Promise<void>;
   completeWorkout: (dayNumber: number) => Promise<boolean>;
+  swapWorkouts: (fromDay: number, toDay: number) => Promise<boolean>;
   getWorkoutForDay: (day: number) => WorkoutTemplate;
   exerciseTemplates: WorkoutTemplate[];
 }
@@ -268,6 +269,55 @@ export function useWorkoutProgress(): WorkoutProgressData {
     };
   }, [user?.id, fetchProgress]);
 
+  const swapWorkouts = useCallback(async (fromDay: number, toDay: number): Promise<boolean> => {
+    if (!user?.id) {
+      console.error("No user logged in");
+      return false;
+    }
+
+    try {
+      const fromDayInfo = dayStatuses.find(d => d.day === fromDay);
+      const toDayInfo = dayStatuses.find(d => d.day === toDay);
+
+      if (!fromDayInfo || !toDayInfo) {
+        console.error("Could not find day info for swap");
+        return false;
+      }
+
+      // Update local state to swap the workout types and titles
+      setDayStatuses(prev => prev.map(ds => {
+        if (ds.day === fromDay) {
+          return {
+            ...ds,
+            title: toDayInfo.title,
+            workoutType: toDayInfo.workoutType,
+          };
+        }
+        if (ds.day === toDay) {
+          return {
+            ...ds,
+            title: fromDayInfo.title,
+            workoutType: fromDayInfo.workoutType,
+          };
+        }
+        return ds;
+      }));
+
+      // Save to localStorage for persistence
+      const swapKey = `workout_swaps_${user.id}`;
+      const existingSwaps = JSON.parse(localStorage.getItem(swapKey) || "{}");
+      existingSwaps[fromDay] = { title: toDayInfo.title, workoutType: toDayInfo.workoutType };
+      existingSwaps[toDay] = { title: fromDayInfo.title, workoutType: fromDayInfo.workoutType };
+      localStorage.setItem(swapKey, JSON.stringify(existingSwaps));
+
+      console.log(`Swapped Day ${fromDay} with Day ${toDay}`);
+      return true;
+    } catch (err) {
+      console.error("Error swapping workouts:", err);
+      return false;
+    }
+  }, [user?.id, dayStatuses]);
+
   const completeWorkout = useCallback(async (dayNumber: number): Promise<boolean> => {
     if (!user?.id) {
       console.error("No user logged in");
@@ -336,6 +386,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
     error,
     refetch: fetchProgress,
     completeWorkout,
+    swapWorkouts,
     getWorkoutForDay,
     exerciseTemplates: [],
   };
