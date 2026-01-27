@@ -450,16 +450,6 @@ export default function Home() {
         </DialogContent>
       </Dialog>
 
-      {/* Scheduling AI Button */}
-      <button
-        onClick={() => setShowSchedulingAI(true)}
-        className="fixed bottom-24 right-4 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center shadow-lg shadow-[#7c57ff]/30"
-        data-testid="button-scheduling-ai"
-        aria-label="Open scheduling assistant"
-      >
-        <MessageCircle className="w-6 h-6 text-white" />
-      </button>
-
       {/* Scheduling AI Assistant */}
       <SchedulingAIAssistant
         isOpen={showSchedulingAI}
