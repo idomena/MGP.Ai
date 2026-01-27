@@ -176,16 +176,16 @@ export default function Home() {
                 <TrendingUp className="w-4 h-4 text-[#7c57ff]" />
               </div>
               <div className="flex items-center gap-2">
-                <div className="backdrop-blur-sm bg-white/5 rounded-md px-2 py-1 border border-white/10 flex items-center gap-1">
-                  <span className="text-white font-semibold text-xs">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</span>
+                <div className="backdrop-blur-sm bg-white/5 rounded-lg px-3 py-1.5 border border-white/10 flex items-center gap-1.5">
+                  <span className="text-white font-semibold text-sm">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</span>
                 </div>
-                <div className="backdrop-blur-sm bg-white/5 rounded-md px-2 py-1 border border-white/10 flex items-center gap-1">
-                  <span className="text-xs">🔥</span>
-                  <span className="text-white font-semibold text-xs">{userStats.streak}</span>
+                <div className="backdrop-blur-sm bg-white/5 rounded-lg px-3 py-1.5 border border-white/10 flex items-center gap-1.5">
+                  <span className="text-sm">🔥</span>
+                  <span className="text-white font-semibold text-sm">{userStats.streak}</span>
                 </div>
-                <div className="backdrop-blur-sm bg-white/5 rounded-md px-2 py-1 border border-white/10 flex items-center gap-1">
-                  <span className="text-xs">⚡</span>
-                  <span className="text-white font-semibold text-xs">{userStats.xp.toLocaleString()}</span>
+                <div className="backdrop-blur-sm bg-white/5 rounded-lg px-3 py-1.5 border border-white/10 flex items-center gap-1.5">
+                  <span className="text-sm">⚡</span>
+                  <span className="text-white font-semibold text-sm">{userStats.xp.toLocaleString()}</span>
                 </div>
               </div>
             </motion.div>
