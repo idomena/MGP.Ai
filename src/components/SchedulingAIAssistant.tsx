@@ -7,10 +7,12 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   action?: {
-    type: "move_workout" | "skip_workout";
+    type: "move_workout" | "skip_workout" | "change_workout";
     fromDay: number;
     toDay?: number;
     fromTitle: string;
+    newType?: string;
+    newTitle?: string;
     confirmed?: boolean;
   };
 }
@@ -30,6 +32,7 @@ interface SchedulingAIAssistantProps {
   dayStatuses: DayInfo[];
   onMoveWorkout: (fromDay: number, toDay: number) => Promise<boolean>;
   onSkipWorkout?: (day: number) => Promise<boolean>;
+  onChangeWorkoutType?: (day: number, newType: string, newTitle: string) => Promise<boolean>;
 }
 
 export default function SchedulingAIAssistant({
@@ -40,6 +43,7 @@ export default function SchedulingAIAssistant({
   dayStatuses,
   onMoveWorkout,
   onSkipWorkout,
+  onChangeWorkoutType,
 }: SchedulingAIAssistantProps) {
   const sourceDay = selectedDay || currentDay;
   const [messages, setMessages] = useState<Message[]>([]);
@@ -164,6 +168,25 @@ export default function SchedulingAIAssistant({
     return sourceDay;
   };
 
+  const parseWorkoutTypeFromText = (text: string): { type: string; title: string } | null => {
+    const lowerText = text.toLowerCase();
+    
+    if (lowerText.includes("upper") || lowerText.includes("arms") || lowerText.includes("chest") || lowerText.includes("back")) {
+      return { type: "upper", title: "Upper Body" };
+    }
+    if (lowerText.includes("lower") || lowerText.includes("leg") || lowerText.includes("glute") || lowerText.includes("squat")) {
+      return { type: "lower", title: "Lower Body" };
+    }
+    if (lowerText.includes("full body") || lowerText.includes("fullbody") || lowerText.includes("total body")) {
+      return { type: "full", title: "Full Body" };
+    }
+    if (lowerText.includes("cardio") || lowerText.includes("running") || lowerText.includes("hiit")) {
+      return { type: "cardio", title: "Cardio" };
+    }
+    
+    return null;
+  };
+
   const processUserInput = async (userInput: string) => {
     const lowerInput = userInput.toLowerCase();
     
@@ -193,6 +216,35 @@ export default function SchedulingAIAssistant({
         
         return {
           content: `I'll skip your **${sourceDayInfo.title}** on Day ${parsedSourceDay} and turn it into a Rest Day.\n\nYou can always change it back later if needed.\n\nShould I skip this workout?`,
+          action,
+        };
+      }
+      
+      // Handle change workout type requests (e.g., "change to upper body", "make this a leg day")
+      const isChangeTypeRequest = lowerInput.includes("change") && 
+        (lowerInput.includes("to ") || lowerInput.includes("this ") || lowerInput.includes("make"));
+      const targetWorkoutType = parseWorkoutTypeFromText(userInput);
+      
+      if (isChangeTypeRequest && targetWorkoutType && sourceDayInfo) {
+        // Don't allow changing to the same type
+        if (sourceDayInfo.workoutType === targetWorkoutType.type) {
+          return {
+            content: `Day ${parsedSourceDay} is already a ${targetWorkoutType.title} workout. Would you like to change it to something else?`,
+          };
+        }
+        
+        const action: Message["action"] = {
+          type: "change_workout",
+          fromDay: parsedSourceDay,
+          fromTitle: sourceDayInfo.title,
+          newType: targetWorkoutType.type,
+          newTitle: targetWorkoutType.title,
+        };
+        
+        setPendingAction(action);
+        
+        return {
+          content: `I'll change Day ${parsedSourceDay} from **${sourceDayInfo.title}** to **${targetWorkoutType.title}**.\n\nShould I make this change?`,
           action,
         };
       }
@@ -309,6 +361,11 @@ If the user is asking about scheduling or moving workouts, explain how they can 
       if (onSkipWorkout) {
         success = await onSkipWorkout(pendingAction.fromDay);
       }
+    } else if (pendingAction.type === "change_workout" && pendingAction.newType && pendingAction.newTitle) {
+      // Change workout type
+      if (onChangeWorkoutType) {
+        success = await onChangeWorkoutType(pendingAction.fromDay, pendingAction.newType, pendingAction.newTitle);
+      }
     } else if (pendingAction.type === "move_workout" && pendingAction.toDay) {
       // Move workout
       success = await onMoveWorkout(pendingAction.fromDay, pendingAction.toDay);
@@ -317,9 +374,14 @@ If the user is asking about scheduling or moving workouts, explain how they can 
     setIsLoading(false);
     
     if (success) {
-      const successMessage = pendingAction.type === "skip_workout"
-        ? `Done! I've skipped your ${pendingAction.fromTitle} on Day ${pendingAction.fromDay}. It's now a Rest Day.`
-        : `Done! I've moved your ${pendingAction.fromTitle} from Day ${pendingAction.fromDay} to Day ${pendingAction.toDay}. Day ${pendingAction.fromDay} is now a Rest Day.`;
+      let successMessage: string;
+      if (pendingAction.type === "skip_workout") {
+        successMessage = `Done! I've skipped your ${pendingAction.fromTitle} on Day ${pendingAction.fromDay}. It's now a Rest Day.`;
+      } else if (pendingAction.type === "change_workout") {
+        successMessage = `Done! I've changed Day ${pendingAction.fromDay} to ${pendingAction.newTitle}.`;
+      } else {
+        successMessage = `Done! I've moved your ${pendingAction.fromTitle} from Day ${pendingAction.fromDay} to Day ${pendingAction.toDay}. Day ${pendingAction.fromDay} is now a Rest Day.`;
+      }
       
       setMessages((prev) => [
         ...prev,
@@ -368,10 +430,10 @@ If the user is asking about scheduling or moving workouts, explain how they can 
   
   const quickCommands = isSelectedDifferent
     ? isRestDay
-      ? [`What's on this day?`]
-      : [`Skip this workout`, `Move to tomorrow`, `Move to next week`]
+      ? [`Change to Upper Body`, `Change to Lower Body`, `Change to Cardio`]
+      : [`Skip this workout`, `Move to tomorrow`, `Change to Upper Body`]
     : isRestDay
-      ? ["What's my schedule?"]
+      ? ["Change to Upper Body", "Change to Lower Body", "Change to Cardio"]
       : ["Skip today", "Move today to tomorrow", "What's my schedule?"];
 
   return (

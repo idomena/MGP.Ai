@@ -503,6 +503,13 @@ export default function Home() {
           }
           return success;
         }}
+        onChangeWorkoutType={async (day, newType, newTitle) => {
+          const success = await changeWorkoutType(day, newType, newTitle);
+          if (success) {
+            toast.success(`Day ${day} changed to ${newTitle}`);
+          }
+          return success;
+        }}
       />
 
       {/* Change Workout Type Modal */}
