@@ -1,0 +1,83 @@
+create table public.exercises_library (
+  id uuid not null default gen_random_uuid (),
+  title text not null,
+  muscle_group text not null,
+  secondary_muscles text[] null default array[]::text[],
+  equipment text not null,
+  difficulty text not null,
+  exercise_type text not null,
+  movement_pattern text not null,
+  is_safe boolean not null default true,
+  description text null,
+  created_at timestamp with time zone not null default now(),
+  constraint exercises_library_pkey primary key (id),
+  constraint exercises_library_equipment_chk check (
+    (
+      equipment = any (
+        array[
+          'bodyweight'::text,
+          'dumbbell'::text,
+          'barbell'::text,
+          'machine'::text,
+          'cable'::text
+        ]
+      )
+    )
+  ),
+  constraint exercises_library_exercise_type_chk check (
+    (
+      exercise_type = any (array['compound'::text, 'isolation'::text])
+    )
+  ),
+  constraint exercises_library_difficulty_chk check (
+    (
+      difficulty = any (
+        array[
+          'beginner'::text,
+          'intermediate'::text,
+          'advanced'::text
+        ]
+      )
+    )
+  ),
+  constraint exercises_library_muscle_group_chk check (
+    (
+      muscle_group = any (
+        array[
+          'chest'::text,
+          'back'::text,
+          'legs'::text,
+          'shoulders'::text,
+          'arms'::text,
+          'core'::text
+        ]
+      )
+    )
+  ),
+  constraint exercises_library_title_not_empty check ((btrim(title) <> ''::text)),
+  constraint exercises_library_movement_pattern_chk check (
+    (
+      movement_pattern = any (
+        array[
+          'push'::text,
+          'pull'::text,
+          'squat'::text,
+          'hinge'::text,
+          'carry'::text
+        ]
+      )
+    )
+  )
+) TABLESPACE pg_default;
+
+create unique INDEX IF not exists idx_exercises_library_title_unique on public.exercises_library using btree (lower(btrim(title))) TABLESPACE pg_default;
+
+create index IF not exists idx_exercises_library_muscle_group on public.exercises_library using btree (muscle_group) TABLESPACE pg_default;
+
+create index IF not exists idx_exercises_library_equipment on public.exercises_library using btree (equipment) TABLESPACE pg_default;
+
+create index IF not exists idx_exercises_library_difficulty on public.exercises_library using btree (difficulty) TABLESPACE pg_default;
+
+create index IF not exists idx_exercises_library_exercise_type on public.exercises_library using btree (exercise_type) TABLESPACE pg_default;
+
+create index IF not exists idx_exercises_library_movement_pattern on public.exercises_library using btree (movement_pattern) TABLESPACE pg_default;
