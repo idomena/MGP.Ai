@@ -13,7 +13,6 @@ import {
   RefreshCw,
   ArrowRightLeft,
   Moon,
-  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NavigationBar from "@/components/NavigationBar";
@@ -211,15 +210,6 @@ export default function WorkoutPage() {
           </div>
 
           <div className="flex gap-2">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setIsSchedulingAIOpen(true)}
-              className="rounded-full bg-white/10"
-              data-testid="button-schedule"
-            >
-              <Calendar className="w-4 h-4 text-white/70" />
-            </Button>
             <Button
               size="icon"
               variant="ghost"
