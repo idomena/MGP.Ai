@@ -43,14 +43,8 @@ export const QUESTIONS: Question[] = [
     required: true,
   },
   {
-    id: 'assistant',
-    botMessage: "Got it, {name}! Now, how do you like to be coached? Pick the style that vibes with you:",
-    componentType: 'assistant',
-    required: true,
-  },
-  {
     id: 'weight',
-    botMessage: "Perfect choice, {name}! Now let's get a bit more personal - what's your current weight? Don't worry, this helps me tailor workouts just for you!",
+    botMessage: "Great, {name}! Now let's get a bit more personal - what's your current weight? Don't worry, this helps me tailor workouts just for you!",
     componentType: 'weight',
     required: true,
   },

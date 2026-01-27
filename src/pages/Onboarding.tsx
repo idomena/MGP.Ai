@@ -16,7 +16,6 @@ import {
 
 import NameInput from "@/components/onboarding/NameInput";
 import { GenderSelector } from "@/components/onboarding/GenderSelector";
-import AssistantSelector from "@/components/onboarding/AssistantSelector";
 import WeightSelector from "@/components/onboarding/WeightSelector";
 import OptionSelector from "@/components/onboarding/OptionSelector";
 import { TrainingDaysSelector } from "@/components/onboarding/TrainingDaysSelector";
@@ -171,11 +170,6 @@ export default function Onboarding() {
     handleAnswer('gender', gender, labels[gender]);
   };
 
-  const handleAssistantSelect = (type: 'coach' | 'nutritionist' | 'trainer') => {
-    setSelections(prev => ({ ...prev, assistantType: type }));
-    const labels = { coach: 'Coach', nutritionist: 'Nutritionist', trainer: 'Fitness Trainer' };
-    handleAnswer('assistant', type, labels[type]);
-  };
 
   const handleWeightSelect = (weight: number, unit: 'kg' | 'lbs') => {
     setSelections(prev => ({ ...prev, weight: { value: weight, unit } }));
@@ -295,9 +289,6 @@ export default function Onboarding() {
       case 'gender':
         return <GenderSelector onSelect={handleGenderSelect} />;
       
-      case 'assistant':
-        return <AssistantSelector onSelect={handleAssistantSelect} />;
-      
       case 'weight':
         return <WeightSelector onSelect={handleWeightSelect} />;
       
@@ -335,7 +326,6 @@ export default function Onboarding() {
               coachName: selections.coachName,
               name: selections.name,
               gender: genderLabels[selections.gender] || 'Not set',
-              assistant: selections.assistantType === 'coach' ? 'Coach' : selections.assistantType === 'nutritionist' ? 'Nutritionist' : 'Fitness Trainer',
               weight: `${selections.weight.value} ${selections.weight.unit}`,
               goals: selections.goals,
               experience: selections.experience,
