@@ -21,24 +21,46 @@ MGP.AI is an AI-powered fitness and nutrition mobile web application built with 
 - **Conversation Manager**: Located at `src/components/onboarding/ConversationManager.ts`
 - **Components Location**: All onboarding components in `src/components/onboarding/`
 
-### January 2026 - LocalStorage-Based 21-Day Plan
-- **Preferences in localStorage**: Training days and workout selections saved to `mgp_workout_preferences` in localStorage
-- **21 Circles Generated Client-Side**: Plan calculated from preferences, not stored in database upfront
-- **Supabase Only for Completions**: Only completed workouts get saved to Supabase
+### January 2026 - Full Database-Driven 21-Day Plan
+- **Onboarding saves to Supabase**: When user completes onboarding, preferences saved to `user_preferences` table
+- **Auto-generated 21-day plan**: `workoutPlanService.ts` generates all 21 `workout_completions` rows in database
+- **Database is single source of truth**: Circles render from `workout_completions` table, not localStorage
+- **Atomic onboarding flow**: onboarding_completed only set to true after verifying 21 rows exist
 - **Rest Day Skipping**: Active day automatically skips rest days and points to next training day
-- **Exercise Fallback**: Uses local exercise data if Supabase table not available
+- **Real-time updates**: UI updates automatically via Supabase realtime subscriptions
 
 ### January 2026 - Supabase Schema Requirements
-The `workout_completions` table in Supabase needs these columns:
+Required tables and columns:
+
+**user_preferences table:**
 | Column | Type | Required |
 |--------|------|----------|
-| id | uuid | PK, auto |
-| user_id | uuid | Yes |
-| day_number | int4 | Yes |
-| completed | boolean | Yes |
+| id | serial | PK, auto |
+| user_id | varchar | Yes, unique |
+| training_days | text[] | Yes |
+| selected_workouts | text[] | Yes |
+| onboarding_completed | boolean | Yes |
 
-Optional columns (not currently used):
-- title, workout_type, completed_at, created_at
+**user_programs table:**
+| Column | Type | Required |
+|--------|------|----------|
+| id | serial | PK, auto |
+| user_id | varchar | Yes, unique |
+| start_date | date | Yes |
+| total_days | integer | Yes |
+
+**workout_completions table:**
+| Column | Type | Required |
+|--------|------|----------|
+| id | serial | PK, auto |
+| user_id | varchar | Yes |
+| day_number | integer | Yes |
+| title | text | Yes |
+| workout_type | text | Yes |
+| completed | boolean | Yes |
+| completed_at | timestamp | Optional |
+
+Unique constraint: (user_id, day_number)
 
 ### January 2026 - Exercise Loading
 - **exercises_templates Table**: Optional - fetches exercises from Supabase if available
