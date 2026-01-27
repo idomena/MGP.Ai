@@ -270,7 +270,13 @@ export default function SchedulingAIAssistant({
             action,
           };
         }
-      } else if (!targetDay && !isSkipRequest) {
+      } else if (!targetDay && !isSkipRequest && !(isChangeTypeRequest && targetWorkoutType)) {
+        // Only show move error if it's not a change type request
+        if (isChangeTypeRequest && !targetWorkoutType) {
+          return {
+            content: "I couldn't figure out which workout type you want. Try saying:\n• \"Change to Upper Body\"\n• \"Change to Lower Body\"\n• \"Change to Cardio\"\n• \"Change to Full Body\"",
+          };
+        }
         return {
           content: "I couldn't figure out which day you want to move the workout to. Could you try again? For example:\n• \"Move to Sunday\"\n• \"Reschedule to day 15\"\n• \"Push to tomorrow\"",
         };

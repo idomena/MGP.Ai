@@ -408,12 +408,26 @@ export function useWorkoutProgress(): WorkoutProgressData {
     }
 
     try {
+      // Get current status to check if we're changing FROM a rest day
+      const currentStatus = dayStatuses.find(ds => ds.day === dayNumber);
+      const wasRestDay = currentStatus?.workoutType === "rest";
+      const changingToWorkout = newType !== "rest";
+      
+      // Build update data
+      const updateData: Record<string, unknown> = { 
+        title: newTitle, 
+        workout_type: newType 
+      };
+      
+      // Reset completion if changing rest day to a real workout
+      if (wasRestDay && changingToWorkout) {
+        updateData.completed = false;
+        updateData.completed_at = null;
+      }
+      
       const { error } = await supabase
         .from("workout_completions")
-        .update({ 
-          title: newTitle, 
-          workout_type: newType 
-        })
+        .update(updateData)
         .eq("user_id", user.id)
         .eq("day_number", dayNumber);
 
@@ -424,10 +438,21 @@ export function useWorkoutProgress(): WorkoutProgressData {
 
       setDayStatuses(prev => prev.map(ds => {
         if (ds.day === dayNumber) {
+          // Recalculate status if changing from rest to workout
+          let newStatus = ds.status;
+          if (wasRestDay && changingToWorkout) {
+            if (dayNumber === currentDay) {
+              newStatus = "active";
+            } else {
+              // For past or future days, set to locked - the next fetch will recalculate properly
+              newStatus = "locked";
+            }
+          }
           return {
             ...ds,
             title: newTitle,
             workoutType: newType,
+            status: newStatus,
           };
         }
         return ds;
@@ -439,7 +464,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
       console.error("Error changing workout type:", err);
       return false;
     }
-  }, [user?.id]);
+  }, [user?.id, dayStatuses, currentDay]);
 
   const moveWorkout = useCallback(async (fromDay: number, toDay: number): Promise<boolean> => {
     if (!user?.id) {
