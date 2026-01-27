@@ -66,8 +66,17 @@ export default function ChangeWorkoutTypeModal({
     }
   }, [isOpen]);
 
+  // Debug: Log selectedType changes
+  useEffect(() => {
+    console.log("selectedType changed to:", selectedType);
+  }, [selectedType]);
+
   const handleConfirm = async () => {
-    if (!selectedType) return;
+    console.log("handleConfirm called, selectedType:", selectedType);
+    if (!selectedType) {
+      console.log("selectedType is null, returning early");
+      return;
+    }
 
     const selected = WORKOUT_TYPES.find((t) => t.type === selectedType);
     if (!selected) return;
@@ -152,17 +161,22 @@ export default function ChangeWorkoutTypeModal({
                   Select a new workout type:
                 </p>
                 {WORKOUT_TYPES.map((workout) => {
-                  const isCurrentType =
-                    workout.type.toLowerCase() === currentType.toLowerCase();
+                  const isCurrentType = currentType 
+                    ? workout.type.toLowerCase() === currentType.toLowerCase()
+                    : false;
                   const isSelected = workout.type === selectedType;
                   const Icon = workout.icon;
 
                   return (
                     <button
                       key={workout.type}
-                      onClick={() =>
-                        !isCurrentType && setSelectedType(workout.type)
-                      }
+                      onClick={() => {
+                        console.log("Button clicked:", workout.type, "isCurrentType:", isCurrentType);
+                        if (!isCurrentType) {
+                          console.log("Setting selectedType to:", workout.type);
+                          setSelectedType(workout.type);
+                        }
+                      }}
                       disabled={isCurrentType}
                       className={`
                         w-full p-4 rounded-2xl border transition-all flex items-center gap-4
