@@ -8,7 +8,7 @@ import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Cale
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
@@ -25,6 +25,7 @@ export default function Home() {
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [showSchedulingAI, setShowSchedulingAI] = useState(false);
   const [showChangeType, setShowChangeType] = useState(false);
+  const [showStatsExpanded, setShowStatsExpanded] = useState(false);
   const [customSchedule, setCustomSchedule] = useState<Record<number, any>>({});
 
   const { isLoading: isLoadingOnboarding, needsOnboarding } = useOnboardingStatus();
@@ -165,25 +166,50 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Floating Stats Buttons */}
-            <motion.div 
+            {/* Floating Stats Button - Expands on tap */}
+            <motion.button
+              onClick={() => setShowStatsExpanded(!showStatsExpanded)}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center gap-4"
+              className="bg-[#2a2a3e] rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.5)] border border-white/10 flex items-center gap-3 px-4 py-2.5 mx-auto"
             >
-              <div className="bg-[#2a2a3e] rounded-full px-5 py-2.5 flex items-center gap-2 shadow-[0_8px_30px_rgba(0,0,0,0.4)] border border-white/5">
-                <Target className="w-4 h-4 text-[#7c57ff]" />
-                <span className="text-white font-bold text-sm">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</span>
-              </div>
-              <div className="bg-[#2a2a3e] rounded-full px-5 py-2.5 flex items-center gap-2 shadow-[0_8px_30px_rgba(0,0,0,0.4)] border border-white/5">
-                <Flame className="w-4 h-4 text-orange-500" />
-                <span className="text-white font-bold text-sm">{userStats.streak}</span>
-              </div>
-              <div className="bg-[#2a2a3e] rounded-full px-5 py-2.5 flex items-center gap-2 shadow-[0_8px_30px_rgba(0,0,0,0.4)] border border-white/5">
-                <Zap className="w-4 h-4 text-yellow-500" />
-                <span className="text-white font-bold text-sm">{userStats.xp.toLocaleString()}</span>
-              </div>
-            </motion.div>
+              <AnimatePresence mode="wait">
+                {showStatsExpanded ? (
+                  <motion.div
+                    key="expanded"
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: "auto" }}
+                    exit={{ opacity: 0, width: 0 }}
+                    className="flex items-center gap-4"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Target className="w-4 h-4 text-[#7c57ff]" />
+                      <span className="text-white font-bold text-sm">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Flame className="w-4 h-4 text-orange-500" />
+                      <span className="text-white font-bold text-sm">{userStats.streak}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Zap className="w-4 h-4 text-yellow-500" />
+                      <span className="text-white font-bold text-sm">{userStats.xp.toLocaleString()}</span>
+                    </div>
+                    <X className="w-4 h-4 text-white/50 ml-1" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="collapsed"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-2"
+                  >
+                    <BarChart3 className="w-5 h-5 text-[#7c57ff]" />
+                    <span className="text-white font-semibold text-sm">Stats</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
           </div>
         )}
       </div>
