@@ -92,7 +92,7 @@ export default function Onboarding() {
     setMessages(prev => [...prev, newMessage]);
   }, []);
 
-  const simulateTyping = useCallback((callback: () => void, delay = 1000) => {
+  const simulateTyping = useCallback((callback: () => void, delay = 300) => {
     if (!isMountedRef.current) return;
     setIsTyping(true);
     safeSetTimeout(() => {
@@ -125,8 +125,8 @@ export default function Onboarding() {
         if (isMountedRef.current) {
           setShowCurrentComponent(true);
         }
-      }, 300);
-    }, 800);
+      }, 200);
+    }, 200);
   }, [simulateTyping, addBotMessage, safeSetTimeout, selections.name]);
 
   useEffect(() => {
@@ -404,36 +404,6 @@ export default function Onboarding() {
             ))}
           </AnimatePresence>
 
-          {isTyping && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-start gap-3"
-            >
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
-              </div>
-              <div className="bg-white/5 px-4 py-3 rounded-2xl rounded-tl-sm">
-                <div className="flex gap-1">
-                  <motion.span
-                    animate={{ opacity: [0.4, 1, 0.4] }}
-                    transition={{ duration: 1, repeat: Infinity, delay: 0 }}
-                    className="w-2 h-2 bg-white/60 rounded-full"
-                  />
-                  <motion.span
-                    animate={{ opacity: [0.4, 1, 0.4] }}
-                    transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
-                    className="w-2 h-2 bg-white/60 rounded-full"
-                  />
-                  <motion.span
-                    animate={{ opacity: [0.4, 1, 0.4] }}
-                    transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
-                    className="w-2 h-2 bg-white/60 rounded-full"
-                  />
-                </div>
-              </div>
-            </motion.div>
-          )}
 
           <AnimatePresence>
             {showCurrentComponent && !isTyping && (
