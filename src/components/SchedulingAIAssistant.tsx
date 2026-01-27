@@ -325,11 +325,18 @@ If the user is asking about scheduling or moving workouts, explain how they can 
     }
   };
 
-  const quickCommands = [
-    "Move today to tomorrow",
-    "Skip today",
-    "What's my schedule?",
-  ];
+  const isSelectedDifferent = selectedDay && selectedDay !== currentDay;
+  const quickCommands = isSelectedDifferent
+    ? [
+        `Move to tomorrow`,
+        `Move to next week`,
+        `What's on this day?`,
+      ]
+    : [
+        "Move today to tomorrow",
+        "Skip today",
+        "What's my schedule?",
+      ];
 
   return (
     <AnimatePresence>
@@ -446,11 +453,39 @@ If the user is asking about scheduling or moving workouts, explain how they can 
                   {quickCommands.map((cmd) => (
                     <button
                       key={cmd}
-                      onClick={() => {
-                        setInput(cmd);
-                        setTimeout(() => {
-                          sendMessage();
-                        }, 0);
+                      onClick={async () => {
+                        if (isLoading) return;
+                        
+                        const userMessage: Message = {
+                          id: `user-${Date.now()}`,
+                          role: "user",
+                          content: cmd,
+                        };
+                        
+                        setMessages((prev) => [...prev, userMessage]);
+                        setIsLoading(true);
+                        
+                        try {
+                          const response = await processUserInput(cmd);
+                          const assistantMessage: Message = {
+                            id: `assistant-${Date.now()}`,
+                            role: "assistant",
+                            content: response.content,
+                            action: response.action,
+                          };
+                          setMessages((prev) => [...prev, assistantMessage]);
+                        } catch (error) {
+                          setMessages((prev) => [
+                            ...prev,
+                            {
+                              id: `error-${Date.now()}`,
+                              role: "assistant",
+                              content: "Sorry, something went wrong. Please try again.",
+                            },
+                          ]);
+                        } finally {
+                          setIsLoading(false);
+                        }
                       }}
                       className="px-3 py-2 bg-white/10 text-white/80 text-sm rounded-full hover:bg-white/20 transition-colors"
                       data-testid={`button-quick-${cmd.slice(0, 8)}`}
