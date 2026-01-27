@@ -213,15 +213,6 @@ export default function WorkoutPage() {
             <Button
               size="icon"
               variant="ghost"
-              onClick={() => setIsChangeTypeOpen(true)}
-              className="rounded-full bg-white/10"
-              data-testid="button-change-type"
-            >
-              <RefreshCw className="w-4 h-4 text-white/70" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
               onClick={() => setIsAIOpen(true)}
               className="rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa]"
               data-testid="button-ai-help"
