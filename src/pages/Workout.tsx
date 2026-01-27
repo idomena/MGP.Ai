@@ -169,18 +169,6 @@ export default function WorkoutPage() {
     );
   }
 
-  // Show loading state while data is being fetched
-  if (isLoading && !id) {
-    return (
-      <div className="min-h-screen bg-[#0f0f1a] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-[#7c57ff] border-t-transparent rounded-full animate-spin" />
-          <span className="text-white/50 text-sm">Loading workout...</span>
-        </div>
-      </div>
-    );
-  }
-
   const getStatusColor = () => {
     switch (workoutStatus) {
       case "completed": return "text-green-400";
