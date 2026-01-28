@@ -201,79 +201,87 @@ export default function WorkoutPage() {
 
   return (
     <div className="min-h-screen bg-[#0f0f1a] flex flex-col">
-      {/* Compact Header */}
-      <header className="sticky top-0 z-40 px-4 py-3 bg-[#0f0f1a] border-b border-white/5">
-        <div className="flex items-center gap-3">
+      {/* Clean Header */}
+      <header className="sticky top-0 z-40 px-4 py-4 bg-[#0f0f1a]/95 backdrop-blur-sm">
+        <div className="flex items-center justify-between">
           <Button
             size="icon"
             variant="ghost"
             onClick={handleGoBack}
-            className="rounded-full bg-white/10"
+            className="rounded-full"
             data-testid="button-back"
           >
-            <ArrowLeft className="w-4 h-4 text-white" />
+            <ArrowLeft className="w-5 h-5 text-white/70" />
           </Button>
           
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-white/50 text-xs" data-testid="text-day-number">Day {dayNumber}</span>
-              <span className={`text-xs font-medium ${getStatusColor()}`} data-testid="text-status">{getStatusText()}</span>
+          <div className="text-center">
+            <span className="text-white/40 text-xs font-medium" data-testid="text-day-number">DAY {dayNumber}</span>
+            <div className="flex items-center justify-center gap-2">
+              <h1 className="text-white font-bold text-lg" data-testid="text-workout-name">{workoutName}</h1>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                workoutStatus === 'completed' ? 'bg-green-500/20 text-green-400' :
+                workoutStatus === 'active' ? 'bg-[#7c57ff]/20 text-[#7c57ff]' :
+                workoutStatus === 'missed' ? 'bg-orange-500/20 text-orange-400' :
+                'bg-white/10 text-white/40'
+              }`} data-testid="text-status">{getStatusText()}</span>
             </div>
-            <h1 className="text-white font-semibold text-base truncate" data-testid="text-workout-name">{workoutName}</h1>
           </div>
 
-          <div className="flex gap-2">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setIsSchedulingAIOpen(true)}
-              className="rounded-full bg-white/10"
-              data-testid="button-schedule"
-            >
-              <Calendar className="w-4 h-4 text-white/70" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setIsChangeTypeOpen(true)}
-              className="rounded-full bg-white/10"
-              data-testid="button-change-type"
-            >
-              <RefreshCw className="w-4 h-4 text-white/70" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setIsAIOpen(true)}
-              className="rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa]"
-              data-testid="button-ai-help"
-            >
-              <Sparkles className="w-4 h-4 text-white" />
-            </Button>
-          </div>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => setIsAIOpen(true)}
+            className="rounded-full"
+            data-testid="button-ai-help"
+          >
+            <Sparkles className="w-5 h-5 text-[#7c57ff]" />
+          </Button>
         </div>
       </header>
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto pb-32">
-        {/* Quick Stats Bar */}
+        {/* Stats Cards */}
         {!isRestDay && (
-          <div className="px-4 py-3 flex items-center justify-center gap-4 border-b border-white/5" data-testid="stats-bar">
-            <div className="flex items-center gap-1.5">
-              <Dumbbell className="w-4 h-4 text-[#7c57ff]" />
-              <span className="text-white font-semibold text-sm" data-testid="text-exercise-count">{exercises.length}</span>
-              <span className="text-white/50 text-xs">exercises</span>
+          <div className="px-4 py-4" data-testid="stats-bar">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-[#1a1a2e] rounded-2xl p-4 text-center">
+                <Dumbbell className="w-5 h-5 text-[#7c57ff] mx-auto mb-1" />
+                <span className="text-white font-bold text-xl block" data-testid="text-exercise-count">{exercises.length}</span>
+                <span className="text-white/40 text-xs">Exercises</span>
+              </div>
+              <div className="bg-[#1a1a2e] rounded-2xl p-4 text-center">
+                <Clock className="w-5 h-5 text-[#60a5fa] mx-auto mb-1" />
+                <span className="text-white font-bold text-xl block" data-testid="text-duration">{totalDuration}</span>
+                <span className="text-white/40 text-xs">Minutes</span>
+              </div>
+              <div className="bg-[#1a1a2e] rounded-2xl p-4 text-center">
+                <Target className="w-5 h-5 text-[#00d9ff] mx-auto mb-1" />
+                <span className="text-white font-bold text-sm block capitalize" data-testid="text-workout-type">{workoutTemplate.workoutType.replace('_', ' ')}</span>
+                <span className="text-white/40 text-xs">Focus</span>
+              </div>
             </div>
-            <div className="w-px h-4 bg-white/10" />
-            <div className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-[#60a5fa]" />
-              <span className="text-white font-semibold text-sm" data-testid="text-duration">{totalDuration}</span>
-              <span className="text-white/50 text-xs">min</span>
-            </div>
-            <div className="w-px h-4 bg-white/10" />
-            <div className="flex items-center gap-1.5">
-              <Target className="w-4 h-4 text-[#00d9ff]" />
-              <span className="text-white/70 text-xs" data-testid="text-workout-type">{workoutTemplate.workoutType}</span>
+            
+            {/* Quick Actions */}
+            <div className="flex gap-2 mt-4">
+              <Button
+                variant="ghost"
+                onClick={() => setIsSchedulingAIOpen(true)}
+                className="flex-1 bg-white/5 rounded-xl py-3"
+                data-testid="button-schedule"
+              >
+                <Calendar className="w-4 h-4 text-white/60 mr-2" />
+                <span className="text-white/70 text-sm">Reschedule</span>
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => setIsChangeTypeOpen(true)}
+                className="flex-1 bg-white/5 rounded-xl py-3"
+                data-testid="button-change-type"
+              >
+                <RefreshCw className="w-4 h-4 text-white/60 mr-2" />
+                <span className="text-white/70 text-sm">Change Type</span>
+              </Button>
             </div>
           </div>
         )}
@@ -305,65 +313,72 @@ export default function WorkoutPage() {
           </div>
         ) : (
           /* Exercise List */
-          <div className="px-4 py-3">
-            <div className="space-y-2">
+          <div className="px-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-white/50 text-sm font-medium">Exercises</span>
+              <span className="text-white/30 text-xs">{exercises.length} total</span>
+            </div>
+            <div className="space-y-3">
               {exercises.map((exercise, index) => (
                 <motion.div
                   key={exercise.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.03 }}
-                  className="bg-[#1a1a2e] rounded-xl p-3 border border-white/5"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="bg-[#1a1a2e] rounded-2xl overflow-hidden"
                   data-testid={`card-exercise-${exercise.id}`}
                 >
-                  <div className="flex items-center gap-3">
-                    {/* Number Badge */}
-                    <div 
-                      className={`
-                        min-w-[32px] h-8 px-2 rounded-lg flex items-center justify-center text-sm font-bold
-                        ${isCompleted 
-                          ? 'bg-green-500/20 text-green-400' 
-                          : 'bg-gradient-to-br from-[#7c57ff]/20 to-[#60a5fa]/20 text-[#7c57ff]'}
-                      `}
-                      data-testid={`badge-exercise-number-${exercise.id}`}
+                  {/* Main Content - Clickable */}
+                  <button
+                    onClick={() => handleViewDetails(exercise)}
+                    className="w-full p-4 text-left"
+                    data-testid={`button-details-${exercise.id}`}
+                  >
+                    <div className="flex items-start gap-4">
+                      {/* Number Badge */}
+                      <div 
+                        className={`
+                          w-10 h-10 rounded-xl flex items-center justify-center text-base font-bold shrink-0
+                          ${isCompleted 
+                            ? 'bg-green-500/20 text-green-400' 
+                            : 'bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] text-white'}
+                        `}
+                        data-testid={`badge-exercise-number-${exercise.id}`}
+                      >
+                        {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-white font-semibold text-base mb-1" data-testid={`text-exercise-name-${exercise.id}`}>{exercise.name}</h4>
+                        <p className="text-white/40 text-sm mb-2" data-testid={`text-exercise-muscles-${exercise.id}`}>{exercise.muscles}</p>
+                        
+                        {/* Stats Pills */}
+                        <div className="flex flex-wrap gap-2">
+                          <span className="bg-white/5 px-2.5 py-1 rounded-lg text-white/60 text-xs" data-testid={`text-exercise-sets-${exercise.id}`}>
+                            {exercise.sets} sets × {exercise.reps} reps
+                          </span>
+                          <span className="bg-white/5 px-2.5 py-1 rounded-lg text-white/40 text-xs" data-testid={`text-exercise-time-${exercise.id}`}>
+                            {exercise.time}
+                          </span>
+                        </div>
+                      </div>
+
+                      <ChevronRight className="w-5 h-5 text-white/20 shrink-0 mt-2" />
+                    </div>
+                  </button>
+                  
+                  {/* Swap Action */}
+                  <div className="px-4 pb-3">
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleOpenSwapExercise(exercise)}
+                      className="w-full bg-[#7c57ff]/10 rounded-xl py-2"
+                      data-testid={`button-swap-${exercise.id}`}
                     >
-                      {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : index + 1}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-white font-medium text-sm truncate" data-testid={`text-exercise-name-${exercise.id}`}>{exercise.name}</h4>
-                      <p className="text-white/40 text-xs" data-testid={`text-exercise-muscles-${exercise.id}`}>{exercise.muscles}</p>
-                    </div>
-
-                    {/* Quick Stats */}
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="text-white/60" data-testid={`text-exercise-sets-${exercise.id}`}>{exercise.sets}×{exercise.reps}</span>
-                      <div className="w-px h-3 bg-white/10" />
-                      <span className="text-white/40" data-testid={`text-exercise-time-${exercise.id}`}>{exercise.time}</span>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-1">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleViewDetails(exercise)}
-                        className="rounded-lg bg-white/5"
-                        data-testid={`button-details-${exercise.id}`}
-                      >
-                        <ChevronRight className="w-4 h-4 text-white/50" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleOpenSwapExercise(exercise)}
-                        className="rounded-lg bg-[#7c57ff]/10"
-                        data-testid={`button-swap-${exercise.id}`}
-                      >
-                        <ArrowRightLeft className="w-3.5 h-3.5 text-[#7c57ff]" />
-                      </Button>
-                    </div>
+                      <ArrowRightLeft className="w-4 h-4 text-[#7c57ff] mr-2" />
+                      <span className="text-[#7c57ff] text-sm font-medium">Swap Exercise</span>
+                    </Button>
                   </div>
                 </motion.div>
               ))}
