@@ -6,6 +6,16 @@ MGP.AI is an AI-powered fitness and nutrition mobile web application built with 
 
 ## Recent Changes
 
+### January 2026 - Backend Improvements
+- **Security Middleware**: Added Helmet for HTTP security headers
+- **Rate Limiting**: AI endpoints limited to 20 requests/min, OCR limited to 10 requests/min
+- **Centralized Error Handling**: asyncHandler wrapper and standardized error responses
+- **Response Utilities**: Consistent API response format via `server/utils/response.ts`
+- **Request Logging**: All requests logged with timestamp, method, URL, status, and duration
+- **Schema Consolidation**: All validation schemas moved to `shared/schema.ts`
+- **Environment Config**: Debug day offset now configurable via `DEBUG_DAY_OFFSET` env var
+- **Middleware Location**: New middleware files in `server/middleware/` (errorHandler, logger, rateLimiter)
+
 ### January 2026 - iPhone-Optimized Workout Page Redesign
 - **Compact Header**: Day number and status inline, reduced header height with icon buttons
 - **Quick Stats Bar**: Horizontal compact bar showing exercises count, duration, and workout type
