@@ -46,6 +46,7 @@ export type GenerateResponse = z.infer<typeof generateResponseSchema>;
 
 export const ocrRequestSchema = z.object({
   image: z.string().min(1, "Image data is required"),
+  mimeType: z.enum(["image/jpeg", "image/png", "image/webp", "image/gif"]).optional().default("image/jpeg"),
 });
 
 export type OcrRequest = z.infer<typeof ocrRequestSchema>;
@@ -90,3 +91,52 @@ export const completeWorkoutResponseSchema = z.object({
 });
 
 export type CompleteWorkoutResponse = z.infer<typeof completeWorkoutResponseSchema>;
+
+export const exerciseContextSchema = z.object({
+  exerciseName: z.string().optional(),
+  muscleGroups: z.array(z.string()).optional(),
+  sets: z.number().optional(),
+  reps: z.number().optional(),
+  currentSet: z.number().optional(),
+  isResting: z.boolean().optional(),
+  workoutType: z.string().optional(),
+}).optional();
+
+export const aiCoachRequestSchema = z.object({
+  message: z.string().min(1).max(5000),
+  context: exerciseContextSchema,
+  workoutName: z.string().optional(),
+  allExercises: z.array(z.object({
+    name: z.string(),
+    muscles: z.string(),
+    sets: z.number(),
+    reps: z.union([z.string(), z.number()]),
+    time: z.string(),
+  })).optional(),
+  currentExerciseIndex: z.number().optional(),
+  completedExercises: z.number().optional(),
+  totalExercises: z.number().optional(),
+});
+
+export type AiCoachRequest = z.infer<typeof aiCoachRequestSchema>;
+
+export const exerciseSelectionSchema = z.object({
+  workoutType: z.string(),
+  userDifficulty: z.enum(["beginner", "intermediate", "advanced"]).default("beginner"),
+  recentExerciseIds: z.array(z.string()).optional().default([]),
+  exerciseCount: z.number().min(1).max(10).optional().default(5),
+  availableExercises: z.array(z.object({
+    id: z.string(),
+    title: z.string(),
+    muscle_group: z.string(),
+    secondary_muscles: z.array(z.string()).optional(),
+    equipment: z.string(),
+    difficulty: z.string(),
+    exercise_type: z.string(),
+    movement_pattern: z.string(),
+    is_safe: z.boolean(),
+    description: z.string().optional(),
+  })),
+});
+
+export type ExerciseSelectionRequest = z.infer<typeof exerciseSelectionSchema>;
