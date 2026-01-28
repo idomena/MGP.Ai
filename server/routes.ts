@@ -116,25 +116,99 @@ export function registerRoutes(app: Express): void {
     }
   });
 
+  // Schema for exercise context
+  const exerciseContextSchema = z.object({
+    exerciseName: z.string().optional(),
+    muscleGroups: z.array(z.string()).optional(),
+    sets: z.number().optional(),
+    reps: z.number().optional(),
+    currentSet: z.number().optional(),
+    isResting: z.boolean().optional(),
+    workoutType: z.string().optional(),
+  }).optional();
+
+  const aiCoachRequestSchema = z.object({
+    message: z.string().min(1).max(5000),
+    context: exerciseContextSchema,
+    workoutName: z.string().optional(),
+    allExercises: z.array(z.object({
+      name: z.string(),
+      muscles: z.string(),
+      sets: z.number(),
+      reps: z.union([z.string(), z.number()]),
+      time: z.string(),
+    })).optional(),
+    currentExerciseIndex: z.number().optional(),
+    completedExercises: z.number().optional(),
+    totalExercises: z.number().optional(),
+  });
+
   app.post("/api/ai-coach", async (req, res) => {
     try {
-      const { message } = req.body;
+      const validation = aiCoachRequestSchema.safeParse(req.body);
 
-      if (!message || typeof message !== "string") {
+      if (!validation.success) {
         return res.status(400).json({
           success: false,
-          error: "Message is required",
+          error: validation.error.errors[0].message,
         });
       }
 
-      if (message.length > 5000) {
-        return res.status(400).json({
-          success: false,
-          error: "Message too long (max 5000 characters)",
-        });
+      const { 
+        message, 
+        context, 
+        workoutName, 
+        allExercises,
+        currentExerciseIndex,
+        completedExercises,
+        totalExercises 
+      } = validation.data;
+
+      // Build enhanced context for the AI
+      let enhancedContext = context;
+      
+      // If we have exercise list but no specific context, build one
+      if (allExercises && allExercises.length > 0 && !context?.exerciseName) {
+        const currentEx = currentExerciseIndex !== undefined 
+          ? allExercises[currentExerciseIndex] 
+          : allExercises[0];
+        
+        if (currentEx) {
+          enhancedContext = {
+            exerciseName: currentEx.name,
+            muscleGroups: currentEx.muscles.split(/[,/]/).map(m => m.trim()),
+            sets: currentEx.sets,
+            reps: typeof currentEx.reps === 'string' ? parseInt(currentEx.reps) || 12 : currentEx.reps,
+            workoutType: workoutName,
+          };
+        }
       }
 
-      const response = await generateCoachResponse(message);
+      // Build workout overview for context
+      let workoutOverview = "";
+      if (allExercises && allExercises.length > 0) {
+        workoutOverview = `\n\nFULL WORKOUT PLAN (${workoutName || "Today's Workout"}):\n`;
+        allExercises.forEach((ex, i) => {
+          const status = completedExercises !== undefined && i < completedExercises 
+            ? "[DONE]" 
+            : currentExerciseIndex !== undefined && i === currentExerciseIndex 
+              ? "[CURRENT]" 
+              : "";
+          workoutOverview += `${i + 1}. ${ex.name} - ${ex.muscles} (${ex.sets}x${ex.reps}) ${status}\n`;
+        });
+        
+        if (completedExercises !== undefined && totalExercises !== undefined) {
+          const progressPercent = Math.round((completedExercises / totalExercises) * 100);
+          workoutOverview += `\nPROGRESS: ${completedExercises}/${totalExercises} exercises (${progressPercent}% complete)`;
+        }
+      }
+
+      // Append workout overview to message for full context
+      const contextualMessage = workoutOverview 
+        ? `${message}\n${workoutOverview}`
+        : message;
+
+      const response = await generateCoachResponse(contextualMessage, enhancedContext);
 
       res.json({
         success: true,
@@ -143,9 +217,9 @@ export function registerRoutes(app: Express): void {
       });
     } catch (error) {
       console.error("Error in AI coach:", error);
-      const message = error instanceof Error ? error.message : "Unknown error";
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
-      if (message.includes("429") || message.includes("quota")) {
+      if (errorMessage.includes("429") || errorMessage.includes("quota")) {
         return res.status(429).json({
           success: false,
           error: "Rate limit exceeded. Please try again in a moment.",
@@ -154,7 +228,7 @@ export function registerRoutes(app: Express): void {
 
       res.status(500).json({
         success: false,
-        error: message,
+        error: errorMessage,
       });
     }
   });

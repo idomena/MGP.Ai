@@ -12,6 +12,7 @@ interface Exercise {
   name: string;
   muscles: string;
   sets: number;
+  reps: string | number;
   time: string;
 }
 
@@ -19,6 +20,9 @@ interface WorkoutAIAssistantProps {
   workoutName: string;
   exercises: Exercise[];
   currentExercise?: string;
+  currentExerciseIndex?: number;
+  completedExercises?: number;
+  isResting?: boolean;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -27,6 +31,9 @@ export default function WorkoutAIAssistant({
   workoutName,
   exercises,
   currentExercise,
+  currentExerciseIndex,
+  completedExercises = 0,
+  isResting = false,
   isOpen, 
   onClose 
 }: WorkoutAIAssistantProps) {
@@ -51,16 +58,35 @@ export default function WorkoutAIAssistant({
   }, [isOpen]);
 
   useEffect(() => {
-    const contextText = currentExercise 
-      ? `About: **${currentExercise}**` 
-      : `Today's workout: **${workoutName}**`;
+    // Build a personalized welcome message based on context
+    let welcomeMessage = "";
+    
+    if (currentExercise) {
+      const currentEx = exercises.find(e => e.name === currentExercise);
+      welcomeMessage = `I see you're working on **${currentExercise}**`;
+      if (currentEx) {
+        welcomeMessage += ` targeting your ${currentEx.muscles}.`;
+      }
+      if (isResting) {
+        welcomeMessage += `\n\nTake a moment to catch your breath! Need any tips for your next set?`;
+      } else {
+        welcomeMessage += `\n\nNeed help with form, breathing, or modifications? I'm here!`;
+      }
+    } else {
+      welcomeMessage = `Today's workout: **${workoutName}** with ${exercises.length} exercises.`;
+      if (completedExercises > 0) {
+        const progressPercent = Math.round((completedExercises / exercises.length) * 100);
+        welcomeMessage += `\n\nYou've completed ${completedExercises}/${exercises.length} exercises (${progressPercent}%). Great progress!`;
+      }
+      welcomeMessage += `\n\nAsk me about form tips, alternatives, or any questions!`;
+    }
     
     setMessages([{
       id: "welcome",
       role: "assistant",
-      content: `${contextText}\n\nI'm your AI workout assistant! Ask me about proper form, alternatives, modifications, or any questions about your exercises.`
+      content: welcomeMessage
     }]);
-  }, [workoutName, currentExercise]);
+  }, [workoutName, currentExercise, exercises, completedExercises, isResting]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -76,24 +102,50 @@ export default function WorkoutAIAssistant({
     setIsLoading(true);
 
     try {
-      const exerciseList = exercises.map(e => `${e.name} (${e.muscles}, ${e.sets} sets)`).join(", ");
+      // Build conversation history for context
       const recentHistory = messages
         .slice(-4)
         .map(m => `${m.role === "user" ? "User" : "Coach"}: ${m.content}`)
         .join("\n");
 
-      const contextualPrompt = `You are an AI workout assistant helping with "${workoutName}".
-${currentExercise ? `Current exercise focus: ${currentExercise}` : ""}
-Exercises in this workout: ${exerciseList}
+      // Build the user's message with conversation context
+      const userQuestion = recentHistory 
+        ? `Previous conversation:\n${recentHistory}\n\nUser's new question: ${input.trim()}`
+        : input.trim();
 
-${recentHistory ? `Recent conversation:\n${recentHistory}\n\n` : ""}User's question: ${input.trim()}
+      // Build exercise context if we have a current exercise
+      const currentEx = currentExercise 
+        ? exercises.find(e => e.name === currentExercise)
+        : undefined;
 
-Provide a helpful, practical answer (2-4 sentences). Focus on form, safety, and encouragement. If asked about alternatives, consider equipment availability.`;
+      const exerciseContext = currentEx ? {
+        exerciseName: currentEx.name,
+        muscleGroups: currentEx.muscles.split(/[,/]/).map(m => m.trim()),
+        sets: currentEx.sets,
+        reps: typeof currentEx.reps === 'string' ? parseInt(currentEx.reps) || 12 : currentEx.reps,
+        isResting: isResting,
+        workoutType: workoutName,
+      } : undefined;
 
+      // Send full context to the API
       const response = await fetch("/api/ai-coach", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: contextualPrompt })
+        body: JSON.stringify({ 
+          message: userQuestion,
+          context: exerciseContext,
+          workoutName: workoutName,
+          allExercises: exercises.map(e => ({
+            name: e.name,
+            muscles: e.muscles,
+            sets: e.sets,
+            reps: e.reps,
+            time: e.time,
+          })),
+          currentExerciseIndex: currentExerciseIndex,
+          completedExercises: completedExercises,
+          totalExercises: exercises.length,
+        })
       });
 
       const data = await response.json();
@@ -130,11 +182,18 @@ Provide a helpful, practical answer (2-4 sentences). Focus on form, safety, and 
     }
   };
 
-  const quickQuestions = [
-    "How do I warm up?",
-    "What's a good alternative?",
-    "Is this safe for beginners?"
-  ];
+  // Context-aware quick questions
+  const quickQuestions = currentExercise 
+    ? [
+        `How do I do ${currentExercise} correctly?`,
+        "Is my form okay?",
+        "What's a good alternative?",
+      ]
+    : [
+        "How should I warm up?",
+        "What order should I do these?",
+        "Any tips for beginners?",
+      ];
 
   return (
     <AnimatePresence>
