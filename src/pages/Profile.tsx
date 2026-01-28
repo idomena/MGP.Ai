@@ -31,12 +31,6 @@ export default function ProfilePage() {
   const [userProgram, setUserProgram] = useState<UserProgram | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (user?.id) {
-      fetchUserData();
-    }
-  }, [user?.id]);
-
   const fetchUserData = async () => {
     if (!user?.id) return;
     
@@ -69,16 +63,49 @@ export default function ProfilePage() {
     }
   };
 
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserData();
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel("profile_workout_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "workout_completions",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          console.log("Profile: workout data changed, refetching...");
+          fetchUserData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
+  const actualWorkouts = completedWorkouts.filter(w => w.workout_type !== "rest");
+
   const calculateStreak = (): number => {
-    if (completedWorkouts.length === 0) return 0;
+    if (actualWorkouts.length === 0) return 0;
     
-    const sortedDays = completedWorkouts
+    const sortedDays = actualWorkouts
       .map(w => w.day_number)
       .sort((a, b) => b - a);
     
     let streak = 1;
     for (let i = 0; i < sortedDays.length - 1; i++) {
-      if (sortedDays[i] - sortedDays[i + 1] === 1) {
+      if (sortedDays[i] - sortedDays[i + 1] <= 2) {
         streak++;
       } else {
         break;
@@ -88,11 +115,11 @@ export default function ProfilePage() {
   };
 
   const calculateXP = (): number => {
-    return completedWorkouts.length * 150;
+    return actualWorkouts.length * 150;
   };
 
   const calculateTotalMinutes = (): number => {
-    return completedWorkouts.length * 30;
+    return actualWorkouts.length * 30;
   };
 
   const getMemberSince = (): string => {
@@ -140,7 +167,7 @@ export default function ProfilePage() {
     navigate("/login");
   };
 
-  const workoutCount = completedWorkouts.length;
+  const workoutCount = actualWorkouts.length;
   const streak = calculateStreak();
   const xp = calculateXP();
   const totalMinutes = calculateTotalMinutes();
