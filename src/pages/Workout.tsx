@@ -10,6 +10,8 @@ import {
   Sparkles,
   CheckCircle2,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   RefreshCw,
   ArrowRightLeft,
   Moon,
@@ -25,6 +27,7 @@ import ExerciseDetailsModal from "@/components/ExerciseDetailsModal";
 import ChangeWorkoutTypeModal from "@/components/ChangeWorkoutTypeModal";
 import SwapExerciseModal from "@/components/SwapExerciseModal";
 import SchedulingAIAssistant from "@/components/SchedulingAIAssistant";
+import MuscleAnatomyDiagram from "@/components/MuscleAnatomyDiagram";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
 import { useExercises } from "@/hooks/useExercises";
@@ -57,6 +60,7 @@ export default function WorkoutPage() {
   const [exerciseToSwap, setExerciseToSwap] = useState<Exercise | null>(null);
   const [showExerciseModal, setShowExerciseModal] = useState(false);
   const [customExercises, setCustomExercises] = useState<Record<number, Exercise>>({});
+  const [isMusclesExpanded, setIsMusclesExpanded] = useState(false);
 
   const currentDay = programCurrentDay || 1;
   const dayNumber = id ? parseInt(id, 10) : currentDay;
@@ -91,6 +95,16 @@ export default function WorkoutPage() {
       const minutes = parseInt(ex.time) || 5;
       return sum + minutes;
     }, 0);
+  }, [exercises]);
+
+  const targetedMuscles = useMemo(() => {
+    const muscles = new Set<string>();
+    exercises.forEach(ex => {
+      if (ex.muscles) {
+        ex.muscles.split(',').forEach(m => muscles.add(m.trim()));
+      }
+    });
+    return Array.from(muscles);
   }, [exercises]);
 
   const handleStartWorkout = () => {
@@ -282,6 +296,36 @@ export default function WorkoutPage() {
                 <RefreshCw className="w-4 h-4 text-white/60 mr-2" />
                 <span className="text-white/70 text-sm">Change Type</span>
               </Button>
+            </div>
+
+            {/* Targeted Muscles Collapsible */}
+            <div className="mt-4 bg-[#1a1a2e] rounded-2xl overflow-hidden">
+              <button
+                onClick={() => setIsMusclesExpanded(!isMusclesExpanded)}
+                className="w-full flex items-center justify-between p-4"
+                data-testid="button-toggle-muscles"
+              >
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-[#7c57ff]" />
+                  <span className="text-white font-medium">Targeted Muscles</span>
+                </div>
+                {isMusclesExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-white/50" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-white/50" />
+                )}
+              </button>
+              
+              {isMusclesExpanded && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="px-4 pb-4"
+                >
+                  <MuscleAnatomyDiagram targetedMuscles={targetedMuscles} />
+                </motion.div>
+              )}
             </div>
           </div>
         )}
