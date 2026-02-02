@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
-import { SiGoogle } from "react-icons/si";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +12,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -60,20 +58,6 @@ export default function Login() {
         description: "You've successfully logged in.",
       });
       navigate("/");
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setIsGoogleLoading(true);
-    const { error } = await signInWithGoogle();
-    setIsGoogleLoading(false);
-    
-    if (error) {
-      toast({
-        title: "Google login failed",
-        description: error.message,
-        variant: "destructive",
-      });
     }
   };
 
@@ -169,33 +153,6 @@ export default function Login() {
               )}
             </Button>
           </form>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-[#1a1f3e]/50 px-4 text-white/40">or continue with</span>
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={isGoogleLoading}
-            variant="outline"
-            className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10 text-white font-medium rounded-xl transition-all duration-300"
-            data-testid="button-google-login"
-          >
-            {isGoogleLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                <SiGoogle className="w-5 h-5 mr-3" />
-                Continue with Google
-              </>
-            )}
-          </Button>
 
           <div className="mt-6 text-center">
             <p className="text-white/60 text-sm">
