@@ -1,0 +1,183 @@
+# Google OAuth Integration Guide
+
+## ✅ What We've Done So Far:
+1. ✅ Created Google OAuth credentials
+2. ✅ Added secrets to Replit
+3. ✅ Updated Supabase database
+4. ✅ Installed required packages
+5. ✅ Created auth files
+
+## 📁 Files Created:
+- `auth.js` - Google OAuth configuration with Passport.js
+- `authRoutes.js` - Authentication routes (login, logout, profile)
+- `server-example.js` - Example of how to integrate with your server
+
+## 🔧 Next Steps - Integration:
+
+### Option 1: If You Have an Existing server.js
+
+1. **Add to the TOP of your server.js:**
+```javascript
+const session = require('express-session');
+const passport = require('./auth');
+const { router: authRouter, ensureAuthenticated } = require('./authRoutes');
+```
+
+2. **Add BEFORE your routes (after app = express()):**
+```javascript
+// Session middleware
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000
+  }
+}));
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Auth routes
+app.use(authRouter);
+```
+
+3. **Add Supabase credentials to Secrets:**
+   - Go to Replit Secrets
+   - Add: `SUPABASE_URL` (your Supabase project URL)
+   - Add: `SUPABASE_ANON_KEY` (your Supabase anon/public key)
+
+4. **To protect any route, add `ensureAuthenticated` middleware:**
+```javascript
+app.get('/api/workouts', ensureAuthenticated, (req, res) => {
+  // Your code here
+  // Access user with: req.user
+});
+```
+
+### Option 2: If You're Starting Fresh
+
+1. Use `server-example.js` as your main server file
+2. Rename it to `server.js` or whatever your main file is
+3. Add your existing routes to it
+
+## 🧪 Testing:
+
+1. **Add Supabase credentials first!** (SUPABASE_URL and SUPABASE_ANON_KEY)
+2. Run your server: `npm start` or click "Run" in Replit
+3. Visit your Replit URL: `https://mgp-ai.replit.app`
+4. Click "Login with Google"
+5. You should be redirected to Google login
+6. After login, you'll see the dashboard with your name and photo!
+
+## 🎨 Frontend Integration Examples:
+
+### Check if user is logged in:
+```javascript
+fetch('/api/user/profile')
+  .then(res => res.json())
+  .then(user => {
+    console.log(user);
+    // Display user info in your UI
+    document.getElementById('username').textContent = user.full_name;
+    document.getElementById('avatar').src = user.avatar_url;
+  })
+  .catch(err => {
+    console.log('User not logged in');
+    // Show login button
+  });
+```
+
+### Login button (HTML):
+```html
+<a href="/auth/google">
+  <button>Login with Google</button>
+</a>
+```
+
+### Logout button (HTML):
+```html
+<a href="/auth/logout">
+  <button>Logout</button>
+</a>
+```
+
+## 🔒 Protect Your Routes:
+
+Any route that should require login, add `ensureAuthenticated`:
+
+```javascript
+app.get('/api/user/workouts', ensureAuthenticated, async (req, res) => {
+  // req.user contains the logged-in user's data
+  const userId = req.user.id;
+  
+  // Fetch user's workouts from Supabase
+  const { data, error } = await supabase
+    .from('workout_completions')
+    .select('*')
+    .eq('user_id', userId);
+    
+  res.json(data);
+});
+```
+
+## 🆘 Troubleshooting:
+
+### Error: "Cannot find module './auth'"
+- Make sure `auth.js` is in the same directory as your server file
+- Or update the path: `require('./path/to/auth')`
+
+### Error: "SUPABASE_URL is not defined"
+- Go to Replit Secrets
+- Add SUPABASE_URL and SUPABASE_ANON_KEY
+
+### Login redirects to error page
+- Check that your Google redirect URI matches exactly:
+  `https://mgp-ai.replit.app/auth/google/callback`
+- Make sure all secrets are added correctly
+
+### Session not persisting
+- Make sure SESSION_SECRET is set in Replit Secrets
+- Check that cookie settings are correct
+
+## 📋 Checklist Before Testing:
+
+- [ ] `auth.js` file exists
+- [ ] `authRoutes.js` file exists
+- [ ] Session middleware added to server
+- [ ] Passport middleware added to server
+- [ ] Auth routes added to server (app.use(authRouter))
+- [ ] GOOGLE_CLIENT_ID in Replit Secrets
+- [ ] GOOGLE_CLIENT_SECRET in Replit Secrets
+- [ ] SESSION_SECRET in Replit Secrets
+- [ ] SUPABASE_URL in Replit Secrets ⚠️ IMPORTANT!
+- [ ] SUPABASE_ANON_KEY in Replit Secrets ⚠️ IMPORTANT!
+- [ ] Database columns added (google_id, avatar_url, etc.)
+
+## 🎯 What You Get:
+
+After integration, users can:
+- ✅ Login with Google (one click!)
+- ✅ See their Google profile photo
+- ✅ See their name from Google
+- ✅ Stay logged in (24 hours)
+- ✅ Logout anytime
+- ✅ Access protected routes
+
+Your app gets:
+- ✅ User's email
+- ✅ User's full name
+- ✅ User's profile photo URL
+- ✅ Automatic user creation in database
+- ✅ Last login tracking
+
+## 🚀 Ready to Test?
+
+1. Make sure ALL secrets are added (especially SUPABASE_URL and SUPABASE_ANON_KEY!)
+2. Integrate the code into your server
+3. Run your app
+4. Try logging in!
+
+Need help? Tell me which step you're on or what error you're seeing!

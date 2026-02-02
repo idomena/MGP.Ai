@@ -14,7 +14,7 @@ Preferred communication style: Simple, everyday language.
 - **Framework**: React 18 with TypeScript and Vite.
 - **Styling**: Tailwind CSS with custom dark theme design tokens and gradients.
 - **UI Components**: shadcn/ui library built on Radix UI primitives.
-- **State Management**: React Query for server state, React Context for authentication.
+- **State Management**: React Query for server state, React Context for authentication (including Google OAuth).
 - **Routing**: React Router DOM with protected and public route handling.
 - **Animation**: Framer Motion for transitions and micro-interactions.
 - **Key Features**: Conversational onboarding chat, iPhone-optimized workout page, muscle anatomy diagrams, workout customization (change type, swap exercises), AI scheduling assistant, redesigned journey path visualization, real-time progress updates, and enhanced workout session UI with rest timers and completion animations.
