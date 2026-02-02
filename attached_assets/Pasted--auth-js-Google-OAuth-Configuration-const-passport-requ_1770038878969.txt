@@ -1,0 +1,92 @@
+// auth.js - Google OAuth Configuration
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const { createClient } = require('@supabase/supabase-js');
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
+
+// Configure Google OAuth Strategy
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "/auth/google/callback"
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    try {
+      // Extract user info from Google profile
+      const googleId = profile.id;
+      const email = profile.emails[0].value;
+      const fullName = profile.displayName;
+      const avatarUrl = profile.photos[0].value;
+
+      // Check if user exists
+      const { data: existingUser, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('google_id', googleId)
+        .single();
+
+      if (existingUser) {
+        // Update existing user's last login
+        const { data: updatedUser, error: updateError } = await supabase
+          .from('profiles')
+          .update({ 
+            last_login: new Date().toISOString(),
+            avatar_url: avatarUrl 
+          })
+          .eq('google_id', googleId)
+          .select()
+          .single();
+
+        if (updateError) throw updateError;
+        return done(null, updatedUser);
+      } else {
+        // Create new user
+        const { data: newUser, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            google_id: googleId,
+            email: email,
+            full_name: fullName,
+            avatar_url: avatarUrl,
+            last_login: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        return done(null, newUser);
+      }
+    } catch (err) {
+      console.error('Error in Google OAuth:', err);
+      return done(err, null);
+    }
+  }
+));
+
+// Serialize user for session
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+// Deserialize user from session
+passport.deserializeUser(async (id, done) => {
+  try {
+    const { data: user, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
+});
+
+module.exports = passport;
