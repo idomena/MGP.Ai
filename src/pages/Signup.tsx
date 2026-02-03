@@ -91,9 +91,17 @@ export default function Signup() {
     }
   };
 
-  const handleGoogleSignup = () => {
+  const handleGoogleSignup = async () => {
     setIsGoogleLoading(true);
-    window.location.href = '/auth/google';
+    const { error } = await signInWithGoogle();
+    if (error) {
+      setIsGoogleLoading(false);
+      toast({
+        title: "Google signup failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (

@@ -15,8 +15,6 @@ build = ["npm", "run", "build"]
 
 [userenv.shared]
 GEMINI_KEY_API = "AIzaSyAxpXJqrtinykOo3jz16TSb0Q8wCyilbEg"
-GOOGLE_CLIENT_SECRET = "https://jgzlyvgkqginzkfjlres.supabase.co/auth/v1/callback"
-GOOGLE_CLIENT_ID = "996595240543-2c6ocf6lvgcc3hdpiplhct2l1p165buo.apps.googleusercontent.com"
 
 [workflows]
 runButton = "Project"

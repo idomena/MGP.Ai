@@ -63,9 +63,17 @@ export default function Login() {
     }
   };
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
-    window.location.href = '/auth/google';
+    const { error } = await signInWithGoogle();
+    if (error) {
+      setIsGoogleLoading(false);
+      toast({
+        title: "Google login failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
