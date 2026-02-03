@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, Loader2, Check, X } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
 import { useAuth } from "@/contexts/AuthContext";
@@ -106,25 +105,13 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen animated-gradient-bg particle-bg flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden" role="main" aria-label="Sign up page">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="w-full max-w-md relative z-10"
-      >
-        <motion.div 
-          className="flex flex-col items-center mb-6"
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <div className="animate-float">
-            <Logo size="xl" />
-          </div>
-        </motion.div>
+    <div className="min-h-screen bg-[#0f0f1a] flex flex-col items-center justify-center px-4 py-8" role="main" aria-label="Sign up page">
+      <div className="w-full max-w-md">
+        <div className="flex flex-col items-center mb-6">
+          <Logo size="xl" />
+        </div>
 
-        <div className="glass-card rounded-2xl p-8 glow-border">
+        <div className="bg-[#1a1a2e] rounded-2xl p-8 border border-white/10">
           <h2 className="text-2xl font-semibold text-white text-center mb-6">Create Account</h2>
           
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -140,7 +127,7 @@ export default function Signup() {
                   placeholder="Enter your full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="pl-11 bg-[#0a0e27]/50 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl focus:ring-2 focus:ring-[#7c57ff] focus:border-transparent"
+                  className="pl-11 bg-[#0f0f1a] border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl"
                   data-testid="input-fullname"
                   aria-label="Full name"
                 />
@@ -159,7 +146,7 @@ export default function Signup() {
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-11 bg-[#0a0e27]/50 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl focus:ring-2 focus:ring-[#7c57ff] focus:border-transparent"
+                  className="pl-11 bg-[#0f0f1a] border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl"
                   data-testid="input-email"
                   aria-label="Email address"
                 />
@@ -178,31 +165,30 @@ export default function Signup() {
                   placeholder="Create a password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-11 pr-11 bg-[#0a0e27]/50 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl focus:ring-2 focus:ring-[#7c57ff] focus:border-transparent"
+                  className="pl-11 pr-11 bg-[#0f0f1a] border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl"
                   data-testid="input-password"
                   aria-label="Password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60"
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  data-testid="button-toggle-password"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
               
               {password && (
-                <div className="mt-2 space-y-1">
+                <div className="space-y-1 mt-2">
                   {passwordRequirements.map((req, index) => (
                     <div key={index} className="flex items-center gap-2 text-xs">
                       {req.met ? (
-                        <Check className="w-3 h-3 text-green-400" />
+                        <Check className="w-3.5 h-3.5 text-green-500" />
                       ) : (
-                        <X className="w-3 h-3 text-red-400" />
+                        <X className="w-3.5 h-3.5 text-white/30" />
                       )}
-                      <span className={req.met ? "text-green-400" : "text-white/50"}>
+                      <span className={req.met ? "text-green-500" : "text-white/40"}>
                         {req.label}
                       </span>
                     </div>
@@ -223,25 +209,19 @@ export default function Signup() {
                   placeholder="Confirm your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pl-11 pr-11 bg-[#0a0e27]/50 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl focus:ring-2 focus:ring-[#7c57ff] focus:border-transparent"
+                  className="pl-11 pr-11 bg-[#0f0f1a] border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl"
                   data-testid="input-confirm-password"
                   aria-label="Confirm password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors"
-                  aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
-                  data-testid="button-toggle-confirm-password"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60"
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                 >
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              {confirmPassword && password !== confirmPassword && (
-                <p className="text-xs text-red-400 flex items-center gap-1">
-                  <X className="w-3 h-3" /> Passwords don't match
-                </p>
-              )}
             </div>
 
             <div className="flex items-start gap-3 pt-2">
@@ -249,21 +229,20 @@ export default function Signup() {
                 id="terms"
                 checked={agreeTerms}
                 onCheckedChange={(checked) => setAgreeTerms(checked as boolean)}
-                className="mt-0.5 border-white/30 data-[state=checked]:bg-[#7c57ff] data-[state=checked]:border-[#7c57ff]"
+                className="mt-0.5 border-white/20 data-[state=checked]:bg-[#7c57ff] data-[state=checked]:border-[#7c57ff]"
                 data-testid="checkbox-terms"
               />
-              <label htmlFor="terms" className="text-white/60 text-sm leading-tight cursor-pointer">
+              <label htmlFor="terms" className="text-white/60 text-sm leading-relaxed cursor-pointer">
                 I agree to the{" "}
-                <span className="text-[#7c57ff] hover:underline">Terms of Service</span>
-                {" "}and{" "}
-                <span className="text-[#7c57ff] hover:underline">Privacy Policy</span>
+                <span className="text-[#7c57ff]">Terms of Service</span> and{" "}
+                <span className="text-[#7c57ff]">Privacy Policy</span>
               </label>
             </div>
 
             <Button
               type="submit"
-              disabled={isLoading}
-              className="w-full h-12 bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] hover:from-[#8f6fff] hover:to-[#7ab8ff] text-white font-semibold rounded-xl transition-all duration-300 mt-4"
+              disabled={isLoading || !allRequirementsMet}
+              className="w-full h-12 bg-gradient-to-r from-[#7c57ff] to-[#00c6ff] hover:opacity-90 text-white font-semibold rounded-xl disabled:opacity-50"
               data-testid="button-signup"
             >
               {isLoading ? (
@@ -272,7 +251,7 @@ export default function Signup() {
                   Creating account...
                 </>
               ) : (
-                "Sign Up"
+                "Create Account"
               )}
             </Button>
           </form>
@@ -282,7 +261,7 @@ export default function Signup() {
               <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-[#1a1f3e]/50 px-4 text-white/40">or continue with</span>
+              <span className="bg-[#1a1a2e] px-4 text-white/40">or continue with</span>
             </div>
           </div>
 
@@ -291,7 +270,7 @@ export default function Signup() {
             onClick={handleGoogleSignup}
             disabled={isGoogleLoading}
             variant="outline"
-            className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10 text-white font-medium rounded-xl transition-all duration-300"
+            className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10 text-white font-medium rounded-xl"
             data-testid="button-google-signup"
           >
             {isGoogleLoading ? (
@@ -312,12 +291,12 @@ export default function Signup() {
                 className="text-[#7c57ff] hover:text-[#9b7aff] font-medium transition-colors"
                 data-testid="link-login"
               >
-                Login
+                Log in
               </Link>
             </p>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

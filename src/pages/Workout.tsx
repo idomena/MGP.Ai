@@ -258,14 +258,14 @@ export default function WorkoutPage() {
 
   if (isLoading && !id) {
     return (
-      <div className="min-h-screen animated-gradient-bg flex items-center justify-center">
+      <div className="min-h-screen bg-[#0f0f1a] flex items-center justify-center">
         <motion.div 
           className="flex flex-col items-center gap-4"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
         >
-          <div className="w-12 h-12 border-3 border-[#7c57ff] border-t-transparent rounded-full animate-spin glow-pulse" />
+          <div className="w-10 h-10 border-2 border-[#7c57ff] border-t-transparent rounded-full animate-spin" />
           <span className="text-white/60 text-sm">Loading workout...</span>
         </motion.div>
       </div>
@@ -282,9 +282,9 @@ export default function WorkoutPage() {
   };
 
   return (
-    <div className="min-h-screen animated-gradient-bg flex flex-col">
+    <div className="min-h-screen bg-[#0f0f1a] flex flex-col">
       <motion.header 
-        className="sticky top-0 z-40 px-4 py-4 glass-card border-b border-white/5"
+        className="sticky top-0 z-40 px-4 py-4 bg-[#0f0f1a] border-b border-white/10"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
@@ -317,7 +317,7 @@ export default function WorkoutPage() {
               <motion.span 
                 className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                   workoutStatus === 'completed' ? 'bg-green-500/20 text-green-400' :
-                  workoutStatus === 'active' ? 'bg-[#7c57ff]/20 text-[#7c57ff] glow-pulse' :
+                  workoutStatus === 'active' ? 'bg-[#7c57ff]/20 text-[#7c57ff]' :
                   workoutStatus === 'missed' ? 'bg-orange-500/20 text-orange-400' :
                   'bg-white/10 text-white/40'
                 }`}
@@ -359,7 +359,7 @@ export default function WorkoutPage() {
             >
               <motion.div 
                 variants={statsCardVariants}
-                className="glass-card rounded-2xl p-4 text-center"
+                className="bg-[#1a1a2e] rounded-2xl p-4 text-center border border-white/10"
                 whileHover={{ scale: 1.02, y: -2 }}
               >
                 <motion.div
@@ -374,7 +374,7 @@ export default function WorkoutPage() {
               </motion.div>
               <motion.div 
                 variants={statsCardVariants}
-                className="glass-card rounded-2xl p-4 text-center"
+                className="bg-[#1a1a2e] rounded-2xl p-4 text-center border border-white/10"
                 whileHover={{ scale: 1.02, y: -2 }}
               >
                 <motion.div
@@ -389,7 +389,7 @@ export default function WorkoutPage() {
               </motion.div>
               <motion.div 
                 variants={statsCardVariants}
-                className="glass-card rounded-2xl p-4 text-center"
+                className="bg-[#1a1a2e] rounded-2xl p-4 text-center border border-white/10"
                 whileHover={{ scale: 1.02, y: -2 }}
               >
                 <motion.div
@@ -414,7 +414,7 @@ export default function WorkoutPage() {
                 <Button
                   variant="ghost"
                   onClick={() => setIsSchedulingAIOpen(true)}
-                  className="w-full glass-card rounded-xl py-3 tap-scale"
+                  className="w-full bg-[#1a1a2e] rounded-xl py-3 border border-white/10 hover:bg-[#252540] transition-colors"
                   data-testid="button-schedule"
                 >
                   <Calendar className="w-4 h-4 text-white/60 mr-2" />
@@ -425,7 +425,7 @@ export default function WorkoutPage() {
                 <Button
                   variant="ghost"
                   onClick={() => setIsChangeTypeOpen(true)}
-                  className="w-full glass-card rounded-xl py-3 tap-scale"
+                  className="w-full bg-[#1a1a2e] rounded-xl py-3 border border-white/10 hover:bg-[#252540] transition-colors"
                   data-testid="button-change-type"
                 >
                   <RefreshCw className="w-4 h-4 text-white/60 mr-2" />
@@ -435,7 +435,7 @@ export default function WorkoutPage() {
             </motion.div>
 
             <motion.div 
-              className="mt-4 glass-card rounded-2xl overflow-hidden"
+              className="mt-4 bg-[#1a1a2e] rounded-2xl overflow-hidden border border-white/10"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35, type: "spring", stiffness: 300, damping: 25 }}
@@ -484,7 +484,7 @@ export default function WorkoutPage() {
               className="text-center"
             >
               <motion.div 
-                className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#7c57ff]/20 to-[#60a5fa]/20 flex items-center justify-center glow-pulse"
+                className="w-20 h-20 mx-auto mb-4 rounded-full bg-[#7c57ff]/20 flex items-center justify-center"
                 animate={{ 
                   scale: [1, 1.05, 1],
                 }}
@@ -506,7 +506,7 @@ export default function WorkoutPage() {
                 <Button
                   variant="ghost"
                   onClick={() => setIsChangeTypeOpen(true)}
-                  className="mx-auto glass-card hover:bg-white/15 px-6 rounded-xl tap-scale"
+                  className="mx-auto bg-[#1a1a2e] hover:bg-[#252540] px-6 rounded-xl border border-white/10"
                   data-testid="button-change-to-workout"
                 >
                   <RefreshCw className="w-4 h-4 text-white/70 mr-2" />
@@ -536,7 +536,7 @@ export default function WorkoutPage() {
                 <motion.div
                   key={exercise.id}
                   variants={itemVariants}
-                  className={`glass-card rounded-2xl overflow-hidden ${isToday && !isCompleted ? 'glow-border' : ''}`}
+                  className="bg-[#1a1a2e] rounded-2xl overflow-hidden border border-white/10"
                   whileHover={{ scale: 1.01, y: -2 }}
                   whileTap={{ scale: 0.99 }}
                   data-testid={`card-exercise-${exercise.id}`}
@@ -629,7 +629,7 @@ export default function WorkoutPage() {
             >
               <Button
                 onClick={handleStartWorkout}
-                className="w-full bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white py-6 rounded-2xl font-bold text-base btn-glow glow-pulse"
+                className="w-full bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] hover:opacity-90 text-white py-6 rounded-2xl font-bold text-base"
                 data-testid="button-start-workout"
               >
                 <motion.div
@@ -644,7 +644,7 @@ export default function WorkoutPage() {
             </motion.div>
           ) : isCompleted ? (
             <motion.div 
-              className="w-full glass-card bg-green-500/20 text-green-400 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border border-green-500/30"
+              className="w-full bg-green-500/20 text-green-400 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border border-green-500/30"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
@@ -660,7 +660,7 @@ export default function WorkoutPage() {
             </motion.div>
           ) : (
             <motion.div 
-              className="w-full glass-card text-white/50 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2"
+              className="w-full bg-[#1a1a2e] text-white/50 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border border-white/10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               data-testid="status-locked"

@@ -196,7 +196,7 @@ export default function ProfilePage() {
   const unlockedCount = achievements.filter(a => a.unlocked).length;
 
   return (
-    <div className="min-h-screen animated-gradient-bg pb-24 overflow-y-auto" role="main" aria-label="Profile page">
+    <div className="min-h-screen bg-[#0f0f1a] pb-24 overflow-y-auto" role="main" aria-label="Profile page">
       <div className="relative">
         <div className="h-44 bg-gradient-to-br from-[#7c57ff] via-[#9b6dff] to-[#60a5fa]" aria-hidden="true">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
@@ -256,9 +256,7 @@ export default function ProfilePage() {
                 <motion.div
                   key={stat.label}
                   variants={staggerItem}
-                  className={`glass-card rounded-2xl p-4 text-center tap-scale ${
-                    isLoading ? "glow-pulse" : ""
-                  }`}
+                  className="bg-[#1a1a2e] rounded-2xl p-4 text-center border border-white/10"
                 >
                   <div 
                     className="w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center transition-all duration-300"
@@ -283,9 +281,7 @@ export default function ProfilePage() {
             variants={staggerItem}
             initial="initial"
             animate="animate"
-            className={`mt-3 glass-card rounded-2xl p-4 tap-scale transition-all duration-300 hover:shadow-lg hover:shadow-[#7c57ff]/20 ${
-              isLoading ? "glow-pulse" : ""
-            }`}
+            className="mt-3 bg-[#1a1a2e] rounded-2xl p-4 border border-white/10"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -328,7 +324,7 @@ export default function ProfilePage() {
                   variants={staggerItem}
                   className={`aspect-square rounded-2xl flex flex-col items-center justify-center p-2 tap-scale transition-all duration-300 ${
                     achievement.unlocked 
-                      ? "glass-card bg-gradient-to-br from-[#7c57ff]/30 to-[#60a5fa]/30 border border-[#7c57ff]/50 hover:shadow-lg hover:shadow-[#7c57ff]/30" 
+                      ? "bg-[#7c57ff]/20 border border-[#7c57ff]/50" 
                       : "bg-white/5 border border-white/10 opacity-50 hover:opacity-70"
                   }`}
                   title={achievement.requirement}
@@ -347,7 +343,7 @@ export default function ProfilePage() {
         <section aria-labelledby="menu-heading">
           <h2 id="menu-heading" className="sr-only">Menu Options</h2>
           <motion.div 
-            className="glass-card rounded-2xl overflow-hidden"
+            className="bg-[#1a1a2e] rounded-2xl overflow-hidden border border-white/10"
             variants={staggerContainer}
             initial="initial"
             animate="animate"
@@ -390,7 +386,7 @@ export default function ProfilePage() {
               onClick={handleResetPlan}
               disabled={isResetting}
               variant="outline"
-              className="w-full h-14 bg-[#7c57ff]/10 hover:bg-[#7c57ff]/20 border-[#7c57ff]/30 text-[#7c57ff] btn-glow tap-scale transition-all duration-300"
+              className="w-full h-14 bg-[#7c57ff]/10 hover:bg-[#7c57ff]/20 border-[#7c57ff]/30 text-[#7c57ff]"
               data-testid="button-reset-plan"
             >
               <RefreshCw className={`w-5 h-5 mr-2 ${isResetting ? 'animate-spin' : ''}`} />
@@ -402,7 +398,7 @@ export default function ProfilePage() {
             <Button
               onClick={handleLogout}
               variant="outline"
-              className="w-full h-14 bg-red-500/10 hover:bg-red-500/20 border-red-500/30 text-red-400 btn-glow tap-scale transition-all duration-300"
+              className="w-full h-14 bg-red-500/10 hover:bg-red-500/20 border-red-500/30 text-red-400"
               data-testid="button-logout"
             >
               <LogOut className="w-5 h-5 mr-2" />
