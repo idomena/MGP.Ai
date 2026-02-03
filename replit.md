@@ -17,6 +17,7 @@ Preferred communication style: Simple, everyday language.
 - **State Management**: React Query for server state, React Context for authentication (including Google OAuth).
 - **Routing**: React Router DOM with protected and public route handling.
 - **Animation**: Framer Motion for transitions and micro-interactions.
+- **Visual Effects**: Animated gradient backgrounds, glassmorphism cards with glowing borders, floating logo animations, particle-like glowing orbs, shimmer loading effects, and pulse/glow animations on interactive elements.
 - **Key Features**: Conversational onboarding chat, iPhone-optimized workout page, muscle anatomy diagrams, workout customization (change type, swap exercises), AI scheduling assistant, redesigned journey path visualization, real-time progress updates, and enhanced workout session UI with rest timers and completion animations.
 - **Accessibility**: ARIA labels, visible focus states, semantic HTML, and screen reader support.
 
