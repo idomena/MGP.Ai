@@ -12,6 +12,9 @@ import passport from "passport";
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust proxy for Replit environment
+app.set('trust proxy', 1);
+
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
