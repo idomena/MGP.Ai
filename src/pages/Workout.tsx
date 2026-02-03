@@ -186,10 +186,10 @@ export default function WorkoutPage() {
   // Show loading state while data is being fetched
   if (isLoading && !id) {
     return (
-      <div className="min-h-screen bg-[#0f0f1a] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-[#7c57ff] border-t-transparent rounded-full animate-spin" />
-          <span className="text-white/50 text-sm">Loading workout...</span>
+      <div className="min-h-screen animated-gradient-bg flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-3 border-[#7c57ff] border-t-transparent rounded-full animate-spin glow-pulse" />
+          <span className="text-white/60 text-sm">Loading workout...</span>
         </div>
       </div>
     );
@@ -214,9 +214,9 @@ export default function WorkoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f1a] flex flex-col">
+    <div className="min-h-screen animated-gradient-bg flex flex-col">
       {/* Clean Header */}
-      <header className="sticky top-0 z-40 px-4 py-4 bg-[#0f0f1a]/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-40 px-4 py-4 bg-[#0a0e27]/90 backdrop-blur-lg border-b border-white/5">
         <div className="flex items-center justify-between">
           <Button
             size="icon"

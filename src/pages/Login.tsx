@@ -78,18 +78,25 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0e27] flex flex-col items-center justify-center px-4" role="main" aria-label="Login page">
+    <div className="min-h-screen animated-gradient-bg particle-bg flex flex-col items-center justify-center px-4 relative overflow-hidden" role="main" aria-label="Login page">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="w-full max-w-md relative z-10"
       >
-        <div className="flex flex-col items-center mb-8">
-          <Logo size="xl" />
-        </div>
+        <motion.div 
+          className="flex flex-col items-center mb-8"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <div className="animate-float">
+            <Logo size="xl" />
+          </div>
+        </motion.div>
 
-        <div className="bg-[#1a1f3e]/50 backdrop-blur-lg rounded-2xl p-8 border border-white/10">
+        <div className="glass-card rounded-2xl p-8 glow-border">
           <h2 className="text-2xl font-semibold text-white text-center mb-6">Welcome Back</h2>
           
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -153,7 +160,7 @@ export default function Login() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] hover:from-[#8f6fff] hover:to-[#7ab8ff] text-white font-semibold rounded-xl transition-all duration-300"
+              className="w-full h-12 bg-gradient-to-r from-[#7c57ff] to-[#00c6ff] hover:from-[#8f6fff] hover:to-[#33d4ff] text-white font-semibold rounded-xl transition-all duration-300 btn-glow tap-scale"
               data-testid="button-login"
             >
               {isLoading ? (
@@ -172,7 +179,7 @@ export default function Login() {
               <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-[#1a1f3e]/50 px-4 text-white/40">or continue with</span>
+              <span className="glass-card px-4 py-1 rounded-full text-white/40">or continue with</span>
             </div>
           </div>
 

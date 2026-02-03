@@ -106,18 +106,25 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0e27] flex flex-col items-center justify-center px-4 py-8" role="main" aria-label="Sign up page">
+    <div className="min-h-screen animated-gradient-bg particle-bg flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden" role="main" aria-label="Sign up page">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="w-full max-w-md relative z-10"
       >
-        <div className="flex flex-col items-center mb-6">
-          <Logo size="xl" />
-        </div>
+        <motion.div 
+          className="flex flex-col items-center mb-6"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <div className="animate-float">
+            <Logo size="xl" />
+          </div>
+        </motion.div>
 
-        <div className="bg-[#1a1f3e]/50 backdrop-blur-lg rounded-2xl p-8 border border-white/10">
+        <div className="glass-card rounded-2xl p-8 glow-border">
           <h2 className="text-2xl font-semibold text-white text-center mb-6">Create Account</h2>
           
           <form onSubmit={handleSubmit} className="space-y-4">

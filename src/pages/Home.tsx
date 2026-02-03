@@ -119,14 +119,14 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen bg-background flex flex-col" role="main" aria-label="Home page">
+    <div className="h-screen animated-gradient-bg flex flex-col relative" role="main" aria-label="Home page">
       {/* Fixed Top Section */}
       <div className="flex-shrink-0 px-4">
         <MobileHeader />
 
         {/* Toggle Buttons */}
         <nav className="mt-6" role="tablist" aria-label="Program view selector">
-        <div className="bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] rounded-full p-1">
+        <div className="bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] rounded-full p-1 glow-pulse">
           <div className="flex">
             <button
               role="tab"
