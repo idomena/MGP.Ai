@@ -3,8 +3,9 @@ import NavigationBar from "@/components/NavigationBar";
 import JourneyPath from "@/components/JourneyPath";
 import SchedulingAIAssistant from "@/components/SchedulingAIAssistant";
 import ChangeWorkoutTypeModal from "@/components/ChangeWorkoutTypeModal";
+import Logo from "@/components/Logo";
 import { useState, useEffect } from "react";
-import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock, Moon, MessageCircle, RefreshCw, Sparkles, Zap } from "lucide-react";
+import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock, Moon, MessageCircle, RefreshCw, Sparkles, Zap, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
@@ -51,8 +52,11 @@ export default function Home() {
 
   if (isLoadingOnboarding) {
     return (
-      <div className="h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-[#7c57ff] border-t-transparent rounded-full" />
+      <div className="h-screen bg-[#0a0e27] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-6">
+          <Logo size="xl" />
+          <Loader2 className="w-8 h-8 text-[#7c57ff] animate-spin" />
+        </div>
       </div>
     );
   }

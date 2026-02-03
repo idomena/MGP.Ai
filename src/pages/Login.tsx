@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import Logo from "@/components/Logo";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -84,11 +85,8 @@ export default function Login() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-[#7c57ff] to-[#00c6ff] bg-clip-text text-transparent mb-2">
-            MGP·AI
-          </h1>
-          <p className="text-white/60 text-sm">Your AI Fitness Partner</p>
+        <div className="flex flex-col items-center mb-8">
+          <Logo size="xl" />
         </div>
 
         <div className="bg-[#1a1f3e]/50 backdrop-blur-lg rounded-2xl p-8 border border-white/10">

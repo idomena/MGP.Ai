@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+import Logo from "./Logo";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,9 +13,9 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0e27] flex items-center justify-center" role="status" aria-label="Loading authentication status">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-12 h-12 text-[#7c57ff] animate-spin" />
-          <p className="text-white/60 text-sm">Loading...</p>
+        <div className="flex flex-col items-center gap-6">
+          <Logo size="xl" />
+          <Loader2 className="w-8 h-8 text-[#7c57ff] animate-spin" />
         </div>
       </div>
     );
