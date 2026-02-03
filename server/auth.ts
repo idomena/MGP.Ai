@@ -3,9 +3,23 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { supabase } from './supabase';
 
 export const configurePassport = () => {
+  const clientID = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  
+  console.log('Google OAuth Config:');
+  console.log('- Client ID exists:', !!clientID);
+  console.log('- Client ID length:', clientID?.length || 0);
+  console.log('- Client ID preview:', clientID?.substring(0, 20) + '...');
+  console.log('- Client Secret exists:', !!clientSecret);
+  
+  if (!clientID || !clientSecret) {
+    console.error('Missing Google OAuth credentials!');
+    return;
+  }
+  
   passport.use(new GoogleStrategy({
-      clientID: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientID: clientID,
+      clientSecret: clientSecret,
       callbackURL: "/auth/google/callback"
     },
     async (accessToken, refreshToken, profile, done) => {
