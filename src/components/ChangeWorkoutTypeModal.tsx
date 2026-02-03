@@ -72,11 +72,11 @@ export default function ChangeWorkoutTypeModal({
         onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="w-full max-w-sm bg-[#1a1a2e] rounded-2xl overflow-hidden"
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="w-full max-w-sm glass-card rounded-2xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -162,7 +162,7 @@ export default function ChangeWorkoutTypeModal({
                     w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all
                     ${
                       selectedType !== null && !isLoading
-                        ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-purple-500/30 active:scale-95"
+                        ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-purple-500/30 active:scale-95 btn-glow"
                         : "bg-white/10 text-white/40 cursor-not-allowed"
                     }
                   `}
