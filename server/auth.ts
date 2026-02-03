@@ -17,10 +17,16 @@ export const configurePassport = () => {
     return;
   }
   
+  const callbackURL = process.env.REPLIT_DEV_DOMAIN 
+    ? `https://${process.env.REPLIT_DEV_DOMAIN}/auth/google/callback`
+    : "/auth/google/callback";
+  
+  console.log('- Callback URL:', callbackURL);
+  
   passport.use(new GoogleStrategy({
       clientID: clientID,
       clientSecret: clientSecret,
-      callbackURL: "/auth/google/callback"
+      callbackURL: callbackURL
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
