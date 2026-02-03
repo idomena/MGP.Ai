@@ -126,7 +126,7 @@ export default function WeightSelector({ onSelect }: WeightSelectorProps) {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
         onClick={handleContinue}
-        className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white font-semibold text-lg shadow-lg shadow-[#7c57ff]/30 hover:shadow-[#7c57ff]/50 transition-all flex items-center justify-center gap-3"
+        className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white font-semibold text-lg shadow-lg shadow-[#7c57ff]/30 hover:shadow-[#7c57ff]/50 transition-all flex items-center justify-center gap-3 btn-glow"
         data-testid="button-continue-weight"
       >
         <span>Continue</span>

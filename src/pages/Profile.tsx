@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { staggerContainer, staggerItem } from "@/components/PageTransition";
 
 interface WorkoutCompletion {
   id: string;
@@ -195,7 +196,7 @@ export default function ProfilePage() {
   const unlockedCount = achievements.filter(a => a.unlocked).length;
 
   return (
-    <div className="min-h-screen bg-[#0a0e27] pb-24 overflow-y-auto" role="main" aria-label="Profile page">
+    <div className="min-h-screen animated-gradient-bg pb-24 overflow-y-auto" role="main" aria-label="Profile page">
       <div className="relative">
         <div className="h-44 bg-gradient-to-br from-[#7c57ff] via-[#9b6dff] to-[#60a5fa]" aria-hidden="true">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
@@ -243,37 +244,48 @@ export default function ProfilePage() {
 
         <section className="mb-6" aria-labelledby="stats-heading">
           <h2 id="stats-heading" className="sr-only">Your Stats</h2>
-          <div className="grid grid-cols-3 gap-3">
-            {stats.map((stat, index) => {
+          <motion.div 
+            className="grid grid-cols-3 gap-3"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            {stats.map((stat) => {
               const Icon = stat.icon;
               return (
                 <motion.div
                   key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 text-center"
+                  variants={staggerItem}
+                  className={`glass-card rounded-2xl p-4 text-center tap-scale ${
+                    isLoading ? "glow-pulse" : ""
+                  }`}
                 >
                   <div 
-                    className="w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center"
+                    className="w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center transition-all duration-300"
                     style={{ backgroundColor: `${stat.color}20` }}
                   >
                     <Icon className="w-5 h-5" style={{ color: stat.color }} aria-hidden="true" />
                   </div>
-                  <p className="text-white text-xl font-bold">
-                    {isLoading ? "-" : stat.value}
-                  </p>
+                  {isLoading ? (
+                    <div className="h-7 bg-white/10 rounded-md mb-1 animate-pulse" />
+                  ) : (
+                    <p className="text-white text-xl font-bold">
+                      {stat.value}
+                    </p>
+                  )}
                   <p className="text-white/60 text-xs">{stat.label}</p>
                 </motion.div>
               );
             })}
-          </div>
+          </motion.div>
           
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="mt-3 bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10"
+            variants={staggerItem}
+            initial="initial"
+            animate="animate"
+            className={`mt-3 glass-card rounded-2xl p-4 tap-scale transition-all duration-300 hover:shadow-lg hover:shadow-[#7c57ff]/20 ${
+              isLoading ? "glow-pulse" : ""
+            }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -282,7 +294,11 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <p className="text-white font-medium">Total Training Time</p>
-                  <p className="text-white/60 text-sm">{isLoading ? "-" : `${totalMinutes} minutes`}</p>
+                  {isLoading ? (
+                    <div className="h-4 w-20 bg-white/10 rounded mt-1 animate-pulse" />
+                  ) : (
+                    <p className="text-white/60 text-sm">{totalMinutes} minutes</p>
+                  )}
                 </div>
               </div>
               <p className="text-white/60 text-sm">
@@ -298,81 +314,102 @@ export default function ProfilePage() {
               Achievements ({unlockedCount}/{achievements.length})
             </h2>
           </div>
-          <div className="grid grid-cols-4 gap-2">
-            {achievements.map((achievement, index) => {
+          <motion.div 
+            className="grid grid-cols-4 gap-2"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            {achievements.map((achievement) => {
               const Icon = achievement.icon;
               return (
                 <motion.div
                   key={achievement.id}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 + index * 0.05 }}
-                  className={`aspect-square rounded-2xl flex flex-col items-center justify-center p-2 ${
+                  variants={staggerItem}
+                  className={`aspect-square rounded-2xl flex flex-col items-center justify-center p-2 tap-scale transition-all duration-300 ${
                     achievement.unlocked 
-                      ? "bg-gradient-to-br from-[#7c57ff]/30 to-[#60a5fa]/30 border border-[#7c57ff]/50" 
-                      : "bg-white/5 border border-white/10 opacity-50"
+                      ? "glass-card bg-gradient-to-br from-[#7c57ff]/30 to-[#60a5fa]/30 border border-[#7c57ff]/50 hover:shadow-lg hover:shadow-[#7c57ff]/30" 
+                      : "bg-white/5 border border-white/10 opacity-50 hover:opacity-70"
                   }`}
                   title={achievement.requirement}
+                  whileHover={{ scale: 1.05 }}
                 >
-                  <Icon className={`w-7 h-7 ${achievement.unlocked ? "text-[#aaf163]" : "text-white/40"}`} aria-hidden="true" />
+                  <Icon className={`w-7 h-7 transition-all duration-300 ${achievement.unlocked ? "text-[#aaf163]" : "text-white/40"}`} aria-hidden="true" />
                   <p className={`text-[9px] mt-1.5 text-center leading-tight ${achievement.unlocked ? "text-white" : "text-white/40"}`}>
                     {achievement.name}
                   </p>
                 </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </section>
 
         <section aria-labelledby="menu-heading">
           <h2 id="menu-heading" className="sr-only">Menu Options</h2>
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
+          <motion.div 
+            className="glass-card rounded-2xl overflow-hidden"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
             {menuItems.map((item, index) => {
               const Icon = item.icon;
               return (
-                <Link
+                <motion.div
                   key={item.label}
-                  to={item.path}
-                  className={`flex items-center justify-between p-4 hover:bg-white/5 transition-colors ${
-                    index !== menuItems.length - 1 ? "border-b border-white/10" : ""
-                  }`}
-                  data-testid={`menu-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+                  variants={staggerItem}
+                  className={index !== menuItems.length - 1 ? "border-b border-white/10" : ""}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-white" aria-hidden="true" />
+                  <Link
+                    to={item.path}
+                    className="flex items-center justify-between p-4 transition-all duration-300 tap-scale hover:bg-white/10"
+                    data-testid={`menu-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center transition-all duration-300 hover:bg-[#7c57ff]/30">
+                        <Icon className="w-5 h-5 text-white" aria-hidden="true" />
+                      </div>
+                      <span className="text-white font-medium">{item.label}</span>
                     </div>
-                    <span className="text-white font-medium">{item.label}</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-white/40" aria-hidden="true" />
-                </Link>
+                    <ChevronRight className="w-5 h-5 text-white/40 transition-all duration-300 group-hover:text-white/60" aria-hidden="true" />
+                  </Link>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </section>
 
-        <div className="mt-6 space-y-3">
-          <Button
-            onClick={handleResetPlan}
-            disabled={isResetting}
-            variant="outline"
-            className="w-full h-14 bg-[#7c57ff]/10 hover:bg-[#7c57ff]/20 border-[#7c57ff]/30 text-[#7c57ff]"
-            data-testid="button-reset-plan"
-          >
-            <RefreshCw className={`w-5 h-5 mr-2 ${isResetting ? 'animate-spin' : ''}`} />
-            {isResetting ? "Resetting..." : "Reset Workout Plan"}
-          </Button>
+        <motion.div 
+          className="mt-6 space-y-3"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
+          <motion.div variants={staggerItem}>
+            <Button
+              onClick={handleResetPlan}
+              disabled={isResetting}
+              variant="outline"
+              className="w-full h-14 bg-[#7c57ff]/10 hover:bg-[#7c57ff]/20 border-[#7c57ff]/30 text-[#7c57ff] btn-glow tap-scale transition-all duration-300"
+              data-testid="button-reset-plan"
+            >
+              <RefreshCw className={`w-5 h-5 mr-2 ${isResetting ? 'animate-spin' : ''}`} />
+              {isResetting ? "Resetting..." : "Reset Workout Plan"}
+            </Button>
+          </motion.div>
 
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            className="w-full h-14 bg-red-500/10 hover:bg-red-500/20 border-red-500/30 text-red-400"
-            data-testid="button-logout"
-          >
-            <LogOut className="w-5 h-5 mr-2" />
-            Log Out
-          </Button>
-        </div>
+          <motion.div variants={staggerItem}>
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="w-full h-14 bg-red-500/10 hover:bg-red-500/20 border-red-500/30 text-red-400 btn-glow tap-scale transition-all duration-300"
+              data-testid="button-logout"
+            >
+              <LogOut className="w-5 h-5 mr-2" />
+              Log Out
+            </Button>
+          </motion.div>
+        </motion.div>
 
         <p className="text-center text-white/30 text-xs mt-8 mb-4">
           MGP.AI v1.0.0

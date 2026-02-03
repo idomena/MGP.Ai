@@ -50,7 +50,7 @@ export default function NameInput({ onSubmit, placeholder = "Enter your name..."
           onClick={handleSubmit}
           disabled={!value.trim()}
           className={`
-            p-3 rounded-xl transition-all
+            p-3 rounded-xl transition-all btn-glow
             ${value.trim()
               ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-[#7c57ff]/30'
               : 'bg-white/10 text-white/40'

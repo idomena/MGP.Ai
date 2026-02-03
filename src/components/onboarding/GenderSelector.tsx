@@ -89,7 +89,7 @@ export function GenderSelector({ onSelect }: GenderSelectorProps) {
         className={`
           w-full mt-6 py-4 rounded-2xl font-semibold text-lg
           flex items-center justify-center gap-2
-          transition-all duration-200
+          transition-all duration-200 btn-glow
           ${selected
             ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-[#7c57ff]/30'
             : 'bg-white/10 text-white/50 cursor-not-allowed'

@@ -58,7 +58,7 @@ export default function AdditionalInfo({ onSubmit, onSkip }: AdditionalInfoProps
           onClick={handleSubmit}
           disabled={!value.trim()}
           className={`
-            flex-1 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all
+            flex-1 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all btn-glow
             ${value.trim()
               ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-[#7c57ff]/30'
               : 'bg-white/10 text-white/40 cursor-not-allowed'

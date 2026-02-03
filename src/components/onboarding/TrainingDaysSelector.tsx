@@ -108,7 +108,7 @@ export function TrainingDaysSelector({ onSelect }: TrainingDaysSelectorProps) {
         className={`
           w-full py-4 rounded-2xl font-semibold text-lg
           flex items-center justify-center gap-3
-          transition-all duration-200
+          transition-all duration-200 btn-glow
           ${selectedDays.length > 0
             ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-[#7c57ff]/30'
             : 'bg-white/10 text-white/50 cursor-not-allowed'
