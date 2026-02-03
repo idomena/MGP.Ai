@@ -112,7 +112,7 @@ export default function YesNoSelector({ onSelect }: YesNoSelectorProps) {
         className={`
           w-full mt-6 py-4 rounded-2xl font-semibold text-lg
           flex items-center justify-center gap-3
-          transition-all duration-200 btn-glow
+          transition-all duration-200
           ${selected !== null
             ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-[#7c57ff]/30'
             : 'bg-white/10 text-white/50 cursor-not-allowed'

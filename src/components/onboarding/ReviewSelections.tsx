@@ -205,7 +205,7 @@ export default function ReviewSelections({ selections, onConfirm, onEdit }: Revi
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
         onClick={onConfirm}
-        className="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] text-white font-semibold text-lg shadow-lg shadow-[#7c57ff]/30 hover:shadow-[#7c57ff]/50 transition-all flex items-center justify-center gap-3 btn-glow"
+        className="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] text-white font-semibold text-lg shadow-lg shadow-[#7c57ff]/30 hover:shadow-[#7c57ff]/50 transition-all flex items-center justify-center gap-3"
         data-testid="button-confirm-all"
       >
         <ArrowRight className="w-5 h-5" />

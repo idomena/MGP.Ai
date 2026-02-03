@@ -16,7 +16,9 @@ export default function NavigationBar() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe" role="navigation" aria-label="Main navigation">
       <div className="relative">
-        <div className="absolute inset-0 bg-[#1a1a2e] rounded-t-2xl border-t border-white/10" aria-hidden="true" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] rounded-t-3xl" aria-hidden="true" />
+        <div className="absolute inset-0 bg-black/20 rounded-t-3xl backdrop-blur-xl" aria-hidden="true" />
+        <div className="absolute inset-x-0 top-0 h-px bg-white/30 rounded-t-3xl" aria-hidden="true" />
         
         <div className="relative flex justify-around items-center h-[72px]">
           {/* Center floating button */}
@@ -25,15 +27,16 @@ export default function NavigationBar() {
               to="/assistant/chat" 
               aria-label="Open AI Assistant chat"
               data-testid="button-assistant-chat"
-              className="block"
+              className="block focus:outline-none focus:ring-2 focus:ring-[#7c57ff] rounded-full"
             >
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center shadow-lg border-2 border-[#0f0f1a]">
-                <MessageCircle className="w-7 h-7 text-white" aria-hidden="true" />
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center shadow-[0_0_30px_rgba(124,87,255,0.6)] backdrop-blur-xl border-2 border-white/20">
+                <MessageCircle className="w-8 h-8 text-white" aria-hidden="true" />
               </div>
             </Link>
           </div>
 
           {navItems.map((item, index) => {
+            // Skip the middle item (index 2) since we have a centered floating button
             if (index === 2) return <div key={item.name} className="flex-1" aria-hidden="true" />;
             
             const isActive = currentPath === item.path || 
@@ -44,20 +47,20 @@ export default function NavigationBar() {
               <Link
                 key={item.name}
                 to={item.path}
-                className="flex flex-col items-center justify-center flex-1 h-full"
+                className="flex flex-col items-center justify-center flex-1 h-full focus:outline-none focus:ring-2 focus:ring-[#7c57ff] focus:ring-inset"
                 aria-label={`Go to ${item.name}`}
                 aria-current={isActive ? "page" : undefined}
                 data-testid={`nav-${item.name.toLowerCase()}`}
               >
                 <Icon
                   className={`w-6 h-6 transition-colors ${
-                    isActive ? "text-[#7c57ff]" : "text-white/50"
+                    isActive ? "text-[#aaf163] drop-shadow-[0_0_8px_rgba(170,241,99,0.5)]" : "text-white/70"
                   }`}
                   aria-hidden="true"
                 />
                 <span
                   className={`text-xs mt-1 transition-colors ${
-                    isActive ? "text-[#7c57ff]" : "text-white/50"
+                    isActive ? "text-[#aaf163] drop-shadow-[0_0_8px_rgba(170,241,99,0.5)]" : "text-white/70"
                   }`}
                 >
                   {item.name}

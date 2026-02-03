@@ -345,15 +345,10 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen animated-gradient-bg flex flex-col">
-      <header className="sticky top-0 z-50 px-4 py-4 border-b border-white/10 glass-card">
+    <div className="min-h-screen bg-[#0f0f1a] flex flex-col">
+      <header className="sticky top-0 z-50 px-4 py-4 border-b border-white/10 bg-[#0f0f1a]/80 backdrop-blur-lg">
         <div className="flex items-center justify-center gap-2">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          >
-            <Sparkles className="w-5 h-5 text-[#7c57ff]" />
-          </motion.div>
+          <Sparkles className="w-5 h-5 text-[#7c57ff]" />
           <h1 className="text-xl font-bold bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] bg-clip-text text-transparent">
             {selections.coachName || DEFAULT_COACH_NAME} - AI Coach
           </h1>
@@ -363,96 +358,51 @@ export default function Onboarding() {
       <main className="flex-1 overflow-y-auto px-4 py-6 pb-24">
         <div className="max-w-md mx-auto space-y-4">
           <AnimatePresence mode="popLayout">
-            {messages.map((message, idx) => (
+            {messages.map((message) => (
               <motion.div
                 key={message.id}
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                transition={{ duration: 0.3, delay: idx * 0.05 }}
+                transition={{ duration: 0.3 }}
                 className={`flex items-start gap-3 ${message.type === 'user' ? 'flex-row-reverse' : ''}`}
               >
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  className={`
-                    w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
-                    ${message.type === 'bot' 
-                      ? 'bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] glow-pulse' 
-                      : 'bg-white/10'
-                    }
-                  `}
-                >
+                <div className={`
+                  w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
+                  ${message.type === 'bot' 
+                    ? 'bg-gradient-to-br from-[#7c57ff] to-[#60a5fa]' 
+                    : 'bg-white/10'
+                  }
+                `}>
                   {message.type === 'bot' ? (
                     <Bot className="w-5 h-5 text-white" />
                   ) : (
                     <User className="w-5 h-5 text-white/70" />
                   )}
-                </motion.div>
+                </div>
 
-                <motion.div
-                  initial={{ opacity: 0, x: message.type === 'user' ? 20 : -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className={`
-                    max-w-[80%] px-4 py-3 rounded-2xl
-                    ${message.type === 'bot'
-                      ? 'glass-card rounded-tl-sm'
-                      : 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] rounded-tr-sm'
-                    }
-                  `}
-                >
+                <div className={`
+                  max-w-[80%] px-4 py-3 rounded-2xl
+                  ${message.type === 'bot'
+                    ? 'bg-white/5 rounded-tl-sm'
+                    : 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] rounded-tr-sm'
+                  }
+                `}>
                   <p className="text-white text-sm leading-relaxed">{message.content}</p>
-                </motion.div>
+                </div>
               </motion.div>
             ))}
           </AnimatePresence>
 
+
           <AnimatePresence>
-            {isTyping && (
+            {showCurrentComponent && !isTyping && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
-                className="flex items-start gap-3"
-              >
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] glow-pulse"
-                >
-                  <Bot className="w-5 h-5 text-white" />
-                </motion.div>
-                <motion.div
-                  className="glass-card rounded-tl-sm px-4 py-3 rounded-2xl"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                >
-                  <div className="flex gap-1">
-                    {[0, 1, 2].map((i) => (
-                      <motion.div
-                        key={i}
-                        className="w-2 h-2 rounded-full bg-[#7c57ff]"
-                        animate={{ y: [0, -8, 0] }}
-                        transition={{ duration: 1, repeat: Infinity, delay: i * 0.1 }}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <AnimatePresence>
-            {showCurrentComponent && !isTyping && (
-              <motion.div
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 30 }}
-                className="mt-4 animate-fade-in-up"
+                className="mt-4"
               >
                 {renderInputComponent()}
               </motion.div>

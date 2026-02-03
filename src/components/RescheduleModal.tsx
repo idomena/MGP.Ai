@@ -80,11 +80,11 @@ export default function RescheduleModal({
         onClick={onClose}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="w-full max-w-md glass-card rounded-t-3xl max-h-[80vh] overflow-hidden"
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          className="w-full max-w-md bg-[#1a1a2e] rounded-t-3xl max-h-[80vh] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -190,7 +190,7 @@ export default function RescheduleModal({
               <div className="p-4 border-t border-white/10 flex gap-3">
                 <button
                   onClick={onClose}
-                  className="flex-1 py-3.5 rounded-2xl bg-white/10 text-white font-medium transition-all hover:bg-white/20"
+                  className="flex-1 py-3.5 rounded-2xl bg-white/10 text-white font-medium"
                   data-testid="button-cancel-reschedule"
                 >
                   Cancel
@@ -199,9 +199,9 @@ export default function RescheduleModal({
                   onClick={handleConfirmReschedule}
                   disabled={selectedDay === null}
                   className={`
-                    flex-1 py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2 transition-all
+                    flex-1 py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2
                     ${selectedDay !== null
-                      ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white btn-glow"
+                      ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white"
                       : "bg-white/10 text-white/40 cursor-not-allowed"
                     }
                   `}

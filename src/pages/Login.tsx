@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
 import { useAuth } from "@/contexts/AuthContext";
@@ -77,13 +78,18 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f1a] flex flex-col items-center justify-center px-4" role="main" aria-label="Login page">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-[#0a0e27] flex flex-col items-center justify-center px-4" role="main" aria-label="Login page">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
         <div className="flex flex-col items-center mb-8">
           <Logo size="xl" />
         </div>
 
-        <div className="bg-[#1a1a2e] rounded-2xl p-8 border border-white/10">
+        <div className="bg-[#1a1f3e]/50 backdrop-blur-lg rounded-2xl p-8 border border-white/10">
           <h2 className="text-2xl font-semibold text-white text-center mb-6">Welcome Back</h2>
           
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -99,7 +105,7 @@ export default function Login() {
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-11 bg-[#0f0f1a] border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl"
+                  className="pl-11 bg-[#0a0e27]/50 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl focus:ring-2 focus:ring-[#7c57ff] focus:border-transparent"
                   data-testid="input-email"
                   aria-label="Email address"
                 />
@@ -118,15 +124,16 @@ export default function Login() {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-11 pr-11 bg-[#0f0f1a] border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl"
+                  className="pl-11 pr-11 bg-[#0a0e27]/50 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl focus:ring-2 focus:ring-[#7c57ff] focus:border-transparent"
                   data-testid="input-password"
                   aria-label="Password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors"
                   aria-label={showPassword ? "Hide password" : "Show password"}
+                  data-testid="button-toggle-password"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -146,7 +153,7 @@ export default function Login() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 bg-gradient-to-r from-[#7c57ff] to-[#00c6ff] hover:opacity-90 text-white font-semibold rounded-xl"
+              className="w-full h-12 bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] hover:from-[#8f6fff] hover:to-[#7ab8ff] text-white font-semibold rounded-xl transition-all duration-300"
               data-testid="button-login"
             >
               {isLoading ? (
@@ -165,7 +172,7 @@ export default function Login() {
               <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-[#1a1a2e] px-4 text-white/40">or continue with</span>
+              <span className="bg-[#1a1f3e]/50 px-4 text-white/40">or continue with</span>
             </div>
           </div>
 
@@ -174,7 +181,7 @@ export default function Login() {
             onClick={handleGoogleLogin}
             disabled={isGoogleLoading}
             variant="outline"
-            className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10 text-white font-medium rounded-xl"
+            className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10 text-white font-medium rounded-xl transition-all duration-300"
             data-testid="button-google-login"
           >
             {isGoogleLoading ? (
@@ -200,7 +207,7 @@ export default function Login() {
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
