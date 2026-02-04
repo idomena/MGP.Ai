@@ -38,18 +38,67 @@ interface OnboardingData {
   additionalInfo?: string;
 }
 
+// Parse user's additional info to extract muscle focus preferences
+function parseMuscleFocus(additionalInfo: string, defaultWorkouts: string[]): string[] {
+  if (!additionalInfo || additionalInfo.trim() === '') {
+    return defaultWorkouts.length > 0 ? defaultWorkouts : ['full'];
+  }
+  
+  const text = additionalInfo.toLowerCase();
+  const detectedMuscles: string[] = [];
+  
+  // Check for muscle group keywords
+  const muscleKeywords: Record<string, string[]> = {
+    chest: ['chest', 'pecs', 'pectoral', 'bench'],
+    back: ['back', 'lats', 'latissimus', 'pull-up', 'pullup', 'row'],
+    shoulders: ['shoulder', 'delts', 'deltoid', 'press'],
+    arms: ['arm', 'bicep', 'tricep', 'curl'],
+    biceps: ['bicep', 'biceps', 'front arm'],
+    triceps: ['tricep', 'triceps', 'back arm'],
+    legs: ['leg', 'quad', 'hamstring', 'glute', 'squat', 'lunge', 'calf', 'calves'],
+    core: ['core', 'abs', 'abdominal', 'stomach', 'plank', 'crunch'],
+    full: ['full body', 'everything', 'all muscles', 'total body', 'whole body'],
+  };
+  
+  for (const [muscle, keywords] of Object.entries(muscleKeywords)) {
+    if (keywords.some(keyword => text.includes(keyword))) {
+      detectedMuscles.push(muscle);
+    }
+  }
+  
+  // If user mentioned specific muscles, use those
+  if (detectedMuscles.length > 0) {
+    // Remove duplicates (e.g., if biceps and arms both detected, keep arms)
+    if (detectedMuscles.includes('biceps') || detectedMuscles.includes('triceps')) {
+      const filtered = detectedMuscles.filter(m => m !== 'arms');
+      if (!filtered.includes('biceps') && !filtered.includes('triceps')) {
+        return detectedMuscles;
+      }
+      return filtered;
+    }
+    return [...new Set(detectedMuscles)];
+  }
+  
+  // Fall back to default or full body
+  return defaultWorkouts.length > 0 ? defaultWorkouts : ['full'];
+}
+
 export async function saveOnboardingAndGeneratePlan(
   userId: string,
   data: OnboardingData
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // Parse additionalInfo to extract muscle focus preferences
+    const focusWorkouts = parseMuscleFocus(data.additionalInfo || '', data.selectedWorkouts);
+    
     const { error: prefsError } = await supabase
       .from("user_preferences")
       .upsert(
         {
           user_id: userId,
           training_days: data.trainingDays,
-          selected_workouts: data.selectedWorkouts,
+          selected_workouts: focusWorkouts,
+          additional_info: data.additionalInfo || null,
           onboarding_completed: false,
         },
         { onConflict: "user_id" }
@@ -71,7 +120,7 @@ export async function saveOnboardingAndGeneratePlan(
       // localStorage not available
     }
 
-    const plan = generate21DayPlan(startDate, data.trainingDays, data.selectedWorkouts);
+    const plan = generate21DayPlan(startDate, data.trainingDays, focusWorkouts);
 
     const completionRows = plan.map((day) => ({
       user_id: userId,
