@@ -601,6 +601,49 @@ export function getExercisesForWorkoutType(workoutType: string, dayNumber: numbe
       return REST_DAY_EXERCISES;
     
     default:
+      // Handle custom multi-muscle combinations (e.g., "biceps_chest", "back_shoulders_core")
+      const muscles = normalizedType.split("_").filter(m => m.length > 0);
+      if (muscles.length > 1) {
+        const exercisesPerMuscle = Math.max(2, Math.floor(6 / muscles.length));
+        const combined: Exercise[] = [];
+        
+        for (const muscle of muscles) {
+          switch (muscle) {
+            case "chest":
+              combined.push(...pickWithRotation(CHEST_EXERCISES, exercisesPerMuscle, dayNumber));
+              break;
+            case "back":
+              combined.push(...pickWithRotation(BACK_EXERCISES, exercisesPerMuscle, dayNumber));
+              break;
+            case "shoulders":
+              combined.push(...pickWithRotation(SHOULDERS_EXERCISES, exercisesPerMuscle, dayNumber));
+              break;
+            case "arms":
+              combined.push(...pickWithRotation(ARMS_EXERCISES, exercisesPerMuscle, dayNumber));
+              break;
+            case "biceps":
+              combined.push(...pickWithRotation(ARMS_EXERCISES.filter(e => 
+                e.name.toLowerCase().includes('curl') || e.name.toLowerCase().includes('bicep')
+              ), exercisesPerMuscle, dayNumber));
+              break;
+            case "triceps":
+              combined.push(...pickWithRotation(ARMS_EXERCISES.filter(e => 
+                e.name.toLowerCase().includes('tricep') || e.name.toLowerCase().includes('pushdown') ||
+                e.name.toLowerCase().includes('extension') || e.name.toLowerCase().includes('dip')
+              ), exercisesPerMuscle, dayNumber));
+              break;
+            case "legs":
+              combined.push(...pickWithRotation(LEGS_EXERCISES, exercisesPerMuscle, dayNumber));
+              break;
+            case "core":
+              combined.push(...pickWithRotation(CORE_EXERCISES, exercisesPerMuscle, dayNumber));
+              break;
+          }
+        }
+        
+        if (combined.length > 0) return combined;
+      }
+      
       // Default to full body with variation
       return FULL_VARIATIONS[variationIndex]();
   }
