@@ -163,7 +163,7 @@ export default function ChangeWorkoutTypeModal({
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 30, stiffness: 300 }}
-          className="w-full max-w-lg bg-[#1a1a2e] rounded-t-[28px] overflow-hidden max-h-[85vh] flex flex-col shadow-2xl"
+          className="w-full max-w-lg bg-[#1a1a2e] rounded-t-[28px] shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Handle bar */}
@@ -205,7 +205,7 @@ export default function ChangeWorkoutTypeModal({
           ) : (
             <>
               {/* Scrollable content */}
-              <div className="flex-1 overflow-y-auto px-6 py-2 overscroll-contain">
+              <div className="overflow-y-auto px-6 py-2 overscroll-contain" style={{ maxHeight: 'calc(70vh - 180px)' }}>
                 {/* Muscle Groups */}
                 <div className="space-y-3 mb-5">
                   <p className="text-white/40 text-sm font-semibold uppercase tracking-wider mb-4">Select Muscle Groups</p>
