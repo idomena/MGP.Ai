@@ -19,7 +19,7 @@ const CHEST_EXERCISES: Exercise[] = [
     reps: "12, 10, 8, 6",
     time: "12 min",
     difficulty: "Intermediate",
-    gifUrl: "https://media.giphy.com/media/3o7TKB3oifq46DDhOE/giphy.gif",
+    gifUrl: "/assets/Bench-Press.gif",
     instructions: "Lie on a flat bench with feet on the floor. Grip the bar slightly wider than shoulder-width. Lower the bar to your chest, then push up explosively.",
   },
   {
@@ -30,7 +30,7 @@ const CHEST_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "10 min",
     difficulty: "Intermediate",
-    gifUrl: "https://media.giphy.com/media/l0MYyv6UK0Bd4DE76/giphy.gif",
+    gifUrl: "/assets/Incline-Dumbbell-Press.gif",
     instructions: "Set bench to 30-45 degrees. Press dumbbells up from chest level, keeping elbows at 45 degrees from your body.",
   },
   {
@@ -52,7 +52,7 @@ const CHEST_EXERCISES: Exercise[] = [
     reps: "15, 15, 15",
     time: "5 min",
     difficulty: "Beginner",
-    gifUrl: "https://media.giphy.com/media/3o7TKB3oifq46DDhOE/giphy.gif",
+    gifUrl: "/assets/Push-Up.gif",
     instructions: "Keep body straight from head to heels. Lower chest to floor, then push back up. Keep core tight throughout.",
   },
 ];
@@ -240,7 +240,7 @@ const ARMS_EXERCISES: Exercise[] = [
     reps: "15, 12, 10",
     time: "8 min",
     difficulty: "Beginner",
-    gifUrl: "https://media.giphy.com/media/l0MYyv6UK0Bd4DE76/giphy.gif",
+    gifUrl: "/assets/Tricep-Pushdown.gif",
     instructions: "Stand at cable machine with rope attachment. Push down until arms are fully extended. Squeeze triceps at bottom.",
   },
   {
