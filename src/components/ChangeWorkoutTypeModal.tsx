@@ -163,7 +163,7 @@ export default function ChangeWorkoutTypeModal({
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 30, stiffness: 300 }}
-          className="w-full max-w-lg bg-[#1a1a2e] rounded-t-[28px] overflow-hidden max-h-[90vh] flex flex-col shadow-2xl"
+          className="w-full max-w-lg bg-[#1a1a2e] rounded-t-[28px] overflow-hidden max-h-[85vh] flex flex-col shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Handle bar */}
@@ -330,40 +330,32 @@ export default function ChangeWorkoutTypeModal({
               </div>
 
               {/* Bottom Section - Fixed */}
-              <div className="px-6 pt-4 pb-8 border-t border-white/10 bg-[#1a1a2e] safe-area-bottom">
+              <div className="flex-shrink-0 px-6 pt-4 pb-6 border-t border-white/10 bg-[#1a1a2e] relative z-10">
                 {/* Selection Preview */}
-                <AnimatePresence>
-                  {selectedMuscles.length > 0 && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0, marginBottom: 0 }}
-                      animate={{ height: "auto", opacity: 1, marginBottom: 16 }}
-                      exit={{ height: 0, opacity: 0, marginBottom: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="p-4 rounded-2xl bg-gradient-to-r from-[#7c57ff]/20 to-[#60a5fa]/20 border border-white/10">
-                        <p className="text-white/50 text-sm mb-1">Today's workout:</p>
-                        <p className="text-white font-bold text-lg">{getSelectionSummary()}</p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {selectedMuscles.length > 0 && (
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-[#7c57ff]/20 to-[#60a5fa]/20 border border-white/10 mb-4">
+                    <p className="text-white/50 text-sm mb-1">Today's workout:</p>
+                    <p className="text-white font-bold text-lg">{getSelectionSummary()}</p>
+                  </div>
+                )}
                 
                 {/* Confirm Button */}
                 <button
                   onClick={handleConfirm}
                   disabled={selectedMuscles.length === 0 || isLoading}
+                  style={{ touchAction: 'manipulation' }}
                   className={`
-                    w-full min-h-[56px] rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all active:scale-[0.98]
+                    w-full min-h-[56px] rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all
                     ${
                       selectedMuscles.length > 0 && !isLoading
-                        ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-xl shadow-purple-500/30"
-                        : "bg-white/10 text-white/40 cursor-not-allowed"
+                        ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-xl shadow-purple-500/30 active:opacity-80"
+                        : "bg-white/10 text-white/40"
                     }
                   `}
                   data-testid="button-confirm-change-type"
                 >
                   {isLoading ? (
-                    <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : selectedMuscles.length > 0 ? (
                     <>
                       <Check className="w-6 h-6" />
