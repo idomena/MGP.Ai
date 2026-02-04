@@ -194,12 +194,6 @@ export default function Onboarding() {
     handleAnswer('trainingDays', days.join(','), days.join(', '));
   };
 
-  const handleWorkoutTypesSelect = (types: string[]) => {
-    setSelections(prev => ({ ...prev, workoutTypes: types }));
-    const labels = types.map(id => QUESTIONS.find(q => q.id === 'workoutTypes')?.options?.find(o => o.id === id)?.label || id);
-    handleAnswer('workoutTypes', types.join(','), labels.join(', '));
-  };
-
   const handleInjuriesSelect = (hasInjuries: boolean) => {
     setSelections(prev => ({ ...prev, hasInjuries }));
     handleAnswer('injuries', hasInjuries ? 'yes' : 'no', hasInjuries ? 'Yes' : 'No');
@@ -298,9 +292,6 @@ export default function Onboarding() {
         }
         if (question.id === 'experience') {
           return <OptionSelector options={question.options || []} multiSelect={false} onSelect={handleExperienceSelect} />;
-        }
-        if (question.id === 'workoutTypes') {
-          return <OptionSelector options={question.options || []} multiSelect={true} onSelect={handleWorkoutTypesSelect} />;
         }
         return null;
       

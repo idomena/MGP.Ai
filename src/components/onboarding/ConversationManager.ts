@@ -7,7 +7,6 @@ export type QuestionType =
   | 'goals'
   | 'experience'
   | 'trainingDays'
-  | 'workoutTypes'
   | 'injuries'
   | 'additionalInfo'
   | 'review';
@@ -80,22 +79,6 @@ export const QUESTIONS: Question[] = [
     required: true,
   },
   {
-    id: 'workoutTypes',
-    botMessage: "Awesome! What muscle groups do you want to focus on? Pick as many as you like - I'll create the perfect plan for you!",
-    componentType: 'options',
-    multiSelect: true,
-    required: true,
-    options: [
-      { id: 'chest', label: 'Chest', icon: 'Dumbbell', description: 'Build a stronger chest' },
-      { id: 'back', label: 'Back', icon: 'User', description: 'Strengthen your back' },
-      { id: 'shoulders', label: 'Shoulders', icon: 'Target', description: 'Sculpt your shoulders' },
-      { id: 'arms', label: 'Arms', icon: 'Zap', description: 'Biceps & Triceps' },
-      { id: 'legs', label: 'Legs', icon: 'Move', description: 'Powerful legs' },
-      { id: 'core', label: 'Core', icon: 'Activity', description: 'Strong abs & core' },
-      { id: 'full', label: 'Full Body', icon: 'Sparkles', description: 'Train everything!' },
-    ],
-  },
-  {
     id: 'injuries',
     botMessage: "Safety first! Do you have any injuries or physical limitations I should keep in mind?",
     componentType: 'yesno',
@@ -140,7 +123,7 @@ export function getDefaultSelections(): UserSelections {
     goals: [],
     experience: '',
     trainingDays: [],
-    workoutTypes: [],
+    workoutTypes: ['full'],
     hasInjuries: false,
   };
 }
@@ -167,7 +150,6 @@ export function isOnboardingComplete(selections: UserSelections): boolean {
     selections.name.length > 0 &&
     selections.goals.length > 0 &&
     selections.experience.length > 0 &&
-    selections.trainingDays.length > 0 &&
-    selections.workoutTypes.length > 0
+    selections.trainingDays.length > 0
   );
 }
