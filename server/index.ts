@@ -85,8 +85,13 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(distPath));
   
   // Handle client-side routing - serve index.html for all non-API routes
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
+  app.use((req, res, next) => {
+    // Only serve index.html for non-API GET requests
+    if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/auth')) {
+      res.sendFile(path.join(distPath, 'index.html'));
+    } else {
+      next();
+    }
   });
 }
 
