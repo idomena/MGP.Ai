@@ -86,8 +86,9 @@ export const QUESTIONS: Question[] = [
     multiSelect: true,
     required: true,
     options: [
-      { id: 'upper', label: 'Upper Body', icon: 'User', description: 'Chest, Back, Arms' },
-      { id: 'lower', label: 'Lower Body', icon: 'Move', description: 'Legs, Glutes' },
+      { id: 'chest_triceps', label: 'Chest & Triceps', icon: 'Dumbbell', description: 'Chest, Triceps (Push)' },
+      { id: 'back_biceps', label: 'Back & Biceps', icon: 'User', description: 'Back, Biceps (Pull)' },
+      { id: 'shoulders_legs', label: 'Shoulders & Legs', icon: 'Move', description: 'Shoulders, Legs' },
       { id: 'cardio', label: 'Cardio', icon: 'HeartPulse', description: 'HIIT, Conditioning' },
       { id: 'full', label: 'Full Body', icon: 'Body', description: 'Complete workout' },
     ],

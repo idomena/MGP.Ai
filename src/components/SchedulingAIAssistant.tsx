@@ -171,11 +171,23 @@ export default function SchedulingAIAssistant({
   const parseWorkoutTypeFromText = (text: string): { type: string; title: string } | null => {
     const lowerText = text.toLowerCase();
     
-    if (lowerText.includes("upper") || lowerText.includes("arms") || lowerText.includes("chest") || lowerText.includes("back")) {
-      return { type: "upper", title: "Upper Body" };
+    if (lowerText.includes("chest") && lowerText.includes("tricep")) {
+      return { type: "chest_triceps", title: "Chest & Triceps" };
     }
-    if (lowerText.includes("lower") || lowerText.includes("leg") || lowerText.includes("glute") || lowerText.includes("squat")) {
-      return { type: "lower", title: "Lower Body" };
+    if (lowerText.includes("back") && lowerText.includes("bicep")) {
+      return { type: "back_biceps", title: "Back & Biceps" };
+    }
+    if ((lowerText.includes("shoulder") && lowerText.includes("leg")) || lowerText.includes("shoulders & legs")) {
+      return { type: "shoulders_legs", title: "Shoulders & Legs" };
+    }
+    if (lowerText.includes("chest") || lowerText.includes("tricep") || lowerText.includes("push")) {
+      return { type: "chest_triceps", title: "Chest & Triceps" };
+    }
+    if (lowerText.includes("back") || lowerText.includes("bicep") || lowerText.includes("pull")) {
+      return { type: "back_biceps", title: "Back & Biceps" };
+    }
+    if (lowerText.includes("shoulder") || lowerText.includes("leg") || lowerText.includes("glute") || lowerText.includes("squat")) {
+      return { type: "shoulders_legs", title: "Shoulders & Legs" };
     }
     if (lowerText.includes("full body") || lowerText.includes("fullbody") || lowerText.includes("total body")) {
       return { type: "full", title: "Full Body" };

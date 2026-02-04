@@ -11,8 +11,9 @@ interface ChangeWorkoutTypeModalProps {
 }
 
 const WORKOUT_TYPES = [
-  { type: "upper", title: "Upper Body", icon: Dumbbell, color: "from-blue-500 to-blue-600" },
-  { type: "lower", title: "Lower Body", icon: Activity, color: "from-green-500 to-green-600" },
+  { type: "chest_triceps", title: "Chest & Triceps", icon: Dumbbell, color: "from-blue-500 to-blue-600" },
+  { type: "back_biceps", title: "Back & Biceps", icon: Activity, color: "from-green-500 to-green-600" },
+  { type: "shoulders_legs", title: "Shoulders & Legs", icon: Zap, color: "from-orange-500 to-orange-600" },
   { type: "full", title: "Full Body", icon: Zap, color: "from-purple-500 to-purple-600" },
   { type: "cardio", title: "Cardio", icon: Heart, color: "from-red-500 to-red-600" },
   { type: "rest", title: "Rest Day", icon: Moon, color: "from-gray-500 to-gray-600" },

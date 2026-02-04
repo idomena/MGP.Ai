@@ -490,7 +490,38 @@ export function getExercisesForWorkoutType(workoutType: string, dayNumber: numbe
     case "core":
       return pickWithRotation(CORE_EXERCISES, 4, dayNumber);
     
-    // Workout types - use variations based on day
+    // Muscle group split workout types
+    case "chest_triceps":
+    case "chest & triceps":
+      return variationIndex === 0 ? [
+        CHEST_EXERCISES[0], CHEST_EXERCISES[1], CHEST_EXERCISES[2], ARMS_EXERCISES[2], ARMS_EXERCISES[3], ARMS_EXERCISES[5],
+      ] : variationIndex === 1 ? [
+        CHEST_EXERCISES[1], CHEST_EXERCISES[3], CHEST_EXERCISES[0], ARMS_EXERCISES[3], ARMS_EXERCISES[2], ARMS_EXERCISES[5],
+      ] : [
+        CHEST_EXERCISES[2], CHEST_EXERCISES[0], CHEST_EXERCISES[3], ARMS_EXERCISES[5], ARMS_EXERCISES[2], ARMS_EXERCISES[3],
+      ];
+    
+    case "back_biceps":
+    case "back & biceps":
+      return variationIndex === 0 ? [
+        BACK_EXERCISES[0], BACK_EXERCISES[1], BACK_EXERCISES[2], ARMS_EXERCISES[0], ARMS_EXERCISES[1], ARMS_EXERCISES[4],
+      ] : variationIndex === 1 ? [
+        BACK_EXERCISES[1], BACK_EXERCISES[3], BACK_EXERCISES[0], ARMS_EXERCISES[1], ARMS_EXERCISES[0], ARMS_EXERCISES[4],
+      ] : [
+        BACK_EXERCISES[2], BACK_EXERCISES[0], BACK_EXERCISES[3], ARMS_EXERCISES[4], ARMS_EXERCISES[0], ARMS_EXERCISES[1],
+      ];
+    
+    case "shoulders_legs":
+    case "shoulders & legs":
+      return variationIndex === 0 ? [
+        SHOULDERS_EXERCISES[0], SHOULDERS_EXERCISES[1], SHOULDERS_EXERCISES[2], LEGS_EXERCISES[0], LEGS_EXERCISES[1], LEGS_EXERCISES[2],
+      ] : variationIndex === 1 ? [
+        SHOULDERS_EXERCISES[1], SHOULDERS_EXERCISES[3], SHOULDERS_EXERCISES[0], LEGS_EXERCISES[1], LEGS_EXERCISES[3], LEGS_EXERCISES[0],
+      ] : [
+        SHOULDERS_EXERCISES[2], SHOULDERS_EXERCISES[0], SHOULDERS_EXERCISES[3], LEGS_EXERCISES[2], LEGS_EXERCISES[0], LEGS_EXERCISES[4],
+      ];
+    
+    // Legacy workout types (for backward compatibility)
     case "upper":
     case "upper body":
       return UPPER_VARIATIONS[variationIndex]();

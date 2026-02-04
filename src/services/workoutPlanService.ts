@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 const TOTAL_PROGRAM_DAYS = 21;
 
 const WORKOUT_INFO: Record<string, { name: string; duration: string; exercises: number }> = {
-  upper: { name: "Upper Body", duration: "35 min", exercises: 5 },
-  lower: { name: "Lower Body", duration: "40 min", exercises: 5 },
+  chest_triceps: { name: "Chest & Triceps", duration: "40 min", exercises: 6 },
+  back_biceps: { name: "Back & Biceps", duration: "40 min", exercises: 6 },
+  shoulders_legs: { name: "Shoulders & Legs", duration: "45 min", exercises: 6 },
   cardio: { name: "Cardio", duration: "30 min", exercises: 4 },
   full: { name: "Full Body", duration: "45 min", exercises: 6 },
   rest: { name: "Rest Day", duration: "0 min", exercises: 0 },

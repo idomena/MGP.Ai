@@ -354,8 +354,9 @@ export default function JourneyPath({ dayStatuses, onDayClick, isLoading }: Jour
                 fontSize="11"
                 fill={isActive ? "#60a5fa" : "rgba(255,255,255,0.4)"}
               >
-                {dayInfo.workoutType === 'upper' ? 'Upper Body' : 
-                 dayInfo.workoutType === 'lower' ? 'Lower Body' : 
+                {dayInfo.workoutType === 'chest_triceps' ? 'Chest & Triceps' : 
+                 dayInfo.workoutType === 'back_biceps' ? 'Back & Biceps' : 
+                 dayInfo.workoutType === 'shoulders_legs' ? 'Shoulders & Legs' : 
                  dayInfo.workoutType === 'full' ? 'Full Body' : 
                  dayInfo.workoutType === 'cardio' ? 'Cardio' : 
                  dayInfo.workoutType === 'rest' ? 'Rest Day' : 
