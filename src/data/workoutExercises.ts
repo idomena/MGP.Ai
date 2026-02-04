@@ -309,7 +309,7 @@ const CORE_EXERCISES: Exercise[] = [
     reps: "15, 12, 10",
     time: "6 min",
     difficulty: "Intermediate",
-    gifUrl: "https://media.giphy.com/media/3o7TKB3oifq46DDhOE/giphy.gif",
+    gifUrl: "/assets/Lying-Leg-Raise.gif",
     instructions: "Lie flat on back, hands under glutes. Raise legs to 90 degrees, then lower without touching floor.",
   },
 ];
