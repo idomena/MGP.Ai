@@ -490,6 +490,42 @@ export function getExercisesForWorkoutType(workoutType: string, dayNumber: numbe
     case "core":
       return pickWithRotation(CORE_EXERCISES, 4, dayNumber);
     
+    // Combo workout types
+    case "chest_shoulders":
+    case "chest + shoulders":
+      return [
+        ...pickWithRotation(CHEST_EXERCISES, 3, dayNumber),
+        ...pickWithRotation(SHOULDERS_EXERCISES, 3, dayNumber),
+      ];
+    
+    case "back_arms":
+    case "back + arms":
+      return [
+        ...pickWithRotation(BACK_EXERCISES, 3, dayNumber),
+        ...pickWithRotation(ARMS_EXERCISES, 3, dayNumber),
+      ];
+    
+    case "chest_back":
+    case "chest + back":
+      return [
+        ...pickWithRotation(CHEST_EXERCISES, 3, dayNumber),
+        ...pickWithRotation(BACK_EXERCISES, 3, dayNumber),
+      ];
+    
+    case "shoulders_arms":
+    case "shoulders + arms":
+      return [
+        ...pickWithRotation(SHOULDERS_EXERCISES, 3, dayNumber),
+        ...pickWithRotation(ARMS_EXERCISES, 3, dayNumber),
+      ];
+    
+    case "legs_core":
+    case "legs + core":
+      return [
+        ...pickWithRotation(LEGS_EXERCISES, 4, dayNumber),
+        ...pickWithRotation(CORE_EXERCISES, 2, dayNumber),
+      ];
+    
     // Legacy workout types (for backward compatibility)
     case "upper":
     case "upper body":

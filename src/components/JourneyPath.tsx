@@ -360,6 +360,11 @@ export default function JourneyPath({ dayStatuses, onDayClick, isLoading }: Jour
                  dayInfo.workoutType === 'arms' ? 'Arms' : 
                  dayInfo.workoutType === 'legs' ? 'Legs' : 
                  dayInfo.workoutType === 'core' ? 'Core' : 
+                 dayInfo.workoutType === 'chest_shoulders' ? 'Chest+Shoulders' : 
+                 dayInfo.workoutType === 'back_arms' ? 'Back+Arms' : 
+                 dayInfo.workoutType === 'chest_back' ? 'Chest+Back' : 
+                 dayInfo.workoutType === 'shoulders_arms' ? 'Shoulders+Arms' : 
+                 dayInfo.workoutType === 'legs_core' ? 'Legs+Core' : 
                  dayInfo.workoutType === 'full' ? 'Full Body' : 
                  dayInfo.workoutType === 'cardio' ? 'Cardio' : 
                  dayInfo.workoutType === 'rest' ? 'Rest Day' : 

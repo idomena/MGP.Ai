@@ -48,6 +48,11 @@ Users can select individual muscle groups and combine them however they like:
 - **arms**: Arms (Biceps & Triceps) - 35 min, 5 exercises
 - **legs**: Legs - 40 min, 5 exercises
 - **core**: Core - 25 min, 4 exercises
+- **chest_shoulders**: Chest + Shoulders - 45 min, 6 exercises
+- **back_arms**: Back + Arms - 45 min, 6 exercises
+- **chest_back**: Chest + Back - 45 min, 6 exercises
+- **shoulders_arms**: Shoulders + Arms - 40 min, 6 exercises
+- **legs_core**: Legs + Core - 45 min, 6 exercises
 - **cardio**: Cardio/HIIT - 30 min, 4 exercises
 - **full**: Full Body - 45 min, 6 exercises
 - **rest**: Rest Day

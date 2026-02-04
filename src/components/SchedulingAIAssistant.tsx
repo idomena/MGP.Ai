@@ -171,6 +171,24 @@ export default function SchedulingAIAssistant({
   const parseWorkoutTypeFromText = (text: string): { type: string; title: string } | null => {
     const lowerText = text.toLowerCase();
     
+    // Check for combo workouts first (more specific)
+    if ((lowerText.includes("chest") && lowerText.includes("shoulder")) || lowerText.includes("chest+shoulder")) {
+      return { type: "chest_shoulders", title: "Chest + Shoulders" };
+    }
+    if ((lowerText.includes("back") && lowerText.includes("arm")) || lowerText.includes("back+arm")) {
+      return { type: "back_arms", title: "Back + Arms" };
+    }
+    if ((lowerText.includes("chest") && lowerText.includes("back")) || lowerText.includes("chest+back")) {
+      return { type: "chest_back", title: "Chest + Back" };
+    }
+    if ((lowerText.includes("shoulder") && lowerText.includes("arm")) || lowerText.includes("shoulder+arm")) {
+      return { type: "shoulders_arms", title: "Shoulders + Arms" };
+    }
+    if ((lowerText.includes("leg") && lowerText.includes("core")) || lowerText.includes("leg+core")) {
+      return { type: "legs_core", title: "Legs + Core" };
+    }
+    
+    // Single muscle groups
     if (lowerText.includes("chest") || lowerText.includes("pec")) {
       return { type: "chest", title: "Chest" };
     }
