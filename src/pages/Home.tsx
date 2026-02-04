@@ -119,9 +119,9 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen bg-background flex flex-col" role="main" aria-label="Home page">
+    <div className="min-h-screen bg-background flex flex-col" role="main" aria-label="Home page">
       {/* Fixed Top Section */}
-      <div className="flex-shrink-0 px-4">
+      <div className="flex-shrink-0 px-4 sticky top-0 z-50 bg-background">
         <MobileHeader />
 
         {/* Toggle Buttons */}

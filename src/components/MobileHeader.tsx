@@ -4,7 +4,11 @@ import { Link } from "react-router-dom";
 
 export default function MobileHeader() {
   return (
-    <header className="flex items-center justify-between py-4" role="banner">
+    <header 
+      className="flex items-center justify-between py-4" 
+      role="banner"
+      style={{ paddingTop: 'calc(var(--safe-area-inset-top, 0px) + 1rem)' }}
+    >
       <Link 
         to="/profile" 
         aria-label="Go to profile" 
