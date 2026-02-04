@@ -11,7 +11,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "tsx server/index.ts"
+    "start": "NODE_ENV=production tsx server/index.ts"
   },
   "dependencies": {
     "@google/genai": "^1.33.0",
