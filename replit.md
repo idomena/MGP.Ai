@@ -40,10 +40,14 @@ Preferred communication style: Simple, everyday language.
 - **Real-time Integration**: Supabase realtime subscriptions for `workout_completions` to update UI dynamically.
 - **Exercise Data**: Can fetch exercises from an `exercises_templates` table in Supabase or fallback to local data.
 
-### Workout Types (Muscle Group Splits)
-- **chest_triceps**: Chest & Triceps (Push muscles) - 40 min, 6 exercises
-- **back_biceps**: Back & Biceps (Pull muscles) - 40 min, 6 exercises
-- **shoulders_legs**: Shoulders & Legs - 45 min, 6 exercises
+### Workout Types (Individual Muscle Groups)
+Users can select individual muscle groups and combine them however they like:
+- **chest**: Chest - 35 min, 5 exercises
+- **back**: Back - 35 min, 5 exercises
+- **shoulders**: Shoulders - 30 min, 4 exercises
+- **arms**: Arms (Biceps & Triceps) - 35 min, 5 exercises
+- **legs**: Legs - 40 min, 5 exercises
+- **core**: Core - 25 min, 4 exercises
 - **cardio**: Cardio/HIIT - 30 min, 4 exercises
 - **full**: Full Body - 45 min, 6 exercises
 - **rest**: Rest Day

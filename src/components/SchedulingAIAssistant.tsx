@@ -171,29 +171,29 @@ export default function SchedulingAIAssistant({
   const parseWorkoutTypeFromText = (text: string): { type: string; title: string } | null => {
     const lowerText = text.toLowerCase();
     
-    if (lowerText.includes("chest") && lowerText.includes("tricep")) {
-      return { type: "chest_triceps", title: "Chest & Triceps" };
+    if (lowerText.includes("chest") || lowerText.includes("pec")) {
+      return { type: "chest", title: "Chest" };
     }
-    if (lowerText.includes("back") && lowerText.includes("bicep")) {
-      return { type: "back_biceps", title: "Back & Biceps" };
+    if (lowerText.includes("back") || lowerText.includes("lat") || lowerText.includes("row")) {
+      return { type: "back", title: "Back" };
     }
-    if ((lowerText.includes("shoulder") && lowerText.includes("leg")) || lowerText.includes("shoulders & legs")) {
-      return { type: "shoulders_legs", title: "Shoulders & Legs" };
+    if (lowerText.includes("shoulder") || lowerText.includes("delt")) {
+      return { type: "shoulders", title: "Shoulders" };
     }
-    if (lowerText.includes("chest") || lowerText.includes("tricep") || lowerText.includes("push")) {
-      return { type: "chest_triceps", title: "Chest & Triceps" };
+    if (lowerText.includes("arm") || lowerText.includes("bicep") || lowerText.includes("tricep")) {
+      return { type: "arms", title: "Arms" };
     }
-    if (lowerText.includes("back") || lowerText.includes("bicep") || lowerText.includes("pull")) {
-      return { type: "back_biceps", title: "Back & Biceps" };
+    if (lowerText.includes("leg") || lowerText.includes("glute") || lowerText.includes("squat") || lowerText.includes("quad")) {
+      return { type: "legs", title: "Legs" };
     }
-    if (lowerText.includes("shoulder") || lowerText.includes("leg") || lowerText.includes("glute") || lowerText.includes("squat")) {
-      return { type: "shoulders_legs", title: "Shoulders & Legs" };
-    }
-    if (lowerText.includes("full body") || lowerText.includes("fullbody") || lowerText.includes("total body")) {
-      return { type: "full", title: "Full Body" };
+    if (lowerText.includes("core") || lowerText.includes("abs") || lowerText.includes("oblique")) {
+      return { type: "core", title: "Core" };
     }
     if (lowerText.includes("cardio") || lowerText.includes("running") || lowerText.includes("hiit")) {
       return { type: "cardio", title: "Cardio" };
+    }
+    if (lowerText.includes("full body") || lowerText.includes("fullbody") || lowerText.includes("total body")) {
+      return { type: "full", title: "Full Body" };
     }
     
     return null;
