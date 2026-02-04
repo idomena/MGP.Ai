@@ -34,11 +34,19 @@ Preferred communication style: Simple, everyday language.
 - **Logging**: Request logging with timestamp, method, URL, status, and duration.
 
 ### Data Layer
-- **Authentication**: Supabase Auth with email/password, integrated with React Context for session management. Features protected routes, email verification, and password requirements.
+- **Authentication**: Supabase Auth with email/password and Google OAuth, integrated with React Context for session management. Features protected routes, email verification, and password requirements.
 - **Database**: Supabase for PostgreSQL, utilized via Drizzle ORM.
 - **Schema**: `user_preferences`, `user_programs`, and `workout_completions` tables for storing user data and workout plans.
 - **Real-time Integration**: Supabase realtime subscriptions for `workout_completions` to update UI dynamically.
 - **Exercise Data**: Can fetch exercises from an `exercises_templates` table in Supabase or fallback to local data.
+
+### Workout Types (Muscle Group Splits)
+- **chest_triceps**: Chest & Triceps (Push muscles) - 40 min, 6 exercises
+- **back_biceps**: Back & Biceps (Pull muscles) - 40 min, 6 exercises
+- **shoulders_legs**: Shoulders & Legs - 45 min, 6 exercises
+- **cardio**: Cardio/HIIT - 30 min, 4 exercises
+- **full**: Full Body - 45 min, 6 exercises
+- **rest**: Rest Day
 
 ### Development Setup
 - **Concurrent Servers**: Frontend (Vite on port 5000) and backend (Express on port 3001) run simultaneously via `npm run dev`.
