@@ -61,23 +61,19 @@ export default function ChangeWorkoutTypeModal({
   }, [isOpen]);
 
   const toggleMuscle = (muscleId: string) => {
-    // If it's a special option (cardio, full, rest), select only that
     if (OTHER_OPTIONS.find(o => o.id === muscleId)) {
       setSelectedMuscles([muscleId]);
       setExpandedArms(false);
       return;
     }
 
-    // Clear special options when selecting muscle groups
     const clearedMuscles = selectedMuscles.filter(m => !OTHER_OPTIONS.find(o => o.id === m));
     
-    // Handle arms specially
     if (muscleId === "arms") {
       setExpandedArms(!expandedArms);
       return;
     }
 
-    // Toggle regular muscle
     if (clearedMuscles.includes(muscleId)) {
       setSelectedMuscles(clearedMuscles.filter(m => m !== muscleId));
     } else {
@@ -91,7 +87,6 @@ export default function ChangeWorkoutTypeModal({
     if (clearedMuscles.includes(armId)) {
       setSelectedMuscles(clearedMuscles.filter(m => m !== armId));
     } else {
-      // Remove other arm options and add this one
       const withoutArms = clearedMuscles.filter(m => m !== "biceps" && m !== "triceps");
       setSelectedMuscles([...withoutArms, armId]);
     }
@@ -131,7 +126,7 @@ export default function ChangeWorkoutTypeModal({
           setShowSuccess(false);
           setSelectedMuscles([]);
           onClose();
-        }, 1000);
+        }, 800);
       }
     } catch (err) {
       console.error("Error changing workout type:", err);
@@ -141,11 +136,11 @@ export default function ChangeWorkoutTypeModal({
   };
 
   const getIconForType = (type: string) => {
-    if (type === "rest") return <Moon className="w-5 h-5 text-white" />;
-    if (type === "cardio") return <Heart className="w-5 h-5 text-white" />;
-    if (type === "full") return <Zap className="w-5 h-5 text-white" />;
-    if (type === "legs") return <Activity className="w-5 h-5 text-white" />;
-    return <Dumbbell className="w-5 h-5 text-white" />;
+    if (type === "rest") return <Moon className="w-6 h-6 text-white" />;
+    if (type === "cardio") return <Heart className="w-6 h-6 text-white" />;
+    if (type === "full") return <Zap className="w-6 h-6 text-white" />;
+    if (type === "legs") return <Activity className="w-6 h-6 text-white" />;
+    return <Dumbbell className="w-6 h-6 text-white" />;
   };
 
   const isSelected = (id: string) => selectedMuscles.includes(id);
@@ -159,55 +154,61 @@ export default function ChangeWorkoutTypeModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       >
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="w-full max-w-md bg-[#1a1a2e] rounded-t-3xl sm:rounded-2xl overflow-hidden max-h-[85vh] flex flex-col"
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 30, stiffness: 300 }}
+          className="w-full max-w-lg bg-[#1a1a2e] rounded-t-[28px] overflow-hidden max-h-[90vh] flex flex-col shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Handle bar for mobile */}
-          <div className="flex justify-center pt-3 sm:hidden">
-            <div className="w-10 h-1 bg-white/20 rounded-full" />
+          {/* Handle bar */}
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="w-12 h-1.5 bg-white/30 rounded-full" />
           </div>
 
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+          <div className="flex items-center justify-between px-6 py-4">
             <div>
-              <h2 className="text-white font-bold text-lg">Build Your Workout</h2>
-              <p className="text-white/50 text-sm">Day {dayNumber} - Select muscle groups</p>
+              <h2 className="text-white font-bold text-xl">Build Your Workout</h2>
+              <p className="text-white/50 text-base mt-0.5">Day {dayNumber}</p>
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+              className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center active:bg-white/20 transition-colors"
               data-testid="button-close-change-type"
             >
-              <X className="w-4 h-4 text-white" />
+              <X className="w-5 h-5 text-white" />
             </button>
           </div>
 
           {showSuccess ? (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="p-10 flex flex-col items-center justify-center"
+              className="py-16 flex flex-col items-center justify-center"
             >
-              <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center mb-4">
-                <Check className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-white font-semibold text-lg">Workout Updated!</h3>
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", delay: 0.1 }}
+                className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center mb-5 shadow-lg shadow-green-500/30"
+              >
+                <Check className="w-10 h-10 text-white" />
+              </motion.div>
+              <h3 className="text-white font-semibold text-xl">Workout Updated!</h3>
             </motion.div>
           ) : (
             <>
               {/* Scrollable content */}
-              <div className="flex-1 overflow-y-auto px-5 py-4">
+              <div className="flex-1 overflow-y-auto px-6 py-2 overscroll-contain">
                 {/* Muscle Groups */}
-                <div className="space-y-2 mb-4">
-                  <p className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Muscle Groups</p>
+                <div className="space-y-3 mb-5">
+                  <p className="text-white/40 text-sm font-semibold uppercase tracking-wider mb-4">Select Muscle Groups</p>
                   
                   {MUSCLE_GROUPS.map((muscle) => {
                     const hasSubOptions = !!muscle.subOptions;
@@ -218,25 +219,30 @@ export default function ChangeWorkoutTypeModal({
                         <button
                           onClick={() => toggleMuscle(muscle.id)}
                           className={`
-                            w-full p-3 rounded-xl border-2 transition-all flex items-center gap-3
+                            w-full min-h-[56px] px-4 rounded-2xl border-2 transition-all flex items-center gap-4 active:scale-[0.98]
                             ${muscleSelected
-                              ? "bg-white/10 border-[#7c57ff]"
-                              : "bg-white/5 border-transparent hover:bg-white/10"
+                              ? "bg-white/10 border-[#7c57ff] shadow-lg shadow-purple-500/10"
+                              : "bg-white/5 border-transparent active:bg-white/10"
                             }
                           `}
                           data-testid={`muscle-${muscle.id}`}
                         >
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${muscle.color}`}>
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${muscle.color} shadow-lg`}>
                             {getIconForType(muscle.id)}
                           </div>
-                          <span className="flex-1 text-left text-white font-medium">{muscle.title}</span>
+                          <span className="flex-1 text-left text-white font-semibold text-lg">{muscle.title}</span>
                           
                           {hasSubOptions ? (
-                            <ChevronDown className={`w-5 h-5 text-white/50 transition-transform ${expandedArms ? "rotate-180" : ""}`} />
+                            <motion.div
+                              animate={{ rotate: expandedArms ? 180 : 0 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              <ChevronDown className="w-6 h-6 text-white/50" />
+                            </motion.div>
                           ) : (
-                            <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all
+                            <div className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all
                               ${muscleSelected ? "bg-[#7c57ff] border-[#7c57ff]" : "border-white/30"}`}>
-                              {muscleSelected && <Check className="w-4 h-4 text-white" />}
+                              {muscleSelected && <Check className="w-5 h-5 text-white" />}
                             </div>
                           )}
                         </button>
@@ -249,31 +255,35 @@ export default function ChangeWorkoutTypeModal({
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: "auto", opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.25, ease: "easeInOut" }}
                                 className="overflow-hidden"
                               >
-                                <div className="pl-6 pt-2 space-y-2">
+                                <div className="pl-5 pt-3 space-y-2">
                                   {muscle.subOptions?.map((sub) => (
-                                    <button
+                                    <motion.button
                                       key={sub.id}
+                                      initial={{ x: -10, opacity: 0 }}
+                                      animate={{ x: 0, opacity: 1 }}
+                                      transition={{ duration: 0.2 }}
                                       onClick={() => toggleArmOption(sub.id)}
                                       className={`
-                                        w-full p-3 rounded-xl border-2 transition-all flex items-center gap-3
+                                        w-full min-h-[52px] px-4 rounded-xl border-2 transition-all flex items-center gap-3 active:scale-[0.98]
                                         ${isSelected(sub.id)
-                                          ? "bg-white/10 border-[#7c57ff]"
-                                          : "bg-white/5 border-transparent hover:bg-white/10"
+                                          ? "bg-cyan-500/20 border-cyan-400"
+                                          : "bg-white/5 border-transparent active:bg-white/10"
                                         }
                                       `}
                                       data-testid={`muscle-${sub.id}`}
                                     >
-                                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${muscle.color}`}>
-                                        <Dumbbell className="w-4 h-4 text-white" />
+                                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${muscle.color}`}>
+                                        <Dumbbell className="w-5 h-5 text-white" />
                                       </div>
-                                      <span className="flex-1 text-left text-white/90 text-sm">{sub.title}</span>
-                                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all
-                                        ${isSelected(sub.id) ? "bg-[#7c57ff] border-[#7c57ff]" : "border-white/30"}`}>
-                                        {isSelected(sub.id) && <Check className="w-3 h-3 text-white" />}
+                                      <span className="flex-1 text-left text-white text-base font-medium">{sub.title}</span>
+                                      <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all
+                                        ${isSelected(sub.id) ? "bg-cyan-400 border-cyan-400" : "border-white/30"}`}>
+                                        {isSelected(sub.id) && <Check className="w-4 h-4 text-white" />}
                                       </div>
-                                    </button>
+                                    </motion.button>
                                   ))}
                                 </div>
                               </motion.div>
@@ -286,66 +296,81 @@ export default function ChangeWorkoutTypeModal({
                 </div>
 
                 {/* Divider */}
-                <div className="border-t border-white/10 my-4" />
+                <div className="flex items-center gap-4 my-5">
+                  <div className="flex-1 h-px bg-white/10" />
+                  <span className="text-white/30 text-sm font-medium">OR</span>
+                  <div className="flex-1 h-px bg-white/10" />
+                </div>
 
                 {/* Other Options */}
-                <div className="space-y-2">
-                  <p className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Or Choose</p>
-                  <div className="grid grid-cols-3 gap-2">
+                <div className="pb-4">
+                  <p className="text-white/40 text-sm font-semibold uppercase tracking-wider mb-4">Quick Options</p>
+                  <div className="grid grid-cols-3 gap-3">
                     {OTHER_OPTIONS.map((option) => (
                       <button
                         key={option.id}
                         onClick={() => toggleMuscle(option.id)}
                         className={`
-                          p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2
+                          min-h-[100px] p-4 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-3 active:scale-[0.96]
                           ${isSelected(option.id)
-                            ? "bg-white/10 border-[#7c57ff]"
-                            : "bg-white/5 border-transparent hover:bg-white/10"
+                            ? "bg-white/10 border-[#7c57ff] shadow-lg shadow-purple-500/10"
+                            : "bg-white/5 border-transparent active:bg-white/10"
                           }
                         `}
                         data-testid={`option-${option.id}`}
                       >
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${option.color}`}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${option.color} shadow-lg`}>
                           {getIconForType(option.id)}
                         </div>
-                        <span className="text-xs text-white/80 font-medium">{option.title}</span>
+                        <span className="text-sm text-white font-semibold">{option.title}</span>
                       </button>
                     ))}
                   </div>
                 </div>
               </div>
 
-              {/* Selection Preview & Confirm */}
-              <div className="p-5 pt-3 border-t border-white/10 bg-[#1a1a2e]">
-                {selectedMuscles.length > 0 && (
-                  <div className="mb-3 p-3 rounded-xl bg-white/5 border border-white/10">
-                    <p className="text-white/50 text-xs mb-1">Today's workout:</p>
-                    <p className="text-white font-semibold">{getSelectionSummary()}</p>
-                  </div>
-                )}
+              {/* Bottom Section - Fixed */}
+              <div className="px-6 pt-4 pb-8 border-t border-white/10 bg-[#1a1a2e] safe-area-bottom">
+                {/* Selection Preview */}
+                <AnimatePresence>
+                  {selectedMuscles.length > 0 && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+                      animate={{ height: "auto", opacity: 1, marginBottom: 16 }}
+                      exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-4 rounded-2xl bg-gradient-to-r from-[#7c57ff]/20 to-[#60a5fa]/20 border border-white/10">
+                        <p className="text-white/50 text-sm mb-1">Today's workout:</p>
+                        <p className="text-white font-bold text-lg">{getSelectionSummary()}</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 
+                {/* Confirm Button */}
                 <button
                   onClick={handleConfirm}
                   disabled={selectedMuscles.length === 0 || isLoading}
                   className={`
-                    w-full py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 transition-all
+                    w-full min-h-[56px] rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all active:scale-[0.98]
                     ${
                       selectedMuscles.length > 0 && !isLoading
-                        ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-purple-500/30 active:scale-[0.98]"
+                        ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-xl shadow-purple-500/30"
                         : "bg-white/10 text-white/40 cursor-not-allowed"
                     }
                   `}
                   data-testid="button-confirm-change-type"
                 >
                   {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : selectedMuscles.length > 0 ? (
                     <>
-                      <Check className="w-5 h-5" />
-                      Confirm Selection
+                      <Check className="w-6 h-6" />
+                      Start Workout
                     </>
                   ) : (
-                    "Select muscle groups"
+                    "Select muscle groups to start"
                   )}
                 </button>
               </div>
