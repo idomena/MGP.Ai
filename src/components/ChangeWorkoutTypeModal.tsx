@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Check, Dumbbell, Heart, Zap, Moon, Activity, Layers } from "lucide-react";
+import { X, Check, Dumbbell, Heart, Zap, Moon, Activity, ChevronRight, ArrowLeft } from "lucide-react";
 
 interface ChangeWorkoutTypeModalProps {
   isOpen: boolean;
@@ -10,24 +10,39 @@ interface ChangeWorkoutTypeModalProps {
   onChangeType: (newType: string, newTitle: string) => Promise<boolean>;
 }
 
-const SINGLE_MUSCLES = [
+interface WorkoutOption {
+  type: string;
+  title: string;
+  color: string;
+  subOptions?: { type: string; title: string; description: string }[];
+}
+
+const WORKOUT_OPTIONS: WorkoutOption[] = [
   { type: "chest", title: "Chest", color: "bg-blue-500" },
   { type: "back", title: "Back", color: "bg-green-500" },
   { type: "shoulders", title: "Shoulders", color: "bg-orange-500" },
-  { type: "arms", title: "Arms", color: "bg-cyan-500" },
-  { type: "legs", title: "Legs", color: "bg-emerald-500" },
+  { 
+    type: "arms", 
+    title: "Arms", 
+    color: "bg-cyan-500",
+    subOptions: [
+      { type: "biceps", title: "Biceps", description: "Front arm" },
+      { type: "triceps", title: "Triceps", description: "Back arm" },
+      { type: "arms", title: "Full Arms", description: "Biceps + Triceps" },
+    ]
+  },
+  { 
+    type: "legs", 
+    title: "Legs", 
+    color: "bg-emerald-500",
+    subOptions: [
+      { type: "quads", title: "Quads", description: "Front legs" },
+      { type: "hamstrings", title: "Hamstrings", description: "Back legs" },
+      { type: "glutes", title: "Glutes", description: "Butt muscles" },
+      { type: "legs", title: "Full Legs", description: "All leg muscles" },
+    ]
+  },
   { type: "core", title: "Core", color: "bg-yellow-500" },
-];
-
-const COMBO_WORKOUTS = [
-  { type: "chest_shoulders", title: "Chest + Shoulders", color: "bg-gradient-to-r from-blue-500 to-orange-500" },
-  { type: "back_arms", title: "Back + Arms", color: "bg-gradient-to-r from-green-500 to-cyan-500" },
-  { type: "chest_back", title: "Chest + Back", color: "bg-gradient-to-r from-blue-500 to-green-500" },
-  { type: "shoulders_arms", title: "Shoulders + Arms", color: "bg-gradient-to-r from-orange-500 to-cyan-500" },
-  { type: "legs_core", title: "Legs + Core", color: "bg-gradient-to-r from-emerald-500 to-yellow-500" },
-];
-
-const OTHER_WORKOUTS = [
   { type: "cardio", title: "Cardio", color: "bg-red-500" },
   { type: "full", title: "Full Body", color: "bg-purple-500" },
   { type: "rest", title: "Rest Day", color: "bg-gray-500" },
@@ -41,33 +56,46 @@ export default function ChangeWorkoutTypeModal({
   onChangeType,
 }: ChangeWorkoutTypeModalProps) {
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedTitle, setSelectedTitle] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [activeTab, setActiveTab] = useState<"single" | "combo" | "other">("single");
+  const [expandedOption, setExpandedOption] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setSelectedType(null);
+      setSelectedTitle(null);
       setShowSuccess(false);
-      setActiveTab("single");
+      setExpandedOption(null);
     }
   }, [isOpen]);
 
-  const handleConfirm = async () => {
-    if (!selectedType) return;
+  const handleOptionClick = (option: WorkoutOption) => {
+    if (option.subOptions) {
+      setExpandedOption(option.type);
+    } else {
+      setSelectedType(option.type);
+      setSelectedTitle(option.title);
+    }
+  };
 
-    const allWorkouts = [...SINGLE_MUSCLES, ...COMBO_WORKOUTS, ...OTHER_WORKOUTS];
-    const selected = allWorkouts.find((t) => t.type === selectedType);
-    if (!selected) return;
+  const handleSubOptionClick = (subType: string, subTitle: string) => {
+    setSelectedType(subType);
+    setSelectedTitle(subTitle);
+  };
+
+  const handleConfirm = async () => {
+    if (!selectedType || !selectedTitle) return;
 
     setIsLoading(true);
     try {
-      const success = await onChangeType(selected.type, selected.title);
+      const success = await onChangeType(selectedType, selectedTitle);
       if (success) {
         setShowSuccess(true);
         setTimeout(() => {
           setShowSuccess(false);
           setSelectedType(null);
+          setSelectedTitle(null);
           onClose();
         }, 1000);
       }
@@ -78,15 +106,18 @@ export default function ChangeWorkoutTypeModal({
     }
   };
 
-  const getCurrentWorkouts = () => {
-    switch (activeTab) {
-      case "single": return SINGLE_MUSCLES;
-      case "combo": return COMBO_WORKOUTS;
-      case "other": return OTHER_WORKOUTS;
-    }
+  const getIconForType = (type: string) => {
+    if (type === "rest") return <Moon className="w-6 h-6 text-white" />;
+    if (type === "cardio") return <Heart className="w-6 h-6 text-white" />;
+    if (type === "full") return <Zap className="w-6 h-6 text-white" />;
+    if (type === "legs" || type === "quads" || type === "hamstrings" || type === "glutes") 
+      return <Activity className="w-6 h-6 text-white" />;
+    return <Dumbbell className="w-6 h-6 text-white" />;
   };
 
   if (!isOpen) return null;
+
+  const expandedOptionData = WORKOUT_OPTIONS.find(o => o.type === expandedOption);
 
   return (
     <AnimatePresence>
@@ -112,9 +143,22 @@ export default function ChangeWorkoutTypeModal({
 
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4">
-            <div>
-              <h2 className="text-white font-bold text-lg">Change Workout</h2>
-              <p className="text-white/50 text-sm">Day {dayNumber}</p>
+            <div className="flex items-center gap-3">
+              {expandedOption && (
+                <button
+                  onClick={() => setExpandedOption(null)}
+                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                  data-testid="button-back"
+                >
+                  <ArrowLeft className="w-4 h-4 text-white" />
+                </button>
+              )}
+              <div>
+                <h2 className="text-white font-bold text-lg">
+                  {expandedOption ? expandedOptionData?.title : "Change Workout"}
+                </h2>
+                <p className="text-white/50 text-sm">Day {dayNumber}</p>
+              </div>
             </div>
             <button
               onClick={onClose}
@@ -138,108 +182,113 @@ export default function ChangeWorkoutTypeModal({
             </motion.div>
           ) : (
             <>
-              {/* Tabs */}
-              <div className="flex gap-2 px-5 mb-4">
-                <button
-                  onClick={() => setActiveTab("single")}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2
-                    ${activeTab === "single" 
-                      ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white" 
-                      : "bg-white/5 text-white/60 hover:bg-white/10"}`}
-                  data-testid="tab-single"
-                >
-                  <Dumbbell className="w-4 h-4" />
-                  Single
-                </button>
-                <button
-                  onClick={() => setActiveTab("combo")}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2
-                    ${activeTab === "combo" 
-                      ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white" 
-                      : "bg-white/5 text-white/60 hover:bg-white/10"}`}
-                  data-testid="tab-combo"
-                >
-                  <Layers className="w-4 h-4" />
-                  Combo
-                </button>
-                <button
-                  onClick={() => setActiveTab("other")}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2
-                    ${activeTab === "other" 
-                      ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white" 
-                      : "bg-white/5 text-white/60 hover:bg-white/10"}`}
-                  data-testid="tab-other"
-                >
-                  <Heart className="w-4 h-4" />
-                  Other
-                </button>
-              </div>
-
-              {/* Workout Options */}
+              {/* Main Options or Sub-Options */}
               <div className="px-5 pb-4">
-                <motion.div 
-                  key={activeTab}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="grid grid-cols-2 gap-3"
-                >
-                  {getCurrentWorkouts().map((workout) => {
-                    const isCurrentType = currentType 
-                      ? workout.type.toLowerCase() === currentType.toLowerCase()
-                      : false;
-                    const isSelected = workout.type === selectedType;
+                <AnimatePresence mode="wait">
+                  {expandedOption && expandedOptionData?.subOptions ? (
+                    <motion.div
+                      key="suboptions"
+                      initial={{ opacity: 0, x: 50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -50 }}
+                      className="space-y-2"
+                    >
+                      {expandedOptionData.subOptions.map((sub) => {
+                        const isSelected = selectedType === sub.type;
+                        const isCurrentType = currentType?.toLowerCase() === sub.type.toLowerCase();
 
-                    return (
-                      <button
-                        key={workout.type}
-                        onClick={() => !isCurrentType && setSelectedType(workout.type)}
-                        disabled={isCurrentType}
-                        className={`
-                          relative p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-3
-                          ${
-                            isCurrentType
-                              ? "bg-white/5 border-white/10 opacity-40 cursor-not-allowed"
-                              : isSelected
-                                ? "bg-white/10 border-[#7c57ff] scale-[1.02]"
-                                : "bg-white/5 border-transparent hover:bg-white/10 active:scale-95"
-                          }
-                        `}
-                        data-testid={`workout-type-${workout.type}`}
-                      >
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${workout.color}`}>
-                          {workout.type === "rest" ? (
-                            <Moon className="w-6 h-6 text-white" />
-                          ) : workout.type === "cardio" ? (
-                            <Heart className="w-6 h-6 text-white" />
-                          ) : workout.type === "full" ? (
-                            <Zap className="w-6 h-6 text-white" />
-                          ) : workout.type.includes("_") ? (
-                            <Layers className="w-6 h-6 text-white" />
-                          ) : (
-                            <Dumbbell className="w-6 h-6 text-white" />
-                          )}
-                        </div>
-                        <span className={`text-sm font-medium text-center ${isSelected ? "text-white" : "text-white/80"}`}>
-                          {workout.title}
-                        </span>
-                        {isSelected && (
-                          <motion.div 
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#7c57ff] flex items-center justify-center"
+                        return (
+                          <button
+                            key={sub.type}
+                            onClick={() => !isCurrentType && handleSubOptionClick(sub.type, sub.title)}
+                            disabled={isCurrentType}
+                            className={`
+                              w-full p-4 rounded-2xl border-2 transition-all flex items-center gap-4
+                              ${
+                                isCurrentType
+                                  ? "bg-white/5 border-white/10 opacity-40 cursor-not-allowed"
+                                  : isSelected
+                                    ? "bg-white/10 border-[#7c57ff]"
+                                    : "bg-white/5 border-transparent hover:bg-white/10 active:scale-[0.98]"
+                              }
+                            `}
+                            data-testid={`workout-sub-${sub.type}`}
                           >
-                            <Check className="w-3 h-3 text-white" />
-                          </motion.div>
-                        )}
-                        {isCurrentType && (
-                          <span className="absolute top-2 right-2 text-[10px] bg-white/20 px-1.5 py-0.5 rounded text-white/60">
-                            Current
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </motion.div>
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${expandedOptionData.color}`}>
+                              {getIconForType(sub.type)}
+                            </div>
+                            <div className="flex-1 text-left">
+                              <p className="text-white font-medium">{sub.title}</p>
+                              <p className="text-white/50 text-sm">{sub.description}</p>
+                            </div>
+                            {isSelected && (
+                              <div className="w-6 h-6 rounded-full bg-[#7c57ff] flex items-center justify-center">
+                                <Check className="w-4 h-4 text-white" />
+                              </div>
+                            )}
+                            {isCurrentType && (
+                              <span className="text-xs bg-white/20 px-2 py-1 rounded text-white/60">
+                                Current
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="mainoptions"
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 50 }}
+                      className="grid grid-cols-3 gap-3"
+                    >
+                      {WORKOUT_OPTIONS.map((option) => {
+                        const isSelected = selectedType === option.type && !option.subOptions;
+                        const isCurrentType = !option.subOptions && currentType?.toLowerCase() === option.type.toLowerCase();
+                        const hasSubOptions = !!option.subOptions;
+
+                        return (
+                          <button
+                            key={option.type}
+                            onClick={() => !isCurrentType && handleOptionClick(option)}
+                            disabled={isCurrentType}
+                            className={`
+                              relative p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2
+                              ${
+                                isCurrentType
+                                  ? "bg-white/5 border-white/10 opacity-40 cursor-not-allowed"
+                                  : isSelected
+                                    ? "bg-white/10 border-[#7c57ff] scale-[1.02]"
+                                    : "bg-white/5 border-transparent hover:bg-white/10 active:scale-95"
+                              }
+                            `}
+                            data-testid={`workout-type-${option.type}`}
+                          >
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${option.color}`}>
+                              {getIconForType(option.type)}
+                            </div>
+                            <span className="text-sm font-medium text-white/80 text-center">
+                              {option.title}
+                            </span>
+                            {hasSubOptions && (
+                              <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                            )}
+                            {isSelected && (
+                              <motion.div 
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#7c57ff] flex items-center justify-center"
+                              >
+                                <Check className="w-3 h-3 text-white" />
+                              </motion.div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Confirm Button */}
@@ -262,7 +311,7 @@ export default function ChangeWorkoutTypeModal({
                   ) : (
                     <>
                       <Check className="w-5 h-5" />
-                      Confirm Change
+                      {selectedTitle ? `Change to ${selectedTitle}` : "Select a workout"}
                     </>
                   )}
                 </button>

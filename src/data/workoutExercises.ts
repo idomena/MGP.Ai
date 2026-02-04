@@ -487,6 +487,38 @@ export function getExercisesForWorkoutType(workoutType: string, dayNumber: numbe
       return pickWithRotation(SHOULDERS_EXERCISES, 4, dayNumber);
     case "arms":
       return pickWithRotation(ARMS_EXERCISES, 5, dayNumber);
+    case "biceps":
+      return pickWithRotation(ARMS_EXERCISES.filter(e => 
+        e.name.toLowerCase().includes('curl') || 
+        e.name.toLowerCase().includes('bicep')
+      ), 4, dayNumber);
+    case "triceps":
+      return pickWithRotation(ARMS_EXERCISES.filter(e => 
+        e.name.toLowerCase().includes('tricep') || 
+        e.name.toLowerCase().includes('pushdown') ||
+        e.name.toLowerCase().includes('extension') ||
+        e.name.toLowerCase().includes('dip')
+      ), 4, dayNumber);
+    case "quads":
+      return pickWithRotation(LEGS_EXERCISES.filter(e => 
+        e.name.toLowerCase().includes('squat') || 
+        e.name.toLowerCase().includes('leg press') ||
+        e.name.toLowerCase().includes('extension') ||
+        e.name.toLowerCase().includes('lunge')
+      ), 4, dayNumber);
+    case "hamstrings":
+      return pickWithRotation(LEGS_EXERCISES.filter(e => 
+        e.name.toLowerCase().includes('curl') || 
+        e.name.toLowerCase().includes('deadlift') ||
+        e.name.toLowerCase().includes('hamstring')
+      ), 4, dayNumber);
+    case "glutes":
+      return pickWithRotation(LEGS_EXERCISES.filter(e => 
+        e.name.toLowerCase().includes('hip') || 
+        e.name.toLowerCase().includes('glute') ||
+        e.name.toLowerCase().includes('bridge') ||
+        e.name.toLowerCase().includes('squat')
+      ), 4, dayNumber);
     case "core":
       return pickWithRotation(CORE_EXERCISES, 4, dayNumber);
     
