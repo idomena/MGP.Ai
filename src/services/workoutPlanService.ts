@@ -98,7 +98,6 @@ export async function saveOnboardingAndGeneratePlan(
           user_id: userId,
           training_days: data.trainingDays,
           selected_workouts: focusWorkouts,
-          additional_info: data.additionalInfo || null,
           onboarding_completed: false,
         },
         { onConflict: "user_id" }
