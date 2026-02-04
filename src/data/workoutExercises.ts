@@ -60,14 +60,14 @@ const CHEST_EXERCISES: Exercise[] = [
 const BACK_EXERCISES: Exercise[] = [
   {
     id: 201,
-    name: "Machine T-bar Row",
+    name: "Barbell Bent Over Row",
     muscles: "Back, Lats",
     sets: 3,
     reps: "12, 10, 8",
     time: "10 min",
     difficulty: "Intermediate",
-    gifUrl: "https://media.giphy.com/media/3o7TKB3oifq46DDhOE/giphy.gif",
-    instructions: "Grip the handles firmly, keep your back straight, and pull the weight towards your chest. Squeeze your back muscles at the top.",
+    gifUrl: "/assets/Barbell-Bent-Over-Row.gif",
+    instructions: "Bend at hips with slight knee bend, grip barbell. Pull bar to lower chest, squeezing back muscles. Lower with control.",
   },
   {
     id: 202,
@@ -124,7 +124,7 @@ const LEGS_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "10 min",
     difficulty: "Beginner",
-    gifUrl: "https://media.giphy.com/media/l0MYyv6UK0Bd4DE76/giphy.gif",
+    gifUrl: "/assets/Leg-Press.gif",
     instructions: "Sit in machine with feet shoulder-width on platform. Lower weight until knees reach 90 degrees, then push back up.",
   },
   {
@@ -218,7 +218,7 @@ const ARMS_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "8 min",
     difficulty: "Beginner",
-    gifUrl: "https://media.giphy.com/media/3o7TKB3oifq46DDhOE/giphy.gif",
+    gifUrl: "/assets/Barbell-Curl.gif",
     instructions: "Stand with barbell, arms extended. Curl bar up to shoulders, keeping elbows pinned to sides. Lower with control.",
   },
   {
@@ -251,7 +251,7 @@ const ARMS_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "8 min",
     difficulty: "Intermediate",
-    gifUrl: "https://media.giphy.com/media/3o7TKB3oifq46DDhOE/giphy.gif",
+    gifUrl: "/assets/Skull-Crusher.gif",
     instructions: "Lie on bench with bar overhead. Lower bar towards forehead by bending elbows. Extend arms back up.",
   },
   {
@@ -298,7 +298,7 @@ const CORE_EXERCISES: Exercise[] = [
     reps: "20, 20, 15",
     time: "6 min",
     difficulty: "Intermediate",
-    gifUrl: "https://media.giphy.com/media/xT0xeIbYVQcBFDSdVu/giphy.gif",
+    gifUrl: "/assets/Russian-Twist.gif",
     instructions: "Sit with knees bent, feet off floor. Lean back slightly. Rotate torso side to side, touching floor each side.",
   },
   {
