@@ -99,7 +99,7 @@ const BACK_EXERCISES: Exercise[] = [
     reps: "10, 10, 10",
     time: "8 min",
     difficulty: "Intermediate",
-    gifUrl: "https://media.giphy.com/media/3o7TKB3oifq46DDhOE/giphy.gif",
+    gifUrl: "/assets/Dumbbell-Row.gif",
     instructions: "Place one knee and hand on bench. Keep back flat. Pull dumbbell to hip, elbow close to body.",
   },
 ];
@@ -204,7 +204,7 @@ const SHOULDERS_EXERCISES: Exercise[] = [
     reps: "12, 12, 10",
     time: "6 min",
     difficulty: "Beginner",
-    gifUrl: "https://media.giphy.com/media/xT0xeIbYVQcBFDSdVu/giphy.gif",
+    gifUrl: "/assets/Dumbbell-Front-Raise.gif",
     instructions: "Hold dumbbells in front of thighs. Raise one arm at a time to shoulder height, then lower. Alternate arms.",
   },
   {
@@ -215,8 +215,19 @@ const SHOULDERS_EXERCISES: Exercise[] = [
     reps: "15, 12, 10",
     time: "6 min",
     difficulty: "Beginner",
-    gifUrl: "https://media.giphy.com/media/3o7TKB3oifq46DDhOE/giphy.gif",
+    gifUrl: "/assets/Dumbbell-Reverse-Fly.gif",
     instructions: "Bend forward at hips. Raise dumbbells out to sides, squeezing rear delts. Keep slight bend in elbows.",
+  },
+  {
+    id: 405,
+    name: "Face Pulls",
+    muscles: "Rear Deltoids, Upper Back",
+    sets: 3,
+    reps: "15, 12, 12",
+    time: "6 min",
+    difficulty: "Beginner",
+    gifUrl: "/assets/Face-Pull.gif",
+    instructions: "Set cable at face height. Pull rope towards face, separating ends and squeezing shoulder blades.",
   },
 ];
 
@@ -234,14 +245,14 @@ const ARMS_EXERCISES: Exercise[] = [
   },
   {
     id: 502,
-    name: "Hammer Curls",
+    name: "EZ Bar Curls",
     muscles: "Biceps, Forearms",
     sets: 3,
     reps: "12, 10, 8",
     time: "8 min",
     difficulty: "Intermediate",
-    gifUrl: "https://media.giphy.com/media/xT0xeIbYVQcBFDSdVu/giphy.gif",
-    instructions: "Hold dumbbells with palms facing each other. Curl up while keeping wrists neutral. Lower slowly.",
+    gifUrl: "/assets/Z-Bar-Curl.gif",
+    instructions: "Hold EZ bar with underhand grip. Curl up while keeping elbows pinned to sides. Lower slowly.",
   },
   {
     id: 503,
@@ -314,14 +325,14 @@ const CORE_EXERCISES: Exercise[] = [
   },
   {
     id: 604,
-    name: "Leg Raises",
-    muscles: "Lower Abs",
+    name: "Hanging Leg Raises",
+    muscles: "Lower Abs, Hip Flexors",
     sets: 3,
     reps: "15, 12, 10",
     time: "6 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Lying-Leg-Raise.gif",
-    instructions: "Lie flat on back, hands under glutes. Raise legs to 90 degrees, then lower without touching floor.",
+    gifUrl: "/assets/Hanging-Leg-Raises.gif",
+    instructions: "Hang from pull-up bar. Raise legs to 90 degrees keeping them straight, then lower with control.",
   },
 ];
 
