@@ -49,6 +49,10 @@ export default function ExerciseDetailsModal({ exercise, isOpen, onClose }: Exer
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a2e] to-transparent" />
+          {/* Demo Watermark */}
+          <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-xs text-white/80 font-medium">
+            Demo Only
+          </div>
         </div>
 
         {/* Content */}

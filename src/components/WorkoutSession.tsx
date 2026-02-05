@@ -124,11 +124,17 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
             className="w-full h-full"
           >
             {currentExercise.gifUrl ? (
-              <img
-                src={currentExercise.gifUrl}
-                alt={`${currentExercise.name} demonstration`}
-                className="w-full h-full object-contain"
-              />
+              <div className="relative w-full h-full">
+                <img
+                  src={currentExercise.gifUrl}
+                  alt={`${currentExercise.name} demonstration`}
+                  className="w-full h-full object-contain"
+                />
+                {/* Demo Watermark */}
+                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-xs text-white/80 font-medium">
+                  Demo Only
+                </div>
+              </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-zinc-800 to-zinc-900">
                 <div className="text-center">
