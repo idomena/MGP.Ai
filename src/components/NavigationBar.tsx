@@ -1,5 +1,6 @@
 import { Home, Dumbbell, MessageCircle, Apple, MoreHorizontal } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import aiAssistantLogo from "@assets/image_1770399092998.png";
 
 export default function NavigationBar() {
   const location = useLocation();
@@ -30,7 +31,7 @@ export default function NavigationBar() {
               className="block focus:outline-none focus:ring-2 focus:ring-[#7c57ff] rounded-full"
             >
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center shadow-[0_0_30px_rgba(124,87,255,0.6)] backdrop-blur-xl border-2 border-white/20">
-                <MessageCircle className="w-8 h-8 text-white" aria-hidden="true" />
+                <img src={aiAssistantLogo} alt="" className="w-8 h-8" aria-hidden="true" />
               </div>
             </Link>
           </div>

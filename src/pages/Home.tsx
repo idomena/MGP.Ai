@@ -6,7 +6,8 @@ import SchedulingAIAssistant from "@/components/SchedulingAIAssistant";
 import ChangeWorkoutTypeModal from "@/components/ChangeWorkoutTypeModal";
 import Logo from "@/components/Logo";
 import { useState, useEffect } from "react";
-import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock, Moon, MessageCircle, RefreshCw, Sparkles, Zap, Loader2 } from "lucide-react";
+import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock, Moon, MessageCircle, RefreshCw, Zap, Loader2 } from "lucide-react";
+import aiAssistantLogo from "@assets/image_1770399092998.png";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
@@ -387,7 +388,7 @@ export default function Home() {
                   className="bg-gradient-to-br from-[#7c57ff]/20 to-[#60a5fa]/20 backdrop-blur-sm py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2 border border-[#7c57ff]/30"
                   data-testid="button-ai-schedule-modal"
                 >
-                  <Sparkles className="w-4 h-4 text-[#7c57ff]" />
+                  <img src={aiAssistantLogo} alt="" className="w-4 h-4" />
                   <span className="text-sm">AI Schedule</span>
                 </button>
               </div>
