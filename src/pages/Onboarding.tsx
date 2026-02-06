@@ -20,7 +20,6 @@ import WeightSelector from "@/components/onboarding/WeightSelector";
 import OptionSelector from "@/components/onboarding/OptionSelector";
 import MuscleFocusSelector from "@/components/onboarding/MuscleFocusSelector";
 import { TrainingDaysSelector } from "@/components/onboarding/TrainingDaysSelector";
-import EquipmentPreferences from "@/components/onboarding/EquipmentPreferences";
 import YesNoSelector from "@/components/onboarding/YesNoSelector";
 import AdditionalInfo from "@/components/onboarding/AdditionalInfo";
 import ReviewSelections from "@/components/onboarding/ReviewSelections";
@@ -210,12 +209,6 @@ export default function Onboarding() {
     handleAnswer('muscleFocus', muscles.join(','), labels.join(', '));
   };
 
-  const handleEquipmentSelect = (equipment: string[], preferences: string[]) => {
-    setSelections(prev => ({ ...prev, equipment, trainingPreferences: preferences }));
-    const eqLabels = equipment.map(e => e.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
-    handleAnswer('equipment', equipment.join(','), eqLabels.join(', '));
-  };
-
   const handleInjuriesSelect = (hasInjuries: boolean) => {
     setSelections(prev => ({ ...prev, hasInjuries }));
     handleAnswer('injuries', hasInjuries ? 'yes' : 'no', hasInjuries ? 'Yes' : 'No');
@@ -239,12 +232,6 @@ export default function Onboarding() {
     setIsComplete(true);
     addUserMessage("Let's go!");
 
-    const enrichedInfo = [
-      selections.additionalInfo || '',
-      selections.equipment.length > 0 ? `Equipment: ${selections.equipment.join(', ')}` : '',
-      selections.trainingPreferences.length > 0 ? `Training preferences: ${selections.trainingPreferences.join(', ')}` : '',
-    ].filter(Boolean).join('\n');
-
     const onboardingData = {
       coachName: selections.coachName,
       userName: selections.name,
@@ -256,10 +243,8 @@ export default function Onboarding() {
       experience: selections.experience,
       trainingDays: selections.trainingDays,
       selectedWorkouts: selections.muscleFocus.length > 0 ? selections.muscleFocus : selections.workoutTypes,
-      equipment: selections.equipment,
-      trainingPreferences: selections.trainingPreferences,
       hasInjuries: selections.hasInjuries,
-      additionalInfo: enrichedInfo,
+      additionalInfo: selections.additionalInfo,
     };
 
     const localPrefs = {
@@ -332,9 +317,6 @@ export default function Onboarding() {
       case 'trainingDays':
         return <TrainingDaysSelector onSelect={handleTrainingDaysSelect} />;
 
-      case 'equipment':
-        return <EquipmentPreferences onSelect={handleEquipmentSelect} />;
-      
       case 'yesno':
         return <YesNoSelector onSelect={handleInjuriesSelect} />;
       
@@ -356,8 +338,6 @@ export default function Onboarding() {
               muscleFocus: selections.muscleFocus,
               experience: selections.experience,
               trainingDays: selections.trainingDays,
-              equipment: selections.equipment,
-              trainingPreferences: selections.trainingPreferences,
               injuries: selections.hasInjuries ? 'Yes' : 'No',
               additionalInfo: selections.additionalInfo || 'None',
             }}

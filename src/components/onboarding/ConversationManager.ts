@@ -8,7 +8,6 @@ export type QuestionType =
   | 'muscleFocus'
   | 'experience'
   | 'trainingDays'
-  | 'equipment'
   | 'injuries'
   | 'additionalInfo'
   | 'review';
@@ -16,7 +15,7 @@ export type QuestionType =
 export interface Question {
   id: QuestionType;
   botMessage: string;
-  componentType: 'name' | 'coachName' | 'gender' | 'assistant' | 'weight' | 'options' | 'muscleFocus' | 'trainingDays' | 'equipment' | 'yesno' | 'textarea' | 'review';
+  componentType: 'name' | 'coachName' | 'gender' | 'assistant' | 'weight' | 'options' | 'muscleFocus' | 'trainingDays' | 'yesno' | 'textarea' | 'review';
   options?: { id: string; label: string; icon?: string; description?: string }[];
   multiSelect?: boolean;
   required?: boolean;
@@ -89,13 +88,6 @@ export const QUESTIONS: Question[] = [
     required: true,
   },
   {
-    id: 'equipment',
-    botMessage: "{coachName}: Great choices, {name}! Now, what equipment do you have access to?",
-    componentType: 'equipment',
-    multiSelect: true,
-    required: true,
-  },
-  {
     id: 'injuries',
     botMessage: "{coachName}: Safety first! Do you have any injuries or physical limitations I should keep in mind?",
     componentType: 'yesno',
@@ -125,8 +117,6 @@ export interface UserSelections {
   muscleFocus: string[];
   experience: string;
   trainingDays: string[];
-  equipment: string[];
-  trainingPreferences: string[];
   workoutTypes: string[];
   hasInjuries: boolean;
   injuryDetails?: string;
@@ -144,8 +134,6 @@ export function getDefaultSelections(): UserSelections {
     muscleFocus: [],
     experience: '',
     trainingDays: [],
-    equipment: [],
-    trainingPreferences: [],
     workoutTypes: ['full'],
     hasInjuries: false,
   };
@@ -174,7 +162,6 @@ export function isOnboardingComplete(selections: UserSelections): boolean {
     selections.goals.length > 0 &&
     selections.muscleFocus.length > 0 &&
     selections.experience.length > 0 &&
-    selections.trainingDays.length > 0 &&
-    selections.equipment.length > 0
+    selections.trainingDays.length > 0
   );
 }

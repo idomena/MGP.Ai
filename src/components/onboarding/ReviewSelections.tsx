@@ -55,7 +55,7 @@ const sections: SectionConfig[] = [
     id: 'training',
     title: 'Training Preferences',
     icon: <Dumbbell className="w-5 h-5" />,
-    fields: ['trainingDays', 'equipment', 'trainingPreferences', 'injuries', 'additionalInfo'],
+    fields: ['trainingDays', 'injuries', 'additionalInfo'],
   },
 ];
 
@@ -70,8 +70,6 @@ const fieldConfig: Record<string, { label: string; icon: React.ReactNode }> = {
   workoutTypes: { label: 'Workout Types', icon: <Dumbbell className="w-4 h-4" /> },
   injuries: { label: 'Injuries', icon: <FileText className="w-4 h-4" /> },
   muscleFocus: { label: 'Muscle Focus', icon: <Target className="w-4 h-4" /> },
-  equipment: { label: 'Equipment', icon: <Dumbbell className="w-4 h-4" /> },
-  trainingPreferences: { label: 'Training Style', icon: <Clock className="w-4 h-4" /> },
   additionalInfo: { label: 'Additional Info', icon: <FileText className="w-4 h-4" /> },
 };
 

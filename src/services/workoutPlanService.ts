@@ -47,8 +47,6 @@ interface OnboardingData {
   experience: string;
   trainingDays: string[];
   selectedWorkouts: string[];
-  equipment?: string[];
-  trainingPreferences?: string[];
   hasInjuries: boolean;
   additionalInfo?: string;
 }
