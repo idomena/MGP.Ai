@@ -1,6 +1,6 @@
 import NavigationBar from "@/components/NavigationBar";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, Settings, Bell, Award, Zap, Flame, Target, ChevronRight, Shield, HelpCircle, Star, Dumbbell, LogOut, RefreshCw, Calendar, TrendingUp } from "lucide-react";
+import { User, Settings, Bell, Award, Zap, Flame, Target, ChevronRight, Shield, HelpCircle, Star, Dumbbell, LogOut, RefreshCw, Calendar, TrendingUp, Mail, ExternalLink } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
@@ -186,10 +186,8 @@ export default function ProfilePage() {
   ];
 
   const menuItems = [
-    { label: "Settings", icon: Settings, path: "/settings" },
-    { label: "Notifications", icon: Bell, path: "/notifications" },
-    { label: "Privacy", icon: Shield, path: "/privacy" },
-    { label: "Help & Support", icon: HelpCircle, path: "/help" },
+    { label: "Privacy Policy", icon: Shield, path: "/privacy-policy" },
+    { label: "Terms of Service", icon: Settings, path: "/terms" },
   ];
 
   const unlockedCount = achievements.filter(a => a.unlocked).length;
@@ -348,6 +346,40 @@ export default function ProfilePage() {
                 </Link>
               );
             })}
+          </div>
+        </section>
+
+        <section className="mt-6" aria-labelledby="help-heading">
+          <h2 id="help-heading" className="text-white font-semibold mb-3">Help & Support</h2>
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
+            <a
+              href="mailto:hello.mgp.ai@gmail.com"
+              className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors border-b border-white/10"
+              data-testid="link-support-email"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#7c57ff]/20 flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-[#7c57ff]" aria-hidden="true" />
+                </div>
+                <div>
+                  <span className="text-white font-medium block">Email Us</span>
+                  <span className="text-white/40 text-xs">hello.mgp.ai@gmail.com</span>
+                </div>
+              </div>
+              <ExternalLink className="w-4 h-4 text-white/40" aria-hidden="true" />
+            </a>
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                  <HelpCircle className="w-5 h-5 text-white" aria-hidden="true" />
+                </div>
+                <div>
+                  <span className="text-white font-medium block">FAQ</span>
+                  <span className="text-white/40 text-xs">Common questions answered</span>
+                </div>
+              </div>
+              <span className="text-white/30 text-xs">Coming soon</span>
+            </div>
           </div>
         </section>
 
