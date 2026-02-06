@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Flame, Apple, Dumbbell, Check } from "lucide-react";
+import { Flame, Banana, Dumbbell, Check } from "lucide-react";
 
 type AssistantType = 'coach' | 'nutritionist' | 'trainer';
 
@@ -19,7 +19,7 @@ const assistants = [
   {
     type: 'nutritionist' as AssistantType,
     name: 'Nutritionist',
-    icon: Apple,
+    icon: Banana,
     emoji: '🥗',
     description: 'Diet guidance & meal planning',
   },
