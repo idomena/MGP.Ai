@@ -1,7 +1,7 @@
 import NavigationBar from "@/components/NavigationBar";
 import MobileHeader from "@/components/MobileHeader";
 import { useState, useRef } from "react";
-import { Camera, Sun, Maximize, UtensilsCrossed, Loader2, Copy, RotateCcw, AlertCircle } from "lucide-react";
+import { Camera, Image as ImageIcon, Sun, Maximize, UtensilsCrossed, Loader2, Copy, RotateCcw, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { extractOcrText } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,19 +13,23 @@ export default function NutritionPage() {
   const [extractedText, setExtractedText] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
   const [error, setError] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
-  const handleScanClick = () => {
-    fileInputRef.current?.click();
+  const handleCameraClick = () => {
+    cameraInputRef.current?.click();
+  };
+
+  const handleGalleryClick = () => {
+    galleryInputRef.current?.click();
   };
 
   const handleReset = () => {
     setExtractedText("");
     setPreviewUrl("");
     setError("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
+    if (galleryInputRef.current) galleryInputRef.current.value = "";
   };
 
   const handleCopyText = () => {
@@ -42,7 +46,8 @@ export default function NutritionPage() {
 
     if (file.size > MAX_FILE_SIZE) {
       setError("That image is a bit too large. Try a smaller photo (under 4MB).");
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (cameraInputRef.current) cameraInputRef.current.value = "";
+      if (galleryInputRef.current) galleryInputRef.current.value = "";
       return;
     }
 
@@ -109,30 +114,57 @@ export default function NutritionPage() {
         </div>
 
         <input
-          ref={fileInputRef}
+          ref={cameraInputRef}
           type="file"
           accept="image/*"
           capture="environment"
           className="hidden"
           onChange={handleFileUpload}
           disabled={isLoading}
-          data-testid="input-file-upload"
+          data-testid="input-camera-upload"
+        />
+        <input
+          ref={galleryInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileUpload}
+          disabled={isLoading}
+          data-testid="input-gallery-upload"
         />
 
         {!isLoading && !extractedText && !error && (
-          <button
-            onClick={handleScanClick}
-            className="w-full bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] rounded-2xl p-0.5 mb-6"
-            data-testid="button-scan"
-          >
-            <div className="bg-[#1a1a2e] rounded-[15px] p-8 flex flex-col items-center gap-3">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
-                <Camera className="w-8 h-8 text-white" />
+          <div className="mb-6">
+            <div className="bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] rounded-2xl p-0.5">
+              <div className="bg-[#1a1a2e] rounded-[15px] p-6 flex flex-col items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
+                  <Camera className="w-7 h-7 text-white" />
+                </div>
+                <div className="text-center">
+                  <p className="text-white text-lg font-semibold">Scan a Nutrition Label</p>
+                  <p className="text-gray-400 text-sm mt-1">Take a photo or pick one from your gallery</p>
+                </div>
+                <div className="flex gap-3 w-full">
+                  <button
+                    onClick={handleCameraClick}
+                    className="flex-1 flex items-center justify-center gap-2 bg-[#7c57ff] text-white py-3 rounded-xl font-medium"
+                    data-testid="button-camera"
+                  >
+                    <Camera className="w-5 h-5" />
+                    Camera
+                  </button>
+                  <button
+                    onClick={handleGalleryClick}
+                    className="flex-1 flex items-center justify-center gap-2 bg-[#1a1a2e] border border-white/10 text-white py-3 rounded-xl font-medium"
+                    data-testid="button-gallery"
+                  >
+                    <ImageIcon className="w-5 h-5" />
+                    Gallery
+                  </button>
+                </div>
               </div>
-              <span className="text-white text-lg font-semibold">Scan a Nutrition Label</span>
-              <span className="text-gray-400 text-sm">Upload a photo from your gallery</span>
             </div>
-          </button>
+          </div>
         )}
 
         {isLoading && (
