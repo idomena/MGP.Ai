@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { User } from "lucide-react";
-import aiAssistantLogo from "@assets/image_1770399092998.png";
+import { Bot, User, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { saveOnboardingAndGeneratePlan } from "@/services/workoutPlanService";
@@ -356,7 +355,7 @@ export default function Onboarding() {
     <div className="min-h-screen bg-[#0f0f1a] flex flex-col">
       <header className="sticky top-0 z-50 px-4 py-4 border-b border-white/10 bg-[#0f0f1a]/80 backdrop-blur-lg">
         <div className="flex items-center justify-center gap-2">
-          <img src={aiAssistantLogo} alt="" className="w-5 h-5" />
+          <Sparkles className="w-5 h-5 text-[#7c57ff]" />
           <h1 className="text-xl font-bold bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] bg-clip-text text-transparent">
             {selections.coachName || DEFAULT_COACH_NAME} - AI Coach
           </h1>
@@ -392,7 +391,7 @@ export default function Onboarding() {
                   }
                 `}>
                   {message.type === 'bot' ? (
-                    <img src={aiAssistantLogo} alt="" className="w-5 h-5" />
+                    <Bot className="w-5 h-5 text-white" />
                   ) : (
                     <User className="w-5 h-5 text-white/70" />
                   )}

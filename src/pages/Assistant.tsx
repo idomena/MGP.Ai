@@ -2,7 +2,6 @@ import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
 import { Dumbbell, Apple, Activity, MessageCircle, Weight, Heart, ClipboardList } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import aiAssistantLogo from "@assets/image_1770399092998.png";
 import { motion } from "framer-motion";
 
 export default function AssistantPage() {
@@ -28,7 +27,7 @@ export default function AssistantPage() {
       <div className="mt-6">
         <h1 className="text-2xl font-bold">
           <span className="flex items-center gap-2 text-white">
-            <img src={aiAssistantLogo} alt="" className="w-6 h-6" aria-hidden="true" />
+            <MessageCircle className="w-6 h-6" aria-hidden="true" />
             Hello <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00c6ff] to-[#7c57ff]">User</span>
           </span>
         </h1>
@@ -46,7 +45,7 @@ export default function AssistantPage() {
           <div className="relative bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] rounded-2xl p-0.5 shadow-lg hover:shadow-[0_0_20px_rgba(124,87,255,0.5)] transition-all duration-300">
             <div className="bg-[#2a2a2a] rounded-[15px] p-5 flex items-center gap-4">
               <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-inner" aria-hidden="true">
-                <img src={aiAssistantLogo} alt="" className="w-7 h-7" />
+                <MessageCircle className="w-7 h-7 text-[#7c57ff]" />
               </div>
               <div className="flex-1">
                 <h3 className="text-white font-semibold text-base">Start a conversation</h3>
