@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Play,
@@ -69,9 +69,39 @@ export default function WorkoutPage() {
   const [addedExercises, setAddedExercises] = useState<Exercise[]>([]);
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
   const [showSuggestion, setShowSuggestion] = useState(true);
+  const hasLoadedFromStorage = useRef(false);
 
   const currentDay = programCurrentDay || 1;
   const dayNumber = id ? parseInt(id, 10) : currentDay;
+  const storageKey = user?.id ? `added_exercises_${user.id}_day${dayNumber}` : null;
+
+  useEffect(() => {
+    hasLoadedFromStorage.current = false;
+    if (!storageKey) {
+      hasLoadedFromStorage.current = true;
+      return;
+    }
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setAddedExercises(parsed);
+        }
+      }
+    } catch {
+    }
+    hasLoadedFromStorage.current = true;
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!storageKey || !hasLoadedFromStorage.current) return;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(addedExercises));
+    } catch {
+    }
+  }, [addedExercises, storageKey]);
+
   const workoutTemplate = getWorkoutForDay(dayNumber);
   const workoutName = workoutTemplate.title;
 

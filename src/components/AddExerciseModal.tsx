@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Search, ChevronDown, ChevronUp, Dumbbell, Clock, Check } from "lucide-react";
+import { X, Search, ChevronDown, ChevronUp, Dumbbell, Clock, Check, Plus, Zap } from "lucide-react";
 import { Exercise, getAllAvailableExercises } from "@/data/workoutExercises";
+import LazyGif from "@/components/LazyGif";
 
 interface AddExerciseModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export default function AddExerciseModal({
 }: AddExerciseModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [selectedPreview, setSelectedPreview] = useState<number | null>(null);
 
   const allExercises = useMemo(() => getAllAvailableExercises(), []);
 
@@ -154,46 +156,114 @@ export default function AddExerciseModal({
                     >
                       {exercises.map((exercise) => {
                         const isAlreadyAdded = currentExerciseIds.has(exercise.id);
+                        const isPreviewOpen = selectedPreview === exercise.id;
                         return (
-                          <button
+                          <div
                             key={exercise.id}
-                            onClick={() => handleAddExercise(exercise)}
-                            disabled={isAlreadyAdded}
-                            className={`w-full p-3 rounded-xl text-left transition-all ${
+                            className={`w-full rounded-xl text-left transition-all ${
                               isAlreadyAdded
-                                ? "bg-white/5 opacity-50 cursor-not-allowed"
-                                : "bg-white/5 hover:bg-[#7c57ff]/20 hover:border-[#7c57ff]/30"
+                                ? "bg-white/5 opacity-50"
+                                : isPreviewOpen
+                                  ? "bg-[#7c57ff]/10 border-[#7c57ff]/30"
+                                  : "bg-white/5 hover:bg-[#7c57ff]/20 hover:border-[#7c57ff]/30"
                             } border border-white/10`}
-                            data-testid={`button-add-exercise-${exercise.id}`}
+                            data-testid={`card-exercise-preview-${exercise.id}`}
                           >
-                            <div className="flex items-center gap-3">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <p className="text-white font-medium text-sm truncate">
-                                    {exercise.name}
+                            <button
+                              onClick={() => setSelectedPreview(isPreviewOpen ? null : exercise.id)}
+                              className="w-full p-3 text-left"
+                              data-testid={`button-preview-exercise-${exercise.id}`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-white font-medium text-sm truncate">
+                                      {exercise.name}
+                                    </p>
+                                    {isAlreadyAdded && (
+                                      <span className="flex items-center gap-1 text-green-400 text-xs shrink-0">
+                                        <Check className="w-3 h-3" />
+                                        Added
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-white/40 text-xs mt-0.5">
+                                    {exercise.muscles}
                                   </p>
-                                  {isAlreadyAdded && (
-                                    <span className="flex items-center gap-1 text-green-400 text-xs shrink-0">
-                                      <Check className="w-3 h-3" />
-                                      Added
+                                  <div className="flex items-center gap-3 mt-1.5">
+                                    <span className="text-white/50 text-xs">
+                                      {exercise.sets} sets x {exercise.reps}
                                     </span>
-                                  )}
+                                    <span className="flex items-center gap-1 text-white/30 text-xs">
+                                      <Clock className="w-3 h-3" />
+                                      {exercise.time}
+                                    </span>
+                                  </div>
                                 </div>
-                                <p className="text-white/40 text-xs mt-0.5">
-                                  {exercise.muscles}
-                                </p>
-                                <div className="flex items-center gap-3 mt-1.5">
-                                  <span className="text-white/50 text-xs">
-                                    {exercise.sets} sets x {exercise.reps}
-                                  </span>
-                                  <span className="flex items-center gap-1 text-white/30 text-xs">
-                                    <Clock className="w-3 h-3" />
-                                    {exercise.time}
-                                  </span>
-                                </div>
+                                {isPreviewOpen ? (
+                                  <ChevronUp className="w-4 h-4 text-[#7c57ff] shrink-0" />
+                                ) : (
+                                  <ChevronDown className="w-4 h-4 text-white/30 shrink-0" />
+                                )}
                               </div>
-                            </div>
-                          </button>
+                            </button>
+
+                            <AnimatePresence>
+                              {isPreviewOpen && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="overflow-hidden"
+                                  data-testid={`preview-details-${exercise.id}`}
+                                >
+                                  <div className="px-3 pb-3 space-y-3">
+                                    {exercise.gifUrl && (
+                                      <div className="rounded-xl overflow-hidden bg-black/30 aspect-video" data-testid={`preview-gif-${exercise.id}`}>
+                                        <LazyGif
+                                          src={exercise.gifUrl}
+                                          alt={exercise.name}
+                                          className="w-full h-full"
+                                          objectFit="contain"
+                                        />
+                                      </div>
+                                    )}
+
+                                    <div className="flex items-center gap-2" data-testid={`preview-difficulty-${exercise.id}`}>
+                                      <Zap className="w-3.5 h-3.5 text-[#7c57ff]" />
+                                      <span className="text-white/60 text-xs">{exercise.difficulty}</span>
+                                    </div>
+
+                                    {exercise.instructions && (
+                                      <p className="text-white/50 text-xs leading-relaxed" data-testid={`preview-instructions-${exercise.id}`}>
+                                        {exercise.instructions}
+                                      </p>
+                                    )}
+
+                                    {isAlreadyAdded ? (
+                                      <div
+                                        className="w-full py-2.5 rounded-xl bg-green-500/20 text-green-400 text-sm font-medium flex items-center justify-center gap-2"
+                                        data-testid={`status-already-added-${exercise.id}`}
+                                      >
+                                        <Check className="w-4 h-4" />
+                                        Already Added
+                                      </div>
+                                    ) : (
+                                      <button
+                                        onClick={() => handleAddExercise(exercise)}
+                                        className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white text-sm font-medium flex items-center justify-center gap-2"
+                                        data-testid={`button-add-exercise-${exercise.id}`}
+                                      >
+                                        <Plus className="w-4 h-4" />
+                                        Add to Workout
+                                      </button>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
                         );
                       })}
                     </motion.div>
