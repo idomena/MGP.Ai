@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
 import { Dumbbell, Banana, Activity, MessageCircle, Weight, Heart, ClipboardList } from "lucide-react";
@@ -6,6 +7,17 @@ import { motion } from "framer-motion";
 
 export default function AssistantPage() {
   const navigate = useNavigate();
+  const [userName, setUserName] = useState("there");
+
+  useEffect(() => {
+    try {
+      const prefs = localStorage.getItem("mgp_workout_preferences");
+      if (prefs) {
+        const parsed = JSON.parse(prefs);
+        if (parsed.userName) setUserName(parsed.userName);
+      }
+    } catch {}
+  }, []);
 
   const handleCategoryClick = (prompt: string) => {
     navigate(`/assistant/chat?prompt=${encodeURIComponent(prompt)}`);
@@ -28,7 +40,7 @@ export default function AssistantPage() {
         <h1 className="text-2xl font-bold">
           <span className="flex items-center gap-2 text-white">
             <MessageCircle className="w-6 h-6" aria-hidden="true" />
-            Hello <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00c6ff] to-[#7c57ff]">User</span>
+            Hello <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00c6ff] to-[#7c57ff]" data-testid="text-user-name">{userName}</span>
           </span>
         </h1>
         <h2 className="text-2xl font-bold mt-2 text-white">How Can I Help You Today?</h2>
