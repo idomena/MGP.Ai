@@ -203,6 +203,13 @@ export default function Onboarding() {
     handleAnswer('trainingDays', days.join(','), days.join(', '));
   };
 
+  const handleGymDurationSelect = (selected: string[]) => {
+    const duration = selected[0];
+    setSelections(prev => ({ ...prev, gymDuration: duration }));
+    const label = QUESTIONS.find(q => q.id === 'gymDuration')?.options?.find(o => o.id === duration)?.label || duration;
+    handleAnswer('gymDuration', duration, label);
+  };
+
   const handleMuscleFocusSelect = (muscles: string[]) => {
     setSelections(prev => ({ ...prev, muscleFocus: muscles }));
     const labels = muscles.map(m => m.charAt(0).toUpperCase() + m.slice(1));
@@ -242,6 +249,7 @@ export default function Onboarding() {
       muscleFocus: selections.muscleFocus,
       experience: selections.experience,
       trainingDays: selections.trainingDays,
+      gymDuration: selections.gymDuration,
       selectedWorkouts: selections.muscleFocus.length > 0 ? selections.muscleFocus : selections.workoutTypes,
       hasInjuries: selections.hasInjuries,
       additionalInfo: selections.additionalInfo,
@@ -309,6 +317,9 @@ export default function Onboarding() {
         if (question.id === 'experience') {
           return <OptionSelector options={question.options || []} multiSelect={false} onSelect={handleExperienceSelect} />;
         }
+        if (question.id === 'gymDuration') {
+          return <OptionSelector options={question.options || []} multiSelect={false} onSelect={handleGymDurationSelect} />;
+        }
         return null;
       
       case 'muscleFocus':
@@ -338,6 +349,7 @@ export default function Onboarding() {
               muscleFocus: selections.muscleFocus,
               experience: selections.experience,
               trainingDays: selections.trainingDays,
+              gymDuration: selections.gymDuration === '30min' ? '30+ Minutes' : selections.gymDuration === '60min' ? '1 Hour+' : 'Not set',
               injuries: selections.hasInjuries ? 'Yes' : 'No',
               additionalInfo: selections.additionalInfo || 'None',
             }}
