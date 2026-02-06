@@ -130,7 +130,6 @@ export async function saveOnboardingAndGeneratePlan(
     }));
 
     // Always delete existing workout data and create fresh plan
-    console.log("Clearing any existing workout data for user:", userId);
     const { error: deleteError } = await supabase
       .from("workout_completions")
       .delete()
@@ -145,7 +144,6 @@ export async function saveOnboardingAndGeneratePlan(
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // Insert new 21-day plan
-    console.log("Inserting 21-day workout plan...");
     const { error: completionsError } = await supabase
       .from("workout_completions")
       .insert(completionRows);
@@ -161,14 +159,10 @@ export async function saveOnboardingAndGeneratePlan(
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId);
 
-    console.log("Verification count:", count);
-
     if (countError || count !== TOTAL_PROGRAM_DAYS) {
       console.error("Workout plan incomplete:", { count, expected: TOTAL_PROGRAM_DAYS });
       return { success: false, error: `Expected ${TOTAL_PROGRAM_DAYS} workouts but found ${count}` };
     }
-
-    console.log("Successfully ensured 21-day workout plan exists");
 
     const { error: finalUpdateError } = await supabase
       .from("user_preferences")

@@ -3,6 +3,7 @@ import { X, Check, Sparkles, SkipForward, Clock, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import ExerciseAIAssistant from "./ExerciseAIAssistant";
+import LazyGif from "./LazyGif";
 
 interface Exercise {
   id: number;
@@ -85,8 +86,6 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
         
         if (!success) {
           console.error('Error saving workout completion');
-        } else {
-          console.log(`Workout Day ${dayNumber} saved to Supabase successfully`);
         }
       } catch (error) {
         console.error('Error saving workout completion:', error);
@@ -125,10 +124,11 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
           >
             {currentExercise.gifUrl ? (
               <div className="relative w-full h-full">
-                <img
+                <LazyGif
                   src={currentExercise.gifUrl}
                   alt={`${currentExercise.name} demonstration`}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full"
+                  objectFit="contain"
                 />
                 {/* Demo Watermark */}
                 <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-xs text-white/80 font-medium">

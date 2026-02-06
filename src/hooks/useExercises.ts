@@ -8,7 +8,6 @@ export function useExercises(workoutType: string, dayNumber: number = 1) {
     queryFn: async () => {
       // Get exercises from local data based on workout type and day (for variety)
       const exercises = getExercisesForWorkoutType(workoutType, dayNumber);
-      console.log("Loaded", exercises.length, "exercises for:", workoutType, "day:", dayNumber);
       return exercises;
     },
     staleTime: 1000 * 60 * 5,

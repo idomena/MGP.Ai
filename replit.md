@@ -18,6 +18,8 @@ Preferred communication style: Simple, everyday language.
 - **Routing**: React Router DOM with protected and public route handling.
 - **Animation**: Framer Motion for transitions and micro-interactions.
 - **Key Features**: Conversational onboarding chat, iPhone-optimized workout page, muscle anatomy diagrams, workout customization (change type, swap exercises), AI scheduling assistant, redesigned journey path visualization, real-time progress updates, and enhanced workout session UI with rest timers and completion animations.
+- **Performance**: Route-level code splitting via React.lazy/Suspense, LazyGif component with IntersectionObserver for exercise GIF loading, two-layer loading screen (HTML pre-loader + React LoadingScreen).
+- **Pages**: Privacy Policy (`/privacy-policy`), Terms of Service (`/terms`) — public routes, no auth required.
 - **Accessibility**: ARIA labels, visible focus states, semantic HTML, and screen reader support.
 
 ### Backend Architecture
