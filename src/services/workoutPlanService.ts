@@ -43,9 +43,12 @@ interface OnboardingData {
   assistantType: string;
   weight: { value: number; unit: string };
   goals: string[];
+  muscleFocus?: string[];
   experience: string;
   trainingDays: string[];
   selectedWorkouts: string[];
+  equipment?: string[];
+  trainingPreferences?: string[];
   hasInjuries: boolean;
   additionalInfo?: string;
 }
@@ -100,8 +103,10 @@ export async function saveOnboardingAndGeneratePlan(
   data: OnboardingData
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Parse additionalInfo to extract muscle focus preferences
-    const focusWorkouts = parseMuscleFocus(data.additionalInfo || '', data.selectedWorkouts);
+    // Use explicit muscle focus from onboarding if available, otherwise parse from additionalInfo
+    const focusWorkouts = (data.muscleFocus && data.muscleFocus.length > 0)
+      ? data.muscleFocus
+      : parseMuscleFocus(data.additionalInfo || '', data.selectedWorkouts);
     
     const { error: prefsError } = await supabase
       .from("user_preferences")

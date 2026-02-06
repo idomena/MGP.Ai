@@ -18,7 +18,9 @@ import NameInput from "@/components/onboarding/NameInput";
 import { GenderSelector } from "@/components/onboarding/GenderSelector";
 import WeightSelector from "@/components/onboarding/WeightSelector";
 import OptionSelector from "@/components/onboarding/OptionSelector";
+import MuscleFocusSelector from "@/components/onboarding/MuscleFocusSelector";
 import { TrainingDaysSelector } from "@/components/onboarding/TrainingDaysSelector";
+import EquipmentPreferences from "@/components/onboarding/EquipmentPreferences";
 import YesNoSelector from "@/components/onboarding/YesNoSelector";
 import AdditionalInfo from "@/components/onboarding/AdditionalInfo";
 import ReviewSelections from "@/components/onboarding/ReviewSelections";
@@ -114,8 +116,11 @@ export default function Onboarding() {
       if (!isMountedRef.current) return;
       
       let message = question.botMessage;
+      if (message.includes('{coachName}')) {
+        message = message.replace(/\{coachName\}/g, selections.coachName || DEFAULT_COACH_NAME);
+      }
       if (message.includes('{name}')) {
-        message = message.replace('{name}', selections.name);
+        message = message.replace(/\{name\}/g, selections.name);
       }
       
       addBotMessage(message, true, questionIndex);
@@ -126,7 +131,7 @@ export default function Onboarding() {
         }
       }, 200);
     }, 200);
-  }, [simulateTyping, addBotMessage, safeSetTimeout, selections.name]);
+  }, [simulateTyping, addBotMessage, safeSetTimeout, selections.name, selections.coachName]);
 
   useEffect(() => {
     if (!hasInitialized.current) {
@@ -141,13 +146,18 @@ export default function Onboarding() {
 
     const nextIndex = currentQuestionIndex + 1;
     
+    try {
+      const progress = { selections: { ...selections }, currentStep: nextIndex };
+      localStorage.setItem('mgp_onboarding_progress', JSON.stringify(progress));
+    } catch (e) {}
+
     if (questionId === 'injuries' && answer === 'no') {
       const additionalInfoIndex = QUESTIONS.findIndex(q => q.id === 'additionalInfo');
       safeSetTimeout(() => askNextQuestion(additionalInfoIndex), 500);
     } else if (nextIndex < QUESTIONS.length) {
       safeSetTimeout(() => askNextQuestion(nextIndex), 500);
     }
-  }, [currentQuestionIndex, addUserMessage, askNextQuestion, safeSetTimeout]);
+  }, [currentQuestionIndex, addUserMessage, askNextQuestion, safeSetTimeout, selections]);
 
   const handleCoachNameSubmit = (coachName: string) => {
     const name = coachName.trim() || DEFAULT_COACH_NAME;
@@ -194,6 +204,18 @@ export default function Onboarding() {
     handleAnswer('trainingDays', days.join(','), days.join(', '));
   };
 
+  const handleMuscleFocusSelect = (muscles: string[]) => {
+    setSelections(prev => ({ ...prev, muscleFocus: muscles }));
+    const labels = muscles.map(m => m.charAt(0).toUpperCase() + m.slice(1));
+    handleAnswer('muscleFocus', muscles.join(','), labels.join(', '));
+  };
+
+  const handleEquipmentSelect = (equipment: string[], preferences: string[]) => {
+    setSelections(prev => ({ ...prev, equipment, trainingPreferences: preferences }));
+    const eqLabels = equipment.map(e => e.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+    handleAnswer('equipment', equipment.join(','), eqLabels.join(', '));
+  };
+
   const handleInjuriesSelect = (hasInjuries: boolean) => {
     setSelections(prev => ({ ...prev, hasInjuries }));
     handleAnswer('injuries', hasInjuries ? 'yes' : 'no', hasInjuries ? 'Yes' : 'No');
@@ -217,6 +239,12 @@ export default function Onboarding() {
     setIsComplete(true);
     addUserMessage("Let's go!");
 
+    const enrichedInfo = [
+      selections.additionalInfo || '',
+      selections.equipment.length > 0 ? `Equipment: ${selections.equipment.join(', ')}` : '',
+      selections.trainingPreferences.length > 0 ? `Training preferences: ${selections.trainingPreferences.join(', ')}` : '',
+    ].filter(Boolean).join('\n');
+
     const onboardingData = {
       coachName: selections.coachName,
       userName: selections.name,
@@ -224,11 +252,14 @@ export default function Onboarding() {
       assistantType: selections.assistantType,
       weight: selections.weight,
       goals: selections.goals,
+      muscleFocus: selections.muscleFocus,
       experience: selections.experience,
       trainingDays: selections.trainingDays,
-      selectedWorkouts: selections.workoutTypes,
+      selectedWorkouts: selections.muscleFocus.length > 0 ? selections.muscleFocus : selections.workoutTypes,
+      equipment: selections.equipment,
+      trainingPreferences: selections.trainingPreferences,
       hasInjuries: selections.hasInjuries,
-      additionalInfo: selections.additionalInfo,
+      additionalInfo: enrichedInfo,
     };
 
     const localPrefs = {
@@ -295,8 +326,14 @@ export default function Onboarding() {
         }
         return null;
       
+      case 'muscleFocus':
+        return <MuscleFocusSelector onSelect={handleMuscleFocusSelect} />;
+
       case 'trainingDays':
         return <TrainingDaysSelector onSelect={handleTrainingDaysSelect} />;
+
+      case 'equipment':
+        return <EquipmentPreferences onSelect={handleEquipmentSelect} />;
       
       case 'yesno':
         return <YesNoSelector onSelect={handleInjuriesSelect} />;
@@ -306,10 +343,7 @@ export default function Onboarding() {
       
       case 'review':
         const genderLabels: Record<string, string> = { 
-          male: 'Male', 
-          female: 'Female', 
-          other: 'Other',
-          '': 'Not set'
+          male: 'Male', female: 'Female', other: 'Other', '': 'Not set'
         };
         return (
           <ReviewSelections
@@ -319,9 +353,11 @@ export default function Onboarding() {
               gender: genderLabels[selections.gender] || 'Not set',
               weight: `${selections.weight.value} ${selections.weight.unit}`,
               goals: selections.goals,
+              muscleFocus: selections.muscleFocus,
               experience: selections.experience,
               trainingDays: selections.trainingDays,
-              workoutTypes: selections.workoutTypes,
+              equipment: selections.equipment,
+              trainingPreferences: selections.trainingPreferences,
               injuries: selections.hasInjuries ? 'Yes' : 'No',
               additionalInfo: selections.additionalInfo || 'None',
             }}
@@ -344,6 +380,15 @@ export default function Onboarding() {
             {selections.coachName || DEFAULT_COACH_NAME} - AI Coach
           </h1>
         </div>
+        <div className="mt-3 w-full bg-white/10 rounded-full h-1.5">
+          <div 
+            className="h-full bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] rounded-full transition-all duration-500"
+            style={{ width: `${((currentQuestionIndex + 1) / QUESTIONS.length) * 100}%` }}
+          />
+        </div>
+        <p className="text-white/40 text-xs mt-1 text-center">
+          Step {currentQuestionIndex + 1} of {QUESTIONS.length}
+        </p>
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 py-6 pb-24">
