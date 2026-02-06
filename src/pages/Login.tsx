@@ -206,6 +206,12 @@ export default function Login() {
               </Link>
             </p>
           </div>
+
+          <div className="mt-8 flex items-center justify-center gap-3">
+            <Link to="/privacy-policy" className="text-white/30 text-xs hover:text-white/60 transition-colors" data-testid="link-login-privacy">Privacy Policy</Link>
+            <span className="text-white/15 text-xs">|</span>
+            <Link to="/terms" className="text-white/30 text-xs hover:text-white/60 transition-colors" data-testid="link-login-terms">Terms</Link>
+          </div>
         </div>
       </motion.div>
     </div>
