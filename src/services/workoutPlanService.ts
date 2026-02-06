@@ -2,6 +2,18 @@ import { supabase } from "@/integrations/supabase/client";
 
 const TOTAL_PROGRAM_DAYS = 21;
 
+function toLocalDateStr(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day, 0, 0, 0, 0);
+}
+
 const WORKOUT_INFO: Record<string, { name: string; duration: string; exercises: number }> = {
   chest: { name: "Chest", duration: "35 min", exercises: 5 },
   back: { name: "Back", duration: "35 min", exercises: 5 },
@@ -110,7 +122,7 @@ export async function saveOnboardingAndGeneratePlan(
 
     const startDate = new Date();
     startDate.setHours(0, 0, 0, 0);
-    const startDateStr = startDate.toISOString().split("T")[0];
+    const startDateStr = toLocalDateStr(startDate);
 
     // Store start date in localStorage as fallback (Supabase column may not exist)
     try {
@@ -195,7 +207,7 @@ function generate21DayPlan(
     const currentDate = new Date(startDate);
     currentDate.setDate(startDate.getDate() + dayNum - 1);
     const dayOfWeek = dayOrder[currentDate.getDay()];
-    const dateStr = currentDate.toISOString().split("T")[0];
+    const dateStr = toLocalDateStr(currentDate);
 
     if (trainingDays.includes(dayOfWeek)) {
       const workoutType = selectedWorkouts[workoutIndex % selectedWorkouts.length];
@@ -280,11 +292,12 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
   workoutType: string;
   completed: boolean;
   date: string;
+  status: "not_started" | "completed" | "skipped";
 }>> {
   try {
     const { data, error } = await supabase
       .from("workout_completions")
-      .select("day_number, title, workout_type, completed, created_at")
+      .select("day_number, title, workout_type, completed, completed_at, created_at")
       .eq("user_id", userId)
       .order("day_number", { ascending: true });
 
@@ -297,30 +310,36 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
       return [];
     }
 
-    // Calculate start_date from Day 1's created_at (database is source of truth)
     const day1 = data.find(d => d.day_number === 1);
     let startDate: Date;
     
     if (day1?.created_at) {
-      // Day 1's created_at is the program start date
-      startDate = new Date(day1.created_at);
-      startDate.setHours(0, 0, 0, 0);
+      const createdDate = new Date(day1.created_at);
+      startDate = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate(), 0, 0, 0, 0);
     } else {
-      // Fallback: check localStorage, then default to today
       let startDateStr: string | null = null;
       try {
         startDateStr = localStorage.getItem(`mgp_start_date_${userId}`);
       } catch (e) {
         // localStorage not available
       }
-      startDate = startDateStr ? new Date(startDateStr) : new Date();
+      startDate = startDateStr ? parseLocalDate(startDateStr) : new Date();
+      startDate.setHours(0, 0, 0, 0);
     }
 
     return data.map((row) => {
-      // Calculate date from day_number
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + row.day_number - 1);
-      const dateStr = date.toISOString().split("T")[0];
+      const dateStr = toLocalDateStr(date);
+
+      let status: "not_started" | "completed" | "skipped";
+      if (!row.completed) {
+        status = "not_started";
+      } else if (row.completed_at) {
+        status = "completed";
+      } else {
+        status = "skipped";
+      }
       
       return {
         dayNumber: row.day_number,
@@ -328,11 +347,122 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
         workoutType: row.workout_type || "full",
         completed: row.completed || false,
         date: dateStr,
+        status,
       };
     });
   } catch (err) {
     console.error("Error fetching workout plan:", err);
     return [];
+  }
+}
+
+export async function markWorkoutSkipped(
+  userId: string,
+  dayNumber: number
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("workout_completions")
+      .update({
+        completed: true,
+        completed_at: null,
+      })
+      .eq("user_id", userId)
+      .eq("day_number", dayNumber);
+
+    if (error) {
+      console.error("Error marking workout skipped:", error);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error("Error marking workout skipped:", err);
+    return false;
+  }
+}
+
+export async function autoSkipPastWorkouts(
+  userId: string,
+  programStartDate: Date
+): Promise<number> {
+  try {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+
+    const { data, error } = await supabase
+      .from("workout_completions")
+      .select("day_number, workout_type")
+      .eq("user_id", userId)
+      .eq("completed", false)
+      .neq("workout_type", "rest");
+
+    if (error || !data || data.length === 0) {
+      return 0;
+    }
+
+    const startDate = new Date(programStartDate.getFullYear(), programStartDate.getMonth(), programStartDate.getDate(), 0, 0, 0, 0);
+
+    const todayStr = toLocalDateStr(today);
+
+    const daysToSkip: number[] = [];
+    for (const row of data) {
+      const scheduledDate = new Date(startDate);
+      scheduledDate.setDate(startDate.getDate() + row.day_number - 1);
+      const scheduledStr = toLocalDateStr(scheduledDate);
+
+      if (scheduledStr < todayStr) {
+        daysToSkip.push(row.day_number);
+      }
+    }
+
+    let skippedCount = 0;
+
+    if (daysToSkip.length > 0) {
+      const { error: updateError } = await supabase
+        .from("workout_completions")
+        .update({ completed: true, completed_at: null })
+        .eq("user_id", userId)
+        .in("day_number", daysToSkip);
+
+      if (updateError) {
+        console.error("Error auto-skipping workouts:", updateError);
+      } else {
+        skippedCount += daysToSkip.length;
+      }
+    }
+
+    const { data: restData, error: restError } = await supabase
+      .from("workout_completions")
+      .select("day_number, workout_type")
+      .eq("user_id", userId)
+      .eq("completed", false)
+      .eq("workout_type", "rest");
+
+    if (!restError && restData && restData.length > 0) {
+      const restDaysToComplete: number[] = [];
+      for (const row of restData) {
+        const scheduledDate = new Date(startDate);
+        scheduledDate.setDate(startDate.getDate() + row.day_number - 1);
+        const scheduledStr = toLocalDateStr(scheduledDate);
+        if (scheduledStr < todayStr) {
+          restDaysToComplete.push(row.day_number);
+        }
+      }
+      if (restDaysToComplete.length > 0) {
+        await supabase
+          .from("workout_completions")
+          .update({ completed: true, completed_at: new Date().toISOString() })
+          .eq("user_id", userId)
+          .in("day_number", restDaysToComplete);
+        skippedCount += restDaysToComplete.length;
+      }
+    }
+
+    return skippedCount;
+  } catch (err) {
+    console.error("Error in autoSkipPastWorkouts:", err);
+    return 0;
   }
 }
 

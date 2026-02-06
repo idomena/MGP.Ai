@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useLayoutEffect } from "react";
 
 interface DayStatus {
   day: number;
-  status: "completed" | "active" | "locked";
+  status: "completed" | "active" | "locked" | "skipped";
   title: string;
   workoutType: string;
   date: string;
@@ -183,7 +183,9 @@ export default function JourneyPath({ dayStatuses, onDayClick, isLoading }: Jour
 
         {nodePositions.map((pos, idx) => {
           if (idx === 0) return null;
-          const prevDayCompleted = dayStatuses[idx - 1]?.status === "completed";
+          const prevDayStatus = dayStatuses[idx - 1]?.status;
+          const prevDayCompleted = prevDayStatus === "completed";
+          const prevDaySkipped = prevDayStatus === "skipped";
           
           if (prevDayCompleted) {
             const prev = nodePositions[idx - 1];
@@ -217,6 +219,28 @@ export default function JourneyPath({ dayStatuses, onDayClick, isLoading }: Jour
               </g>
             );
           }
+          if (prevDaySkipped) {
+            const prev = nodePositions[idx - 1];
+            const midY = (prev.y + pos.y) / 2;
+            const segmentPath = `M ${prev.x} ${prev.y} C ${prev.x} ${midY}, ${pos.x} ${midY}, ${pos.x} ${pos.y}`;
+            
+            return (
+              <g key={`skipped-path-${idx}`}>
+                <motion.path
+                  d={segmentPath}
+                  stroke="#f97316"
+                  strokeWidth="6"
+                  fill="none"
+                  opacity="0.4"
+                  strokeLinecap="round"
+                  strokeDasharray="8 6"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.5, delay: idx * 0.1 }}
+                />
+              </g>
+            );
+          }
           return null;
         })}
 
@@ -225,6 +249,7 @@ export default function JourneyPath({ dayStatuses, onDayClick, isLoading }: Jour
           const isActive = dayInfo.status === "active";
           const isLocked = dayInfo.status === "locked";
           const isCompleted = dayInfo.status === "completed";
+          const isSkipped = dayInfo.status === "skipped";
           const radius = isActive ? todayNodeRadius : nodeRadius;
 
           return (
@@ -258,9 +283,11 @@ export default function JourneyPath({ dayStatuses, onDayClick, isLoading }: Jour
                 fill={
                   isCompleted 
                     ? "url(#nodeCompletedGradient)"
-                    : isActive 
-                      ? "url(#nodeActiveGradient)"
-                      : "url(#nodeLockedGradient)"
+                    : isSkipped
+                      ? "url(#nodeMissedGradient)"
+                      : isActive 
+                        ? "url(#nodeActiveGradient)"
+                        : "url(#nodeLockedGradient)"
                 }
                 filter={isActive ? "url(#activeGlow)" : isCompleted ? "url(#glowFilter)" : undefined}
                 initial={{ scale: 0, opacity: 0 }}
@@ -294,11 +321,13 @@ export default function JourneyPath({ dayStatuses, onDayClick, isLoading }: Jour
                   onClick={() => onDayClick(dayInfo.day)}
                   className="w-full h-full flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform focus:outline-none focus:ring-2 focus:ring-[#7c57ff] focus:ring-offset-2 focus:ring-offset-[#0a0e27] rounded-full"
                   style={{ background: 'transparent' }}
-                  aria-label={`Day ${dayInfo.day} - ${dayInfo.title}${isLocked ? ' (locked)' : isCompleted ? ' (completed)' : isActive ? ' (today)' : ''}`}
+                  aria-label={`Day ${dayInfo.day} - ${dayInfo.title}${isLocked ? ' (locked)' : isCompleted ? ' (completed)' : isSkipped ? ' (skipped)' : isActive ? ' (today)' : ''}`}
                   data-testid={`journey-node-${dayInfo.day}`}
                 >
                   {isLocked ? (
                     <Lock className="w-5 h-5 text-white/50" />
+                  ) : isSkipped ? (
+                    <X className="w-6 h-6 text-white" />
                   ) : isCompleted ? (
                     <CheckCircle2 className="w-6 h-6 text-white" />
                   ) : isActive ? (
