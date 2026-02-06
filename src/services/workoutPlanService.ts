@@ -402,22 +402,50 @@ export async function autoSkipPastWorkouts(
       }
     }
 
-    if (daysToSkip.length === 0) {
-      return 0;
+    let skippedCount = 0;
+
+    if (daysToSkip.length > 0) {
+      const { error: updateError } = await supabase
+        .from("workout_completions")
+        .update({ completed: true, completed_at: null })
+        .eq("user_id", userId)
+        .in("day_number", daysToSkip);
+
+      if (updateError) {
+        console.error("Error auto-skipping workouts:", updateError);
+      } else {
+        skippedCount += daysToSkip.length;
+      }
     }
 
-    const { error: updateError } = await supabase
+    const { data: restData, error: restError } = await supabase
       .from("workout_completions")
-      .update({ completed: true, completed_at: null })
+      .select("day_number, workout_type")
       .eq("user_id", userId)
-      .in("day_number", daysToSkip);
+      .eq("completed", false)
+      .eq("workout_type", "rest");
 
-    if (updateError) {
-      console.error("Error auto-skipping workouts:", updateError);
-      return 0;
+    if (!restError && restData && restData.length > 0) {
+      const restDaysToComplete: number[] = [];
+      for (const row of restData) {
+        const scheduledDate = new Date(startDate);
+        scheduledDate.setDate(startDate.getDate() + row.day_number - 1);
+        scheduledDate.setHours(0, 0, 0, 0);
+        if (scheduledDate < today) {
+          restDaysToComplete.push(row.day_number);
+        }
+      }
+      if (restDaysToComplete.length > 0) {
+        await supabase
+          .from("workout_completions")
+          .update({ completed: true, completed_at: new Date().toISOString() })
+          .eq("user_id", userId)
+          .in("day_number", restDaysToComplete);
+        skippedCount += restDaysToComplete.length;
+      }
     }
 
-    return daysToSkip.length;
+    return skippedCount;
   } catch (err) {
     console.error("Error in autoSkipPastWorkouts:", err);
     return 0;

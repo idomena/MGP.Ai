@@ -50,6 +50,8 @@ export default function WorkoutPage() {
     getWorkoutForDay,
     dayStatuses,
     isLoading,
+    isTodayCompleted,
+    todayIsRestDay,
   } = useWorkoutProgress();
 
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
@@ -80,8 +82,8 @@ export default function WorkoutPage() {
   const isToday = dayNumber === currentDay;
   const isCompleted = completedDays.includes(dayNumber);
   const isPast = dayNumber < currentDay;
-  const canStartWorkout = isToday && !isCompleted;
   const isRestDay = workoutTemplate.workoutType === "rest";
+  const canStartWorkout = isToday && !isCompleted && !isRestDay;
 
   const dayStatusEntry = dayStatuses.find(d => d.day === dayNumber);
   const workoutStatus: "completed" | "active" | "locked" | "missed" | "skipped" = 
@@ -129,11 +131,10 @@ export default function WorkoutPage() {
     setIsWorkoutActive(false);
     const success = await completeWorkout(dayNumber);
     if (success) {
-      toast.success("Workout complete! Great job!");
+      toast.success("Great job! Come back tomorrow for your next workout.");
     } else {
       toast.error("Failed to save workout. Please try again.");
     }
-    navigate("/");
   };
 
   const handleWorkoutExit = () => {
@@ -461,9 +462,14 @@ export default function WorkoutPage() {
               Workout Skipped
             </div>
           ) : isCompleted ? (
-            <div className="w-full bg-green-500/20 text-green-400 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border border-green-500/30" data-testid="status-completed">
-              <CheckCircle2 className="w-5 h-5" />
-              Workout Completed
+            <div>
+              <div className="w-full bg-green-500/20 text-green-400 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border border-green-500/30" data-testid="status-completed">
+                <CheckCircle2 className="w-5 h-5" />
+                Workout Completed
+              </div>
+              {isToday && (
+                <p className="text-center text-white/50 text-sm mt-2">Come back tomorrow for your next workout</p>
+              )}
             </div>
           ) : (
             <div className="w-full bg-white/10 text-white/50 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2" data-testid="status-locked">
