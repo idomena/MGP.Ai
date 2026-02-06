@@ -1,5 +1,6 @@
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
+import Footer from "@/components/Footer";
 import JourneyPath from "@/components/JourneyPath";
 import SchedulingAIAssistant from "@/components/SchedulingAIAssistant";
 import ChangeWorkoutTypeModal from "@/components/ChangeWorkoutTypeModal";
@@ -500,6 +501,7 @@ export default function Home() {
         />
       )}
 
+      <Footer />
       <NavigationBar />
     </div>
   );
