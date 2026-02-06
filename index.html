@@ -1,17 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A brief description of the page.">
-    <title>Your Title Here</title>
-    <link rel="icon" type="image/png" sizes="200x200" href="/icon-200.png">
-    <link rel="apple-touch-icon" sizes="200x200" href="/icon-200.png">
-    <link rel="manifest" href="/manifest.json">
-    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <h1>Your Content Here</h1>
-    <p>Your page content goes here.</p>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>MGP.AI - Fitness & Nutrition</title>
+    <meta name="description" content="AI-powered fitness app with OCR scanning, personalized coaching, and nutrition tracking" />
+    
+    <!-- Mobile Web App Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MGP.AI" />
+    <meta name="theme-color" content="#0f0f1a" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.json" />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <meta property="og:title" content="MGP.AI - Fitness & Nutrition" />
+    <meta property="og:description" content="AI-powered fitness app with OCR scanning, personalized coaching, and nutrition tracking" />
+    <meta property="og:type" content="website" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+
+  <body>
+    <div id="root">
+      <div id="initial-loader" style="min-height:100vh;background:#0a0e27;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2rem;">
+        <img src="/logo.png" alt="MGP.AI" style="height:96px;width:auto;" />
+        <div style="display:flex;gap:6px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#7c57ff;animation:ildot 1.2s ease-in-out infinite;animation-delay:0s;"></span>
+          <span style="width:8px;height:8px;border-radius:50%;background:#7c57ff;animation:ildot 1.2s ease-in-out infinite;animation-delay:.15s;"></span>
+          <span style="width:8px;height:8px;border-radius:50%;background:#7c57ff;animation:ildot 1.2s ease-in-out infinite;animation-delay:.3s;"></span>
+        </div>
+        <p style="color:rgba(255,255,255,0.5);font-size:0.875rem;font-family:Inter,sans-serif;">Preparing your personalized experience</p>
+      </div>
+      <style>@keyframes ildot{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-6px)}}</style>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
