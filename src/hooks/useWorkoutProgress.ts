@@ -3,6 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getWorkoutPlan, markWorkoutComplete, autoSkipPastWorkouts } from "@/services/workoutPlanService";
 
+function toLocalDateStr(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day, 0, 0, 0, 0);
+}
+
 interface DayStatus {
   day: number;
   status: "completed" | "active" | "locked" | "skipped";
@@ -137,17 +149,15 @@ export function useWorkoutProgress(): WorkoutProgressData {
 
       const day1 = plan.find(p => p.dayNumber === 1);
       if (day1) {
-        const startDate = new Date(day1.date);
-        startDate.setHours(0, 0, 0, 0);
+        const startDate = parseLocalDate(day1.date);
         const skippedCount = await autoSkipPastWorkouts(user.id, startDate);
         if (skippedCount > 0) {
           plan = await getWorkoutPlan(user.id);
         }
       }
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayStr = today.toISOString().split("T")[0];
+      const now = new Date();
+      const todayStr = toLocalDateStr(now);
       const todaysPlan = plan.find(p => p.date === todayStr);
 
       let activeDay: number;

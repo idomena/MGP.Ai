@@ -2,6 +2,18 @@ import { supabase } from "@/integrations/supabase/client";
 
 const TOTAL_PROGRAM_DAYS = 21;
 
+function toLocalDateStr(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day, 0, 0, 0, 0);
+}
+
 const WORKOUT_INFO: Record<string, { name: string; duration: string; exercises: number }> = {
   chest: { name: "Chest", duration: "35 min", exercises: 5 },
   back: { name: "Back", duration: "35 min", exercises: 5 },
@@ -110,7 +122,7 @@ export async function saveOnboardingAndGeneratePlan(
 
     const startDate = new Date();
     startDate.setHours(0, 0, 0, 0);
-    const startDateStr = startDate.toISOString().split("T")[0];
+    const startDateStr = toLocalDateStr(startDate);
 
     // Store start date in localStorage as fallback (Supabase column may not exist)
     try {
@@ -195,7 +207,7 @@ function generate21DayPlan(
     const currentDate = new Date(startDate);
     currentDate.setDate(startDate.getDate() + dayNum - 1);
     const dayOfWeek = dayOrder[currentDate.getDay()];
-    const dateStr = currentDate.toISOString().split("T")[0];
+    const dateStr = toLocalDateStr(currentDate);
 
     if (trainingDays.includes(dayOfWeek)) {
       const workoutType = selectedWorkouts[workoutIndex % selectedWorkouts.length];
@@ -302,8 +314,8 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
     let startDate: Date;
     
     if (day1?.created_at) {
-      startDate = new Date(day1.created_at);
-      startDate.setHours(0, 0, 0, 0);
+      const createdDate = new Date(day1.created_at);
+      startDate = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate(), 0, 0, 0, 0);
     } else {
       let startDateStr: string | null = null;
       try {
@@ -311,13 +323,14 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
       } catch (e) {
         // localStorage not available
       }
-      startDate = startDateStr ? new Date(startDateStr) : new Date();
+      startDate = startDateStr ? parseLocalDate(startDateStr) : new Date();
+      startDate.setHours(0, 0, 0, 0);
     }
 
     return data.map((row) => {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + row.day_number - 1);
-      const dateStr = date.toISOString().split("T")[0];
+      const dateStr = toLocalDateStr(date);
 
       let status: "not_started" | "completed" | "skipped";
       if (!row.completed) {
@@ -374,8 +387,8 @@ export async function autoSkipPastWorkouts(
   programStartDate: Date
 ): Promise<number> {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
 
     const { data, error } = await supabase
       .from("workout_completions")
@@ -388,16 +401,17 @@ export async function autoSkipPastWorkouts(
       return 0;
     }
 
-    const startDate = new Date(programStartDate);
-    startDate.setHours(0, 0, 0, 0);
+    const startDate = new Date(programStartDate.getFullYear(), programStartDate.getMonth(), programStartDate.getDate(), 0, 0, 0, 0);
+
+    const todayStr = toLocalDateStr(today);
 
     const daysToSkip: number[] = [];
     for (const row of data) {
       const scheduledDate = new Date(startDate);
       scheduledDate.setDate(startDate.getDate() + row.day_number - 1);
-      scheduledDate.setHours(0, 0, 0, 0);
+      const scheduledStr = toLocalDateStr(scheduledDate);
 
-      if (scheduledDate < today) {
+      if (scheduledStr < todayStr) {
         daysToSkip.push(row.day_number);
       }
     }
@@ -430,8 +444,8 @@ export async function autoSkipPastWorkouts(
       for (const row of restData) {
         const scheduledDate = new Date(startDate);
         scheduledDate.setDate(startDate.getDate() + row.day_number - 1);
-        scheduledDate.setHours(0, 0, 0, 0);
-        if (scheduledDate < today) {
+        const scheduledStr = toLocalDateStr(scheduledDate);
+        if (scheduledStr < todayStr) {
           restDaysToComplete.push(row.day_number);
         }
       }
