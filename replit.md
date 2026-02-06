@@ -39,6 +39,7 @@ Preferred communication style: Simple, everyday language.
 - **Authentication**: Supabase Auth with email/password and Google OAuth, integrated with React Context for session management. Features protected routes, email verification, and password requirements.
 - **Database**: Supabase for PostgreSQL, utilized via Drizzle ORM.
 - **Schema**: `user_preferences`, `user_programs`, and `workout_completions` tables for storing user data and workout plans.
+- **Workout Status Tracking**: Three states — `not_started`, `completed`, `skipped`. Status derived from `completed` boolean + `completed_at` timestamp (completed=true + completed_at=null means skipped). Auto-skip logic marks past incomplete workouts as skipped on app load.
 - **Real-time Integration**: Supabase realtime subscriptions for `workout_completions` to update UI dynamically.
 - **Exercise Data**: Can fetch exercises from an `exercises_templates` table in Supabase or fallback to local data.
 

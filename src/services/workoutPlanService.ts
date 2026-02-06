@@ -280,11 +280,12 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
   workoutType: string;
   completed: boolean;
   date: string;
+  status: "not_started" | "completed" | "skipped";
 }>> {
   try {
     const { data, error } = await supabase
       .from("workout_completions")
-      .select("day_number, title, workout_type, completed, created_at")
+      .select("day_number, title, workout_type, completed, completed_at, created_at")
       .eq("user_id", userId)
       .order("day_number", { ascending: true });
 
@@ -297,16 +298,13 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
       return [];
     }
 
-    // Calculate start_date from Day 1's created_at (database is source of truth)
     const day1 = data.find(d => d.day_number === 1);
     let startDate: Date;
     
     if (day1?.created_at) {
-      // Day 1's created_at is the program start date
       startDate = new Date(day1.created_at);
       startDate.setHours(0, 0, 0, 0);
     } else {
-      // Fallback: check localStorage, then default to today
       let startDateStr: string | null = null;
       try {
         startDateStr = localStorage.getItem(`mgp_start_date_${userId}`);
@@ -317,10 +315,18 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
     }
 
     return data.map((row) => {
-      // Calculate date from day_number
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + row.day_number - 1);
       const dateStr = date.toISOString().split("T")[0];
+
+      let status: "not_started" | "completed" | "skipped";
+      if (!row.completed) {
+        status = "not_started";
+      } else if (row.completed_at) {
+        status = "completed";
+      } else {
+        status = "skipped";
+      }
       
       return {
         dayNumber: row.day_number,
@@ -328,11 +334,93 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
         workoutType: row.workout_type || "full",
         completed: row.completed || false,
         date: dateStr,
+        status,
       };
     });
   } catch (err) {
     console.error("Error fetching workout plan:", err);
     return [];
+  }
+}
+
+export async function markWorkoutSkipped(
+  userId: string,
+  dayNumber: number
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("workout_completions")
+      .update({
+        completed: true,
+        completed_at: null,
+      })
+      .eq("user_id", userId)
+      .eq("day_number", dayNumber);
+
+    if (error) {
+      console.error("Error marking workout skipped:", error);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error("Error marking workout skipped:", err);
+    return false;
+  }
+}
+
+export async function autoSkipPastWorkouts(
+  userId: string,
+  programStartDate: Date
+): Promise<number> {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const { data, error } = await supabase
+      .from("workout_completions")
+      .select("day_number, workout_type")
+      .eq("user_id", userId)
+      .eq("completed", false)
+      .neq("workout_type", "rest");
+
+    if (error || !data || data.length === 0) {
+      return 0;
+    }
+
+    const startDate = new Date(programStartDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    const daysToSkip: number[] = [];
+    for (const row of data) {
+      const scheduledDate = new Date(startDate);
+      scheduledDate.setDate(startDate.getDate() + row.day_number - 1);
+      scheduledDate.setHours(0, 0, 0, 0);
+
+      if (scheduledDate < today) {
+        daysToSkip.push(row.day_number);
+      }
+    }
+
+    if (daysToSkip.length === 0) {
+      return 0;
+    }
+
+    const { error: updateError } = await supabase
+      .from("workout_completions")
+      .update({ completed: true, completed_at: null })
+      .eq("user_id", userId)
+      .in("day_number", daysToSkip);
+
+    if (updateError) {
+      console.error("Error auto-skipping workouts:", updateError);
+      return 0;
+    }
+
+    return daysToSkip.length;
+  } catch (err) {
+    console.error("Error in autoSkipPastWorkouts:", err);
+    return 0;
   }
 }
 

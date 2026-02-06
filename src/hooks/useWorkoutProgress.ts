@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { getWorkoutPlan, markWorkoutComplete } from "@/services/workoutPlanService";
+import { getWorkoutPlan, markWorkoutComplete, autoSkipPastWorkouts } from "@/services/workoutPlanService";
 
 interface DayStatus {
   day: number;
-  status: "completed" | "active" | "locked";
+  status: "completed" | "active" | "locked" | "skipped";
   title: string;
   workoutType: string;
   date: string;
@@ -127,57 +127,80 @@ export function useWorkoutProgress(): WorkoutProgressData {
         return;
       }
 
-      const completedDayNumbers = plan
-        .filter(p => p.completed)
-        .map(p => p.dayNumber);
-      
-      setCompletedDays(completedDayNumbers);
+      let needsRefetch = false;
 
       // Find the first uncompleted day and auto-complete rest days that user has reached
       let activeDay = 1;
-      let needsRefetch = false;
       
       for (const day of plan) {
         if (!day.completed) {
           if (day.workoutType === "rest") {
-            // Auto-complete rest days when user reaches them
             try {
               await markWorkoutComplete(user.id, day.dayNumber);
               needsRefetch = true;
             } catch (err) {
               console.error("Failed to auto-complete rest day:", err);
             }
-            continue; // Move to next day
+            continue;
           }
           activeDay = day.dayNumber;
           break;
         }
-        activeDay = day.dayNumber + 1; // Move past completed days
+        activeDay = day.dayNumber + 1;
         if (day.dayNumber === TOTAL_PROGRAM_DAYS) {
           activeDay = TOTAL_PROGRAM_DAYS;
         }
       }
       
-      // If we auto-completed rest days, refetch to get updated data
       if (needsRefetch) {
-        const updatedPlan = await getWorkoutPlan(user.id);
-        plan = updatedPlan;
-        // Recalculate completed days
-        const updatedCompletedDays = plan.filter(p => p.completed).map(p => p.dayNumber);
-        setCompletedDays(updatedCompletedDays);
+        plan = await getWorkoutPlan(user.id);
       }
+
+      // Auto-skip past workouts that were never completed
+      const day1 = plan.find(p => p.dayNumber === 1);
+      if (day1) {
+        const startDate = new Date(day1.date);
+        startDate.setHours(0, 0, 0, 0);
+        const skippedCount = await autoSkipPastWorkouts(user.id, startDate);
+        if (skippedCount > 0) {
+          plan = await getWorkoutPlan(user.id);
+          // Recalculate active day after auto-skip
+          activeDay = 1;
+          for (const day of plan) {
+            if (!day.completed) {
+              if (day.workoutType === "rest") {
+                continue;
+              }
+              activeDay = day.dayNumber;
+              break;
+            }
+            activeDay = day.dayNumber + 1;
+            if (day.dayNumber === TOTAL_PROGRAM_DAYS) {
+              activeDay = TOTAL_PROGRAM_DAYS;
+            }
+          }
+        }
+      }
+
+      const completedDayNumbers = plan
+        .filter(p => p.status === "completed")
+        .map(p => p.dayNumber);
       
+      setCompletedDays(completedDayNumbers);
       setCurrentDay(activeDay);
 
       const statuses: DayStatus[] = plan.map(p => {
-        let status: "completed" | "active" | "locked";
+        let status: "completed" | "active" | "locked" | "skipped";
 
-        if (p.completed) {
+        if (p.status === "completed") {
           status = "completed";
+        } else if (p.status === "skipped") {
+          status = "skipped";
         } else if (p.dayNumber === activeDay) {
           status = "active";
-        } else if (p.dayNumber < activeDay) {
-          // Days before active day should be completed (catches edge cases)
+        } else if (p.dayNumber < activeDay && p.workoutType !== "rest") {
+          status = "skipped";
+        } else if (p.dayNumber < activeDay && p.workoutType === "rest") {
           status = "completed";
         } else {
           status = "locked";
@@ -212,7 +235,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
       }
 
       for (let i = startIndex; i >= 0; i--) {
-        if (workoutDays[i].completed) {
+        if (workoutDays[i].status === "completed") {
           streak++;
         } else {
           break;
@@ -220,12 +243,13 @@ export function useWorkoutProgress(): WorkoutProgressData {
       }
 
       const totalActualWorkouts = plan.filter(p => p.workoutType !== "rest").length;
+      const trulyCompleted = plan.filter(p => p.status === "completed" && p.workoutType !== "rest").length;
 
       setUserStats({
-        workoutsCompleted: completedDayNumbers.length,
+        workoutsCompleted: trulyCompleted,
         totalWorkouts: totalActualWorkouts,
         streak,
-        xp: completedDayNumbers.length * XP_PER_WORKOUT,
+        xp: trulyCompleted * XP_PER_WORKOUT,
         currentDay: activeDay,
       });
 
