@@ -34,7 +34,6 @@ export function useUserStats(): UseUserStatsReturn {
         .eq("completed", true);
 
       if (completionsError) {
-        console.log("Could not fetch completions:", completionsError.message);
         return null;
       }
 

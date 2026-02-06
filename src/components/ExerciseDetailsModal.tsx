@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Dumbbell, Clock, Target, X } from "lucide-react";
 import { motion } from "framer-motion";
+import LazyGif from "./LazyGif";
 
 interface Exercise {
   id: number;
@@ -43,10 +44,10 @@ export default function ExerciseDetailsModal({ exercise, isOpen, onClose }: Exer
 
         {/* Exercise GIF/Video */}
         <div className="relative w-full h-48 bg-gradient-to-br from-[#3a3a5c] to-[#2a2a4c] overflow-hidden">
-          <img
+          <LazyGif
             src={exercise.gifUrl}
             alt={`${exercise.name} demonstration`}
-            className="w-full h-full object-cover"
+            className="w-full h-full"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a2e] to-transparent" />
           {/* Demo Watermark */}

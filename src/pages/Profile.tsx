@@ -83,7 +83,6 @@ export default function ProfilePage() {
           filter: `user_id=eq.${user.id}`,
         },
         () => {
-          console.log("Profile: workout data changed, refetching...");
           fetchUserData();
         }
       )
@@ -143,7 +142,7 @@ export default function ProfilePage() {
         .eq("user_id", user.id);
 
       if (error) {
-        console.log("Could not clear Supabase completions:", error);
+        console.error("Could not clear Supabase completions:", error);
       }
       
       toast({

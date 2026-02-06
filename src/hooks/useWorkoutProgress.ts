@@ -141,7 +141,6 @@ export function useWorkoutProgress(): WorkoutProgressData {
         if (!day.completed) {
           if (day.workoutType === "rest") {
             // Auto-complete rest days when user reaches them
-            console.log(`Auto-completing rest day ${day.dayNumber}`);
             try {
               await markWorkoutComplete(user.id, day.dayNumber);
               needsRefetch = true;
@@ -256,15 +255,10 @@ export function useWorkoutProgress(): WorkoutProgressData {
           filter: `user_id=eq.${user.id}`,
         },
         () => {
-          console.log("Real-time update: workout_completions changed");
           fetchProgress();
         }
       )
-      .subscribe((status) => {
-        if (status === "SUBSCRIBED") {
-          console.log("Subscribed to workout progress changes");
-        }
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
@@ -334,7 +328,6 @@ export function useWorkoutProgress(): WorkoutProgressData {
         return ds;
       }));
 
-      console.log(`Swapped Day ${fromDay} with Day ${toDay} in Supabase`);
       return true;
     } catch (err) {
       console.error("Error swapping workouts:", err);
@@ -351,12 +344,10 @@ export function useWorkoutProgress(): WorkoutProgressData {
     const dayInfo = dayStatuses.find(d => d.day === dayNumber);
 
     if (dayInfo?.workoutType === "rest") {
-      console.log(`Day ${dayNumber} is a rest day, skipping`);
       return false;
     }
 
     if (completedDays.includes(dayNumber)) {
-      console.log(`Day ${dayNumber} already completed`);
       return true;
     }
 
@@ -366,8 +357,6 @@ export function useWorkoutProgress(): WorkoutProgressData {
       if (!success) {
         return false;
       }
-
-      console.log(`Workout day ${dayNumber} marked complete`);
 
       setCompletedDays(prev => [...prev, dayNumber]);
 
@@ -458,7 +447,6 @@ export function useWorkoutProgress(): WorkoutProgressData {
         return ds;
       }));
 
-      console.log(`Changed Day ${dayNumber} to ${newTitle} in Supabase`);
       return true;
     } catch (err) {
       console.error("Error changing workout type:", err);
@@ -527,7 +515,6 @@ export function useWorkoutProgress(): WorkoutProgressData {
         return ds;
       }));
 
-      console.log(`Moved workout from Day ${fromDay} to Day ${toDay} in Supabase`);
       return true;
     } catch (err) {
       console.error("Error moving workout:", err);
