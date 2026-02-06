@@ -84,7 +84,8 @@ export function registerRoutes(app: Express): void {
       allExercises,
       currentExerciseIndex,
       completedExercises,
-      totalExercises 
+      totalExercises,
+      history
     } = validation.data;
 
     let enhancedContext = context;
@@ -127,7 +128,7 @@ export function registerRoutes(app: Express): void {
       ? `${message}\n${workoutOverview}`
       : message;
 
-    const response = await generateCoachResponse(contextualMessage, enhancedContext);
+    const response = await generateCoachResponse(contextualMessage, enhancedContext, history);
 
     sendSuccess(res, { response, advice: response });
   }));

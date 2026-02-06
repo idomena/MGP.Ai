@@ -1,10 +1,11 @@
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
-import { Send, Loader2, ArrowLeft } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { Send, Loader2, ArrowLeft, SquarePen } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { callAiCoach } from "@/lib/api";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Message {
   role: "user" | "assistant";
@@ -12,19 +13,44 @@ interface Message {
   timestamp: Date;
 }
 
+const DEFAULT_GREETING: Message = {
+  role: "assistant",
+  content: "Hello! How can I help you with your fitness journey today?",
+  timestamp: new Date(),
+};
+
+const MAX_STORED_MESSAGES = 100;
+const MAX_HISTORY_FOR_API = 20;
+
+function loadChatHistory(userId: string): Message[] {
+  try {
+    const raw = localStorage.getItem(`chat_history_${userId}`);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }));
+  } catch {
+    return [];
+  }
+}
+
+function saveChatHistory(userId: string, messages: Message[]): void {
+  try {
+    const toStore = messages.slice(-MAX_STORED_MESSAGES);
+    localStorage.setItem(`chat_history_${userId}`, JSON.stringify(toStore));
+  } catch {
+    // silent fail
+  }
+}
+
 export default function AssistantChatPage() {
   const [searchParams] = useSearchParams();
   const initialPrompt = searchParams.get("prompt");
+  const { user } = useAuth();
   
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Hello! How can I help you with your fitness journey today?",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([DEFAULT_GREETING]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -32,14 +58,36 @@ export default function AssistantChatPage() {
   };
 
   useEffect(() => {
+    if (user?.id && !historyLoaded) {
+      const saved = loadChatHistory(user.id);
+      if (saved.length > 0) {
+        setMessages(saved);
+      }
+      setHistoryLoaded(true);
+    }
+  }, [user?.id, historyLoaded]);
+
+  useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
+  const saveMessages = useCallback((msgs: Message[]) => {
+    if (user?.id) {
+      saveChatHistory(user.id, msgs);
+    }
+  }, [user?.id]);
+
   useEffect(() => {
-    if (initialPrompt) {
+    if (initialPrompt && historyLoaded) {
       handleSend(initialPrompt);
     }
-  }, [initialPrompt]);
+  }, [initialPrompt, historyLoaded]);
+
+  const handleNewChat = () => {
+    const freshMessages = [{ ...DEFAULT_GREETING, timestamp: new Date() }];
+    setMessages(freshMessages);
+    saveMessages(freshMessages);
+  };
 
   const handleSend = async (text?: string) => {
     const messageText = text || inputValue.trim();
@@ -51,12 +99,17 @@ export default function AssistantChatPage() {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setInputValue("");
     setIsTyping(true);
 
     try {
-      const data = await callAiCoach(messageText);
+      const historyForApi = messages
+        .map(m => ({ role: m.role, content: m.content }))
+        .slice(-MAX_HISTORY_FOR_API);
+
+      const data = await callAiCoach(messageText, historyForApi);
 
       const assistantMessage: Message = {
         role: "assistant",
@@ -64,7 +117,9 @@ export default function AssistantChatPage() {
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      const finalMessages = [...updatedMessages, assistantMessage];
+      setMessages(finalMessages);
+      saveMessages(finalMessages);
     } catch (error) {
       console.error("Error getting AI response:", error);
       toast.error("Failed to get response. Please try again.");
@@ -74,7 +129,9 @@ export default function AssistantChatPage() {
         content: "Sorry, I'm having trouble connecting right now. Please try again in a moment.",
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      const finalMessages = [...updatedMessages, errorMessage];
+      setMessages(finalMessages);
+      saveMessages(finalMessages);
     } finally {
       setIsTyping(false);
     }
@@ -92,7 +149,7 @@ export default function AssistantChatPage() {
       <div className="px-4">
         <MobileHeader />
         
-        <div className="mt-4">
+        <div className="mt-4 flex items-center justify-between gap-2">
           <Link 
             to="/assistant" 
             className="flex items-center text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#7c57ff] rounded-lg p-1"
@@ -102,6 +159,16 @@ export default function AssistantChatPage() {
             <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
             Back to Assistant
           </Link>
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#7c57ff] rounded-lg p-1"
+            aria-label="Start new chat"
+            data-testid="button-new-chat"
+          >
+            <SquarePen className="w-4 h-4" aria-hidden="true" />
+            <span className="text-sm">New Chat</span>
+          </button>
         </div>
       </div>
 

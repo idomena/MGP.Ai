@@ -116,6 +116,10 @@ export const aiCoachRequestSchema = z.object({
   currentExerciseIndex: z.number().optional(),
   completedExercises: z.number().optional(),
   totalExercises: z.number().optional(),
+  history: z.array(z.object({
+    role: z.enum(["user", "assistant"]),
+    content: z.string(),
+  })).optional().default([]),
 });
 
 export type AiCoachRequest = z.infer<typeof aiCoachRequestSchema>;
