@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { X, Sparkles, Send, Loader2, Headphones } from "lucide-react";
+import { X, Sparkles, Send, Loader2, Headphones, Plus, Trash2, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  actions?: Array<{ type: string; data: Record<string, unknown>; executed?: boolean }>;
 }
 
 interface Exercise {
@@ -25,6 +26,8 @@ interface WorkoutAIAssistantProps {
   isResting?: boolean;
   isOpen: boolean;
   onClose: () => void;
+  onAddExercise?: (exercise: { name: string; muscles: string; sets: number; reps: string; time: string }) => void;
+  onRemoveExercise?: (exerciseName: string) => void;
 }
 
 export default function WorkoutAIAssistant({ 
@@ -35,7 +38,9 @@ export default function WorkoutAIAssistant({
   completedExercises = 0,
   isResting = false,
   isOpen, 
-  onClose 
+  onClose,
+  onAddExercise,
+  onRemoveExercise,
 }: WorkoutAIAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -78,7 +83,7 @@ export default function WorkoutAIAssistant({
         const progressPercent = Math.round((completedExercises / exercises.length) * 100);
         welcomeMessage += `\n\nYou've completed ${completedExercises}/${exercises.length} exercises (${progressPercent}%). Great progress!`;
       }
-      welcomeMessage += `\n\nAsk me about form tips, alternatives, or any questions!`;
+      welcomeMessage += `\n\nAsk me about form tips, alternatives, or any questions! I can also add or swap exercises for you.`;
     }
     
     setMessages([{
@@ -151,11 +156,36 @@ export default function WorkoutAIAssistant({
       const data = await response.json();
 
       if (data.success && data.response) {
-        setMessages(prev => [...prev, {
+        const assistantMessage: Message = {
           id: `assistant-${Date.now()}`,
           role: "assistant",
-          content: data.response
-        }]);
+          content: data.response,
+          actions: data.actions || [],
+        };
+
+        setMessages(prev => [...prev, assistantMessage]);
+
+        if (data.actions && data.actions.length > 0) {
+          data.actions.forEach((action: { type: string; data: Record<string, unknown> }) => {
+            if (action.type === 'ADD_EXERCISE' && onAddExercise) {
+              const d = action.data as Record<string, unknown>;
+              if (d.name && typeof d.name === 'string' && d.muscles && typeof d.muscles === 'string') {
+                onAddExercise({
+                  name: d.name,
+                  muscles: d.muscles,
+                  sets: typeof d.sets === 'number' ? d.sets : 3,
+                  reps: typeof d.reps === 'string' ? d.reps : '12, 10, 8',
+                  time: typeof d.time === 'string' ? d.time : '8 min',
+                });
+              }
+            } else if (action.type === 'REMOVE_EXERCISE' && onRemoveExercise) {
+              const removeData = action.data as { name: string };
+              if (removeData.name && typeof removeData.name === 'string') {
+                onRemoveExercise(removeData.name);
+              }
+            }
+          });
+        }
       } else {
         setMessages(prev => [...prev, {
           id: `error-${Date.now()}`,
@@ -191,7 +221,7 @@ export default function WorkoutAIAssistant({
       ]
     : [
         "How should I warm up?",
-        "What order should I do these?",
+        "Add a back exercise",
         "Any tips for beginners?",
       ];
 
@@ -250,6 +280,29 @@ export default function WorkoutAIAssistant({
                     }`}
                   >
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                    {msg.actions && msg.actions.length > 0 && (
+                      <div className="mt-2 space-y-1.5">
+                        {msg.actions.map((action, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-2 bg-green-500/20 text-green-400 rounded-lg px-3 py-1.5 text-xs"
+                            data-testid={`action-indicator-${idx}`}
+                          >
+                            {action.type === 'ADD_EXERCISE' ? (
+                              <>
+                                <Plus className="w-3 h-3" />
+                                <span>Added: {(action.data as { name: string }).name}</span>
+                              </>
+                            ) : action.type === 'REMOVE_EXERCISE' ? (
+                              <>
+                                <Trash2 className="w-3 h-3" />
+                                <span>Removed: {(action.data as { name: string }).name}</span>
+                              </>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

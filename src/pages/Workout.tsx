@@ -557,6 +557,27 @@ export default function WorkoutPage() {
         exercises={exercises}
         isOpen={isAIOpen}
         onClose={() => setIsAIOpen(false)}
+        onAddExercise={(exerciseData) => {
+          const newExercise: Exercise = {
+            id: 10000 + Date.now() % 10000,
+            name: exerciseData.name,
+            muscles: exerciseData.muscles,
+            sets: exerciseData.sets,
+            reps: exerciseData.reps,
+            time: exerciseData.time,
+            difficulty: "Intermediate",
+            gifUrl: "",
+            instructions: "",
+          };
+          handleAddExercise(newExercise);
+        }}
+        onRemoveExercise={(exerciseName) => {
+          const found = addedExercises.some(e => e.name === exerciseName);
+          if (found) {
+            setAddedExercises(prev => prev.filter(e => e.name !== exerciseName));
+            toast.success(`${exerciseName} removed from workout`);
+          }
+        }}
       />
 
       {/* Exercise Details Modal */}

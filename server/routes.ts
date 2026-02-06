@@ -130,7 +130,23 @@ export function registerRoutes(app: Express): void {
 
     const response = await generateCoachResponse(contextualMessage, enhancedContext, history);
 
-    sendSuccess(res, { response, advice: response });
+    const actions: Array<{ type: string; data: Record<string, unknown> }> = [];
+    let cleanResponse = response;
+
+    const actionRegex = /\[ACTION:(\w+)\](.*?)\[\/ACTION\]/gs;
+    let match;
+    while ((match = actionRegex.exec(response)) !== null) {
+      try {
+        const actionType = match[1];
+        const actionData = JSON.parse(match[2]);
+        actions.push({ type: actionType, data: actionData });
+      } catch (e) {
+      }
+    }
+
+    cleanResponse = response.replace(/\[ACTION:\w+\].*?\[\/ACTION\]/gs, '').trim();
+
+    sendSuccess(res, { response: cleanResponse, advice: cleanResponse, actions });
   }));
 
   app.post("/api/ocr-extract", strictAiLimiter, asyncHandler(async (req, res) => {
