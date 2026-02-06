@@ -1,10 +1,13 @@
-export async function callAiCoach(message: string): Promise<{ response: string; advice: string }> {
+export async function callAiCoach(
+  message: string,
+  history?: Array<{ role: "user" | "assistant"; content: string }>
+): Promise<{ response: string; advice: string }> {
   const res = await fetch("/api/ai-coach", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, history: history || [] }),
   });
 
   if (!res.ok) {

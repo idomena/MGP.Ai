@@ -16,6 +16,7 @@ import {
   ArrowRightLeft,
   Moon,
   Calendar,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NavigationBar from "@/components/NavigationBar";
@@ -49,6 +50,8 @@ export default function WorkoutPage() {
     getWorkoutForDay,
     dayStatuses,
     isLoading,
+    isTodayCompleted,
+    todayIsRestDay,
   } = useWorkoutProgress();
 
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
@@ -79,16 +82,20 @@ export default function WorkoutPage() {
   const isToday = dayNumber === currentDay;
   const isCompleted = completedDays.includes(dayNumber);
   const isPast = dayNumber < currentDay;
-  const canStartWorkout = isToday && !isCompleted;
   const isRestDay = workoutTemplate.workoutType === "rest";
+  const canStartWorkout = isToday && !isCompleted && !isRestDay;
 
-  const workoutStatus: "completed" | "active" | "locked" | "missed" = isCompleted
-    ? "completed"
-    : isToday
-      ? "active"
-      : isPast
-        ? "missed"
-        : "locked";
+  const dayStatusEntry = dayStatuses.find(d => d.day === dayNumber);
+  const workoutStatus: "completed" | "active" | "locked" | "missed" | "skipped" = 
+    dayStatusEntry?.status === "skipped"
+      ? "skipped"
+      : isCompleted
+        ? "completed"
+        : isToday
+          ? "active"
+          : isPast
+            ? "missed"
+            : "locked";
 
   const totalDuration = useMemo(() => {
     return exercises.reduce((sum, ex) => {
@@ -124,11 +131,10 @@ export default function WorkoutPage() {
     setIsWorkoutActive(false);
     const success = await completeWorkout(dayNumber);
     if (success) {
-      toast.success("Workout complete! Great job!");
+      toast.success("Great job! Come back tomorrow for your next workout.");
     } else {
       toast.error("Failed to save workout. Please try again.");
     }
-    navigate("/");
   };
 
   const handleWorkoutExit = () => {
@@ -200,6 +206,7 @@ export default function WorkoutPage() {
       case "completed": return "text-green-400";
       case "active": return "text-[#7c57ff]";
       case "missed": return "text-orange-400";
+      case "skipped": return "text-orange-400";
       default: return "text-white/40";
     }
   };
@@ -209,6 +216,7 @@ export default function WorkoutPage() {
       case "completed": return "Completed";
       case "active": return "Today";
       case "missed": return "Missed";
+      case "skipped": return "Skipped";
       default: return "Locked";
     }
   };
@@ -235,7 +243,7 @@ export default function WorkoutPage() {
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                 workoutStatus === 'completed' ? 'bg-green-500/20 text-green-400' :
                 workoutStatus === 'active' ? 'bg-[#7c57ff]/20 text-[#7c57ff]' :
-                workoutStatus === 'missed' ? 'bg-orange-500/20 text-orange-400' :
+                workoutStatus === 'missed' || workoutStatus === 'skipped' ? 'bg-orange-500/20 text-orange-400' :
                 'bg-white/10 text-white/40'
               }`} data-testid="text-status">{getStatusText()}</span>
             </div>
@@ -448,10 +456,20 @@ export default function WorkoutPage() {
                 Start Workout
               </Button>
             </motion.div>
+          ) : workoutStatus === "skipped" ? (
+            <div className="w-full bg-orange-500/20 text-orange-400 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border border-orange-500/30" data-testid="status-skipped">
+              <X className="w-5 h-5" />
+              Workout Skipped
+            </div>
           ) : isCompleted ? (
-            <div className="w-full bg-green-500/20 text-green-400 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border border-green-500/30" data-testid="status-completed">
-              <CheckCircle2 className="w-5 h-5" />
-              Workout Completed
+            <div>
+              <div className="w-full bg-green-500/20 text-green-400 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border border-green-500/30" data-testid="status-completed">
+                <CheckCircle2 className="w-5 h-5" />
+                Workout Completed
+              </div>
+              {isToday && (
+                <p className="text-center text-white/50 text-sm mt-2">Come back tomorrow for your next workout</p>
+              )}
             </div>
           ) : (
             <div className="w-full bg-white/10 text-white/50 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2" data-testid="status-locked">

@@ -1,0 +1,235 @@
+Perfect — this is a **very good clarification**, and you’re 100% right.
+What you’re describing is a **state-machine + time-based rule problem**, not a UI bug.
+
+I’ll do three things:
+
+1. **Explain the correct behavior in plain English (authoritative rules)**
+2. **Explain why your current logic is wrong**
+3. **Give you an exact Replit Agent instruction to fix it**
+
+No fluff.
+
+---
+
+# ✅ The CORRECT rules (what you want)
+
+Let’s define **one golden rule** first:
+
+> **Only ONE workout can be active per day.
+> Tomorrow’s workout must NEVER start today.**
+
+---
+
+## 🧠 Canonical workout rules (this is the model)
+
+### 1️⃣ Daily workout ownership
+
+* Each workout belongs to a **specific calendar day**
+* Example:
+
+  * 2026-02-06 → Workout A
+  * 2026-02-07 → Workout B
+
+You **cannot start tomorrow’s workout today**, even if today is completed.
+
+---
+
+### 2️⃣ Status rules (very important)
+
+Each daily workout has exactly ONE status:
+
+* `not_started`
+* `completed`
+* `skipped`
+
+❌ There is NO “auto-completed” during the day
+❌ There is NO instant skipping when app loads
+
+---
+
+### 3️⃣ Completion rules
+
+* If the user **clicks “Complete workout” today**
+  → today’s workout = `completed`
+
+* After completion:
+
+  * User sees **rest / recovery state**
+  * Tomorrow’s workout is **locked**
+  * UI should say something like:
+
+    > “Great job. Come back tomorrow 💪”
+
+---
+
+### 4️⃣ Rest day behavior
+
+* A rest day is still a **day entry**
+* It is NOT auto-completed
+* The user can:
+
+  * Replace it manually (change workout)
+  * Or do nothing
+
+If user does nothing → see rule 5.
+
+---
+
+### 5️⃣ Midnight rule (THIS IS KEY)
+
+At **00:01** (server time):
+
+* If today’s workout status = `not_started`
+  → mark as `skipped`
+
+* If status = `completed`
+  → leave as `completed`
+
+Then and ONLY then:
+➡️ Tomorrow’s workout becomes available
+
+✅ This is the **only automatic transition**
+
+---
+
+# ❌ Why your current system is broken
+
+From what you described, your system is doing this:
+
+* It checks “is today completed?”
+* If yes → it immediately:
+
+  * completes rest workout
+  * skips the circle
+  * unlocks next workout
+
+That means:
+❌ Time is ignored
+❌ “Today” and “Tomorrow” are mixed
+❌ The system is guessing instead of waiting
+
+This is **not real-time logic** — it’s **stateless logic**.
+
+---
+
+# 🧩 The missing concept: “ACTIVE DAY”
+
+You need ONE variable everywhere:
+
+```
+active_date = today (YYYY-MM-DD)
+```
+
+Every query must include it.
+
+No `active_date` → bugs like the one you see.
+
+---
+
+# ✅ Correct data model (simple)
+
+You should have (or simulate) this:
+
+```
+user_workouts:
+- user_id
+- workout_date (DATE)   ← THIS IS CRITICAL
+- workout_id
+- status
+```
+
+All logic is based on `workout_date = today`.
+
+---
+
+# 🧪 Real-time behavior (what you should observe)
+
+### Scenario A – User completes today
+
+* Status → `completed`
+* UI → “Rest day / Come back tomorrow”
+* Tomorrow workout → LOCKED
+
+### Scenario B – User does nothing
+
+* Until 23:59 → still `not_started`
+* At 00:01 → system sets → `skipped`
+* Tomorrow workout → UNLOCKED
+
+### Scenario C – Rest day
+
+* User may manually replace workout
+* If not → same midnight rule applies
+
+---
+
+# 🧠 IMPORTANT: “Real-time” does NOT mean polling every second
+
+Real-time means:
+
+* UI reacts immediately to user actions
+* Date-based transitions happen **once per day**, not on render
+
+---
+
+# 🧾 EXACT Replit Agent instruction (copy–paste)
+
+Paste this **as-is**:
+
+```
+BUG FIX TASK: Fix workout day progression logic.
+
+PROBLEM:
+The system is automatically completing or skipping rest workouts
+and unlocking future workouts immediately.
+This must NOT happen.
+
+REQUIRED BEHAVIOR:
+
+1. Each workout must be tied to a specific calendar date (workout_date).
+2. Only ONE workout can be active per day.
+3. Completing today’s workout must NOT unlock tomorrow’s workout.
+4. After completing today’s workout:
+   - Show rest/recovery state
+   - Lock tomorrow’s workout until the next day
+5. Automatic skipping is allowed ONLY at 00:01 server time:
+   - If status = not_started → mark as skipped
+   - If status = completed → do nothing
+6. Tomorrow’s workout becomes available ONLY after the date changes.
+
+IMPLEMENTATION NOTES:
+- All queries must include workout_date = today
+- Do NOT auto-skip or auto-complete on page load
+- Do NOT unlock future workouts early
+
+RESULT:
+Users can complete only today’s workout.
+Tomorrow’s workout is locked until the next day.
+Rest days do not auto-complete during the day.
+```
+
+---
+
+# 🔍 How to verify the fix (2-minute test)
+
+1. Complete today’s workout
+
+   * Tomorrow workout must be LOCKED
+2. Refresh page
+
+   * Still locked
+3. Manually change system date OR simulate midnight
+
+   * Tomorrow workout unlocks
+
+If that works → **your logic is correct and scalable**.
+
+---
+
+If you want next, I can:
+
+* Draw this as a **state diagram**
+* Help you implement the **midnight job (cron / scheduled task)**
+* Or simplify this even more for V1
+
+Just say which one.

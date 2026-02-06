@@ -1,11 +1,23 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { getWorkoutPlan, markWorkoutComplete } from "@/services/workoutPlanService";
+import { getWorkoutPlan, markWorkoutComplete, autoSkipPastWorkouts } from "@/services/workoutPlanService";
+
+function toLocalDateStr(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day, 0, 0, 0, 0);
+}
 
 interface DayStatus {
   day: number;
-  status: "completed" | "active" | "locked";
+  status: "completed" | "active" | "locked" | "skipped";
   title: string;
   workoutType: string;
   date: string;
@@ -41,6 +53,8 @@ interface WorkoutProgressData {
   moveWorkout: (fromDay: number, toDay: number) => Promise<boolean>;
   getWorkoutForDay: (day: number) => WorkoutTemplate;
   exerciseTemplates: WorkoutTemplate[];
+  isTodayCompleted: boolean;
+  todayIsRestDay: boolean;
 }
 
 const TOTAL_PROGRAM_DAYS = 21;
@@ -61,6 +75,8 @@ export function useWorkoutProgress(): WorkoutProgressData {
   const [completedDays, setCompletedDays] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isTodayCompleted, setIsTodayCompleted] = useState(false);
+  const [todayIsRestDay, setTodayIsRestDay] = useState(false);
   const [userStats, setUserStats] = useState<UserStats>({
     workoutsCompleted: 0,
     totalWorkouts: TOTAL_PROGRAM_DAYS,
@@ -95,6 +111,8 @@ export function useWorkoutProgress(): WorkoutProgressData {
       setDayStatuses([]);
       setCompletedDays([]);
       setCurrentDay(1);
+      setIsTodayCompleted(false);
+      setTodayIsRestDay(false);
       setUserStats({
         workoutsCompleted: 0,
         totalWorkouts: 0,
@@ -116,6 +134,8 @@ export function useWorkoutProgress(): WorkoutProgressData {
         setDayStatuses([]);
         setCompletedDays([]);
         setCurrentDay(1);
+        setIsTodayCompleted(false);
+        setTodayIsRestDay(false);
         setUserStats({
           workoutsCompleted: 0,
           totalWorkouts: 0,
@@ -127,57 +147,54 @@ export function useWorkoutProgress(): WorkoutProgressData {
         return;
       }
 
+      const day1 = plan.find(p => p.dayNumber === 1);
+      if (day1) {
+        const startDate = parseLocalDate(day1.date);
+        const skippedCount = await autoSkipPastWorkouts(user.id, startDate);
+        if (skippedCount > 0) {
+          plan = await getWorkoutPlan(user.id);
+        }
+      }
+
+      const now = new Date();
+      const todayStr = toLocalDateStr(now);
+      const todaysPlan = plan.find(p => p.date === todayStr);
+
+      let activeDay: number;
+      if (!todaysPlan) {
+        const firstDay = plan[0];
+        const lastDay = plan[plan.length - 1];
+        if (todayStr < firstDay.date) {
+          activeDay = 1;
+        } else {
+          activeDay = lastDay.dayNumber;
+        }
+      } else {
+        activeDay = todaysPlan.dayNumber;
+      }
+
+      setIsTodayCompleted(todaysPlan?.status === "completed" || todaysPlan?.status === "skipped" || false);
+      setTodayIsRestDay(todaysPlan?.workoutType === "rest" || false);
+
       const completedDayNumbers = plan
-        .filter(p => p.completed)
+        .filter(p => p.status === "completed")
         .map(p => p.dayNumber);
       
       setCompletedDays(completedDayNumbers);
-
-      // Find the first uncompleted day and auto-complete rest days that user has reached
-      let activeDay = 1;
-      let needsRefetch = false;
-      
-      for (const day of plan) {
-        if (!day.completed) {
-          if (day.workoutType === "rest") {
-            // Auto-complete rest days when user reaches them
-            try {
-              await markWorkoutComplete(user.id, day.dayNumber);
-              needsRefetch = true;
-            } catch (err) {
-              console.error("Failed to auto-complete rest day:", err);
-            }
-            continue; // Move to next day
-          }
-          activeDay = day.dayNumber;
-          break;
-        }
-        activeDay = day.dayNumber + 1; // Move past completed days
-        if (day.dayNumber === TOTAL_PROGRAM_DAYS) {
-          activeDay = TOTAL_PROGRAM_DAYS;
-        }
-      }
-      
-      // If we auto-completed rest days, refetch to get updated data
-      if (needsRefetch) {
-        const updatedPlan = await getWorkoutPlan(user.id);
-        plan = updatedPlan;
-        // Recalculate completed days
-        const updatedCompletedDays = plan.filter(p => p.completed).map(p => p.dayNumber);
-        setCompletedDays(updatedCompletedDays);
-      }
-      
       setCurrentDay(activeDay);
 
       const statuses: DayStatus[] = plan.map(p => {
-        let status: "completed" | "active" | "locked";
+        let status: "completed" | "active" | "locked" | "skipped";
 
-        if (p.completed) {
+        if (p.status === "completed") {
           status = "completed";
-        } else if (p.dayNumber === activeDay) {
+        } else if (p.status === "skipped") {
+          status = "skipped";
+        } else if (p.dayNumber === activeDay && p.status === "not_started") {
           status = "active";
-        } else if (p.dayNumber < activeDay) {
-          // Days before active day should be completed (catches edge cases)
+        } else if (p.date < todayStr && p.workoutType !== "rest") {
+          status = "skipped";
+        } else if (p.date < todayStr && p.workoutType === "rest") {
           status = "completed";
         } else {
           status = "locked";
@@ -212,7 +229,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
       }
 
       for (let i = startIndex; i >= 0; i--) {
-        if (workoutDays[i].completed) {
+        if (workoutDays[i].status === "completed") {
           streak++;
         } else {
           break;
@@ -220,12 +237,13 @@ export function useWorkoutProgress(): WorkoutProgressData {
       }
 
       const totalActualWorkouts = plan.filter(p => p.workoutType !== "rest").length;
+      const trulyCompleted = plan.filter(p => p.status === "completed" && p.workoutType !== "rest").length;
 
       setUserStats({
-        workoutsCompleted: completedDayNumbers.length,
+        workoutsCompleted: trulyCompleted,
         totalWorkouts: totalActualWorkouts,
         streak,
-        xp: completedDayNumbers.length * XP_PER_WORKOUT,
+        xp: trulyCompleted * XP_PER_WORKOUT,
         currentDay: activeDay,
       });
 
@@ -280,7 +298,6 @@ export function useWorkoutProgress(): WorkoutProgressData {
         return false;
       }
 
-      // Update Supabase: swap workout_type and title between the two days
       const { error: error1 } = await supabase
         .from("workout_completions")
         .update({ 
@@ -309,7 +326,6 @@ export function useWorkoutProgress(): WorkoutProgressData {
         return false;
       }
 
-      // Update local state to swap the workout types and titles
       setDayStatuses(prev => prev.map(ds => {
         if (ds.day === fromDay) {
           return {
@@ -359,28 +375,18 @@ export function useWorkoutProgress(): WorkoutProgressData {
       }
 
       setCompletedDays(prev => [...prev, dayNumber]);
+      setIsTodayCompleted(true);
 
-      let nextActiveDay = dayNumber + 1;
-      for (let d = dayNumber + 1; d <= TOTAL_PROGRAM_DAYS; d++) {
-        const nextDayInfo = dayStatuses.find(ds => ds.day === d);
-        if (nextDayInfo?.workoutType !== "rest") {
-          nextActiveDay = d;
-          break;
-        }
-      }
-
-      setCurrentDay(nextActiveDay);
       setDayStatuses(prev => prev.map(ds => {
         if (ds.day === dayNumber) return { ...ds, status: "completed" as const };
-        if (ds.day === nextActiveDay) return { ...ds, status: "active" as const };
         return ds;
       }));
+
       setUserStats(prev => ({
         ...prev,
         workoutsCompleted: prev.workoutsCompleted + 1,
         streak: prev.streak + 1,
         xp: prev.xp + XP_PER_WORKOUT,
-        currentDay: nextActiveDay,
       }));
 
       return true;
@@ -388,7 +394,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
       console.error("Error completing workout:", err);
       return false;
     }
-  }, [user?.id, currentDay, completedDays, dayStatuses]);
+  }, [user?.id, completedDays, dayStatuses]);
 
   const changeWorkoutType = useCallback(async (dayNumber: number, newType: string, newTitle: string): Promise<boolean> => {
     if (!user?.id) {
@@ -397,18 +403,15 @@ export function useWorkoutProgress(): WorkoutProgressData {
     }
 
     try {
-      // Get current status to check if we're changing FROM a rest day
       const currentStatus = dayStatuses.find(ds => ds.day === dayNumber);
       const wasRestDay = currentStatus?.workoutType === "rest";
       const changingToWorkout = newType !== "rest";
       
-      // Build update data
       const updateData: Record<string, unknown> = { 
         title: newTitle, 
         workout_type: newType 
       };
       
-      // Reset completion if changing rest day to a real workout
       if (wasRestDay && changingToWorkout) {
         updateData.completed = false;
         updateData.completed_at = null;
@@ -427,13 +430,11 @@ export function useWorkoutProgress(): WorkoutProgressData {
 
       setDayStatuses(prev => prev.map(ds => {
         if (ds.day === dayNumber) {
-          // Recalculate status if changing from rest to workout
           let newStatus = ds.status;
           if (wasRestDay && changingToWorkout) {
             if (dayNumber === currentDay) {
               newStatus = "active";
             } else {
-              // For past or future days, set to locked - the next fetch will recalculate properly
               newStatus = "locked";
             }
           }
@@ -536,5 +537,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
     moveWorkout,
     getWorkoutForDay,
     exerciseTemplates: [],
+    isTodayCompleted,
+    todayIsRestDay,
   };
 }

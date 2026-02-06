@@ -43,6 +43,7 @@ export default function Home() {
     getWorkoutForDay,
     moveWorkout,
     changeWorkoutType,
+    isTodayCompleted,
   } = useWorkoutProgress();
 
   useEffect(() => {
@@ -342,6 +343,11 @@ export default function Home() {
                     Locked
                   </div>
                 )}
+                {dayStatus?.status === "skipped" && (
+                  <div className="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm font-medium">
+                    Skipped
+                  </div>
+                )}
               </div>
               
               <div className="grid grid-cols-2 gap-3">
@@ -403,6 +409,36 @@ export default function Home() {
                     </div>
                   );
                 }
+
+                // Skipped workouts
+                if (dayStatus?.status === "skipped") {
+                  return (
+                    <div className="space-y-3">
+                      <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                        <X className="w-5 h-5" />
+                        Workout Skipped
+                      </div>
+                      <p className="text-white/40 text-center text-sm">
+                        This workout was missed. Keep going with today's workout!
+                      </p>
+                    </div>
+                  );
+                }
+
+                // Active + today completed
+                if (isActive && isTodayCompleted) {
+                  return (
+                    <div className="space-y-3">
+                      <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-green-500/20 text-green-400 border border-green-500/30">
+                        <CheckCircle2 className="w-5 h-5" />
+                        Today's Workout Completed
+                      </div>
+                      <p className="text-white/40 text-center text-sm">
+                        Great job! Come back tomorrow for your next workout.
+                      </p>
+                    </div>
+                  );
+                }
                 
                 // Active rest day - auto-complete message
                 if (isActive && isRestDay) {
@@ -444,7 +480,7 @@ export default function Home() {
                       Locked
                     </div>
                     <p className="text-white/40 text-center text-sm">
-                      Complete previous workouts to unlock
+                      This workout will be available on its scheduled date
                     </p>
                   </div>
                 );
