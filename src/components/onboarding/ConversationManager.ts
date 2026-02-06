@@ -8,6 +8,7 @@ export type QuestionType =
   | 'muscleFocus'
   | 'experience'
   | 'trainingDays'
+  | 'gymDuration'
   | 'injuries'
   | 'additionalInfo'
   | 'review';
@@ -15,7 +16,7 @@ export type QuestionType =
 export interface Question {
   id: QuestionType;
   botMessage: string;
-  componentType: 'name' | 'coachName' | 'gender' | 'assistant' | 'weight' | 'options' | 'muscleFocus' | 'trainingDays' | 'yesno' | 'textarea' | 'review';
+  componentType: 'name' | 'coachName' | 'gender' | 'assistant' | 'weight' | 'options' | 'muscleFocus' | 'trainingDays' | 'gymDuration' | 'yesno' | 'textarea' | 'review';
   options?: { id: string; label: string; icon?: string; description?: string }[];
   multiSelect?: boolean;
   required?: boolean;
@@ -88,6 +89,17 @@ export const QUESTIONS: Question[] = [
     required: true,
   },
   {
+    id: 'gymDuration',
+    botMessage: "{coachName}: Great picks, {name}! One more thing - how much time do you usually want to spend in the gym per session?",
+    componentType: 'options',
+    multiSelect: false,
+    required: true,
+    options: [
+      { id: '30min', label: '30+ Minutes', icon: 'Clock', description: 'Quick and efficient sessions' },
+      { id: '60min', label: '1 Hour+', icon: 'Timer', description: 'Full training sessions' },
+    ],
+  },
+  {
     id: 'injuries',
     botMessage: "{coachName}: Safety first! Do you have any injuries or physical limitations I should keep in mind?",
     componentType: 'yesno',
@@ -117,6 +129,7 @@ export interface UserSelections {
   muscleFocus: string[];
   experience: string;
   trainingDays: string[];
+  gymDuration: string;
   workoutTypes: string[];
   hasInjuries: boolean;
   injuryDetails?: string;
@@ -134,6 +147,7 @@ export function getDefaultSelections(): UserSelections {
     muscleFocus: [],
     experience: '',
     trainingDays: [],
+    gymDuration: '',
     workoutTypes: ['full'],
     hasInjuries: false,
   };

@@ -626,40 +626,34 @@ export function getExercisesForWorkoutType(workoutType: string, dayNumber: numbe
       // Handle custom multi-muscle combinations (e.g., "biceps_chest", "back_shoulders_core")
       const muscles = normalizedType.split("_").filter(m => m.length > 0);
       if (muscles.length > 1) {
-        const exercisesPerMuscle = Math.max(2, Math.floor(6 / muscles.length));
         const combined: Exercise[] = [];
         
-        for (const muscle of muscles) {
+        const getMuscleExercises = (muscle: string): Exercise[] => {
           switch (muscle) {
-            case "chest":
-              combined.push(...pickWithRotation(CHEST_EXERCISES, exercisesPerMuscle, dayNumber));
-              break;
-            case "back":
-              combined.push(...pickWithRotation(BACK_EXERCISES, exercisesPerMuscle, dayNumber));
-              break;
-            case "shoulders":
-              combined.push(...pickWithRotation(SHOULDERS_EXERCISES, exercisesPerMuscle, dayNumber));
-              break;
-            case "arms":
-              combined.push(...pickWithRotation(ARMS_EXERCISES, exercisesPerMuscle, dayNumber));
-              break;
-            case "biceps":
-              combined.push(...pickWithRotation(ARMS_EXERCISES.filter(e => 
-                e.name.toLowerCase().includes('curl') || e.name.toLowerCase().includes('bicep')
-              ), exercisesPerMuscle, dayNumber));
-              break;
-            case "triceps":
-              combined.push(...pickWithRotation(ARMS_EXERCISES.filter(e => 
-                e.name.toLowerCase().includes('tricep') || e.name.toLowerCase().includes('pushdown') ||
-                e.name.toLowerCase().includes('extension') || e.name.toLowerCase().includes('dip')
-              ), exercisesPerMuscle, dayNumber));
-              break;
-            case "legs":
-              combined.push(...pickWithRotation(LEGS_EXERCISES, exercisesPerMuscle, dayNumber));
-              break;
-            case "core":
-              combined.push(...pickWithRotation(CORE_EXERCISES, exercisesPerMuscle, dayNumber));
-              break;
+            case "chest": return CHEST_EXERCISES;
+            case "back": return BACK_EXERCISES;
+            case "shoulders": return SHOULDERS_EXERCISES;
+            case "arms": return ARMS_EXERCISES;
+            case "biceps": return ARMS_EXERCISES.filter(e => 
+              e.name.toLowerCase().includes('curl') || e.name.toLowerCase().includes('bicep'));
+            case "triceps": return ARMS_EXERCISES.filter(e => 
+              e.name.toLowerCase().includes('tricep') || e.name.toLowerCase().includes('pushdown') ||
+              e.name.toLowerCase().includes('extension') || e.name.toLowerCase().includes('dip'));
+            case "legs": return LEGS_EXERCISES;
+            case "core": return CORE_EXERCISES;
+            default: return [];
+          }
+        };
+
+        if (muscles.length === 2) {
+          const primaryCount = 3;
+          const secondaryCount = 2;
+          combined.push(...pickWithRotation(getMuscleExercises(muscles[0]), primaryCount, dayNumber));
+          combined.push(...pickWithRotation(getMuscleExercises(muscles[1]), secondaryCount, dayNumber));
+        } else {
+          const exercisesPerMuscle = Math.max(2, Math.floor(6 / muscles.length));
+          for (const muscle of muscles) {
+            combined.push(...pickWithRotation(getMuscleExercises(muscle), exercisesPerMuscle, dayNumber));
           }
         }
         
@@ -669,6 +663,17 @@ export function getExercisesForWorkoutType(workoutType: string, dayNumber: numbe
       // Default to full body with variation
       return FULL_VARIATIONS[variationIndex]();
   }
+}
+
+export function getAllAvailableExercises(): Record<string, Exercise[]> {
+  return {
+    chest: CHEST_EXERCISES,
+    back: BACK_EXERCISES,
+    shoulders: SHOULDERS_EXERCISES,
+    arms: ARMS_EXERCISES,
+    legs: LEGS_EXERCISES,
+    core: CORE_EXERCISES,
+  };
 }
 
 export function getAlternativesForMuscleGroup(exercise: Exercise): Exercise[] {

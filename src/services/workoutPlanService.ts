@@ -46,6 +46,7 @@ interface OnboardingData {
   muscleFocus?: string[];
   experience: string;
   trainingDays: string[];
+  gymDuration?: string;
   selectedWorkouts: string[];
   hasInjuries: boolean;
   additionalInfo?: string;

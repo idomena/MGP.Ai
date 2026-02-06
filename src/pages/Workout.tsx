@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Play,
@@ -17,6 +17,7 @@ import {
   Moon,
   Calendar,
   X,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NavigationBar from "@/components/NavigationBar";
@@ -29,6 +30,7 @@ import ChangeWorkoutTypeModal from "@/components/ChangeWorkoutTypeModal";
 import SwapExerciseModal from "@/components/SwapExerciseModal";
 import SchedulingAIAssistant from "@/components/SchedulingAIAssistant";
 import MuscleAnatomyDiagram from "@/components/MuscleAnatomyDiagram";
+import AddExerciseModal from "@/components/AddExerciseModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
 import { useExercises } from "@/hooks/useExercises";
@@ -64,9 +66,42 @@ export default function WorkoutPage() {
   const [showExerciseModal, setShowExerciseModal] = useState(false);
   const [customExercises, setCustomExercises] = useState<Record<number, Exercise>>({});
   const [isMusclesExpanded, setIsMusclesExpanded] = useState(false);
+  const [addedExercises, setAddedExercises] = useState<Exercise[]>([]);
+  const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
+  const [showSuggestion, setShowSuggestion] = useState(true);
+  const hasLoadedFromStorage = useRef(false);
 
   const currentDay = programCurrentDay || 1;
   const dayNumber = id ? parseInt(id, 10) : currentDay;
+  const storageKey = user?.id ? `added_exercises_${user.id}_day${dayNumber}` : null;
+
+  useEffect(() => {
+    hasLoadedFromStorage.current = false;
+    if (!storageKey) {
+      hasLoadedFromStorage.current = true;
+      return;
+    }
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setAddedExercises(parsed);
+        }
+      }
+    } catch {
+    }
+    hasLoadedFromStorage.current = true;
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!storageKey || !hasLoadedFromStorage.current) return;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(addedExercises));
+    } catch {
+    }
+  }, [addedExercises, storageKey]);
+
   const workoutTemplate = getWorkoutForDay(dayNumber);
   const workoutName = workoutTemplate.title;
 
@@ -76,8 +111,9 @@ export default function WorkoutPage() {
     : getExercisesForWorkoutType(workoutTemplate.workoutType, dayNumber);
   
   const exercises = useMemo(() => {
-    return baseExercises.map(ex => customExercises[ex.id] || ex);
-  }, [baseExercises, customExercises]);
+    const base = baseExercises.map(ex => customExercises[ex.id] || ex);
+    return [...base, ...addedExercises];
+  }, [baseExercises, customExercises, addedExercises]);
 
   const isToday = dayNumber === currentDay;
   const isCompleted = completedDays.includes(dayNumber);
@@ -160,6 +196,11 @@ export default function WorkoutPage() {
     setIsSwapExerciseOpen(true);
   };
 
+  const handleAddExercise = (exercise: Exercise) => {
+    setAddedExercises(prev => [...prev, exercise]);
+    toast.success(`${exercise.name} added to workout`);
+  };
+
   const handleSwapExercise = (newExercise: Exercise) => {
     if (!exerciseToSwap) return;
     
@@ -200,6 +241,15 @@ export default function WorkoutPage() {
       </div>
     );
   }
+
+  const COMPLEMENTARY_MUSCLES: Record<string, { muscles: string[], label: string }> = {
+    chest: { muscles: ['back', 'arms'], label: 'Back or Arms' },
+    back: { muscles: ['chest', 'arms'], label: 'Chest or Arms' },
+    shoulders: { muscles: ['arms', 'chest'], label: 'Arms or Chest' },
+    arms: { muscles: ['chest', 'back'], label: 'Chest or Back' },
+    legs: { muscles: ['core'], label: 'Core' },
+    core: { muscles: ['legs'], label: 'Legs' },
+  };
 
   const getStatusColor = () => {
     switch (workoutStatus) {
@@ -338,6 +388,44 @@ export default function WorkoutPage() {
           </div>
         )}
 
+        {showSuggestion && !isRestDay && COMPLEMENTARY_MUSCLES[workoutTemplate.workoutType] && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-4 mt-4 bg-[#7c57ff]/10 border border-[#7c57ff]/20 rounded-2xl p-4"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                <p className="text-white/80 text-sm font-medium">
+                  Want to add some {COMPLEMENTARY_MUSCLES[workoutTemplate.workoutType].label} exercises?
+                </p>
+                <p className="text-white/40 text-xs mt-1">
+                  Adding complementary muscles makes your workout more balanced
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setShowSuggestion(false)}
+                  className="text-white/40 text-xs"
+                  data-testid="button-dismiss-suggestion"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => { setIsAddExerciseOpen(true); setShowSuggestion(false); }}
+                  className="bg-[#7c57ff] text-white text-xs rounded-xl"
+                  data-testid="button-accept-suggestion"
+                >
+                  Add
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Rest Day View */}
         {isRestDay ? (
           <div className="px-4 py-8">
@@ -435,6 +523,16 @@ export default function WorkoutPage() {
                 </motion.div>
               ))}
             </div>
+
+            <Button
+              variant="ghost"
+              onClick={() => setIsAddExerciseOpen(true)}
+              className="w-full mt-4 bg-[#7c57ff]/10 border border-dashed border-[#7c57ff]/30 rounded-2xl py-4"
+              data-testid="button-add-exercise"
+            >
+              <Plus className="w-5 h-5 text-[#7c57ff] mr-2" />
+              <span className="text-[#7c57ff] font-medium">Add Exercise</span>
+            </Button>
           </div>
         )}
       </div>
@@ -489,6 +587,27 @@ export default function WorkoutPage() {
         exercises={exercises}
         isOpen={isAIOpen}
         onClose={() => setIsAIOpen(false)}
+        onAddExercise={(exerciseData) => {
+          const newExercise: Exercise = {
+            id: 10000 + Date.now() % 10000,
+            name: exerciseData.name,
+            muscles: exerciseData.muscles,
+            sets: exerciseData.sets,
+            reps: exerciseData.reps,
+            time: exerciseData.time,
+            difficulty: "Intermediate",
+            gifUrl: "",
+            instructions: "",
+          };
+          handleAddExercise(newExercise);
+        }}
+        onRemoveExercise={(exerciseName) => {
+          const found = addedExercises.some(e => e.name === exerciseName);
+          if (found) {
+            setAddedExercises(prev => prev.filter(e => e.name !== exerciseName));
+            toast.success(`${exerciseName} removed from workout`);
+          }
+        }}
       />
 
       {/* Exercise Details Modal */}
@@ -523,6 +642,15 @@ export default function WorkoutPage() {
           onSwap={handleSwapExercise}
         />
       )}
+
+      {/* Add Exercise Modal */}
+      <AddExerciseModal
+        isOpen={isAddExerciseOpen}
+        onClose={() => setIsAddExerciseOpen(false)}
+        onAddExercise={handleAddExercise}
+        currentExercises={exercises}
+        workoutType={workoutTemplate.workoutType}
+      />
 
       {/* Scheduling AI Assistant */}
       <SchedulingAIAssistant
