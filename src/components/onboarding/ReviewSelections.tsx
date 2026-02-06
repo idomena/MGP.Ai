@@ -4,6 +4,7 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  Clock,
   Edit2,
   User,
   Users,
@@ -48,13 +49,13 @@ const sections: SectionConfig[] = [
     id: 'fitness',
     title: 'Fitness Goals',
     icon: <Target className="w-5 h-5" />,
-    fields: ['weight', 'goals', 'experience'],
+    fields: ['weight', 'goals', 'muscleFocus', 'experience'],
   },
   {
     id: 'training',
     title: 'Training Preferences',
     icon: <Dumbbell className="w-5 h-5" />,
-    fields: ['trainingDays', 'workoutTypes', 'injuries', 'additionalInfo'],
+    fields: ['trainingDays', 'injuries', 'additionalInfo'],
   },
 ];
 
@@ -68,6 +69,7 @@ const fieldConfig: Record<string, { label: string; icon: React.ReactNode }> = {
   trainingDays: { label: 'Training Days', icon: <Calendar className="w-4 h-4" /> },
   workoutTypes: { label: 'Workout Types', icon: <Dumbbell className="w-4 h-4" /> },
   injuries: { label: 'Injuries', icon: <FileText className="w-4 h-4" /> },
+  muscleFocus: { label: 'Muscle Focus', icon: <Target className="w-4 h-4" /> },
   additionalInfo: { label: 'Additional Info', icon: <FileText className="w-4 h-4" /> },
 };
 

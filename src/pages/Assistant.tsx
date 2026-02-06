@@ -1,11 +1,23 @@
+import { useState, useEffect } from "react";
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
-import { Dumbbell, Apple, Activity, MessageCircle, Weight, Heart, ClipboardList } from "lucide-react";
+import { Dumbbell, Banana, Activity, MessageCircle, Weight, Heart, ClipboardList } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
 export default function AssistantPage() {
   const navigate = useNavigate();
+  const [userName, setUserName] = useState("there");
+
+  useEffect(() => {
+    try {
+      const prefs = localStorage.getItem("mgp_workout_preferences");
+      if (prefs) {
+        const parsed = JSON.parse(prefs);
+        if (parsed.userName) setUserName(parsed.userName);
+      }
+    } catch {}
+  }, []);
 
   const handleCategoryClick = (prompt: string) => {
     navigate(`/assistant/chat?prompt=${encodeURIComponent(prompt)}`);
@@ -14,7 +26,7 @@ export default function AssistantPage() {
   const categories = [
     { id: 1, label: "Exercises", icon: Dumbbell, prompt: "Tell me about effective exercises for building strength" },
     { id: 2, label: "Pain", icon: Activity, prompt: "I'm experiencing some workout-related pain, can you help?" },
-    { id: 3, label: "Diet", icon: Apple, prompt: "What should I eat for my fitness goals?" },
+    { id: 3, label: "Diet", icon: Banana, prompt: "What should I eat for my fitness goals?" },
     { id: 4, label: "Mass", icon: Weight, prompt: "How can I build muscle mass effectively?" },
     { id: 5, label: "Toning", icon: Heart, prompt: "What's the best way to tone my body?" },
     { id: 6, label: "Program", icon: ClipboardList, prompt: "Help me create a workout program" },
@@ -28,7 +40,7 @@ export default function AssistantPage() {
         <h1 className="text-2xl font-bold">
           <span className="flex items-center gap-2 text-white">
             <MessageCircle className="w-6 h-6" aria-hidden="true" />
-            Hello <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00c6ff] to-[#7c57ff]">User</span>
+            Hello <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00c6ff] to-[#7c57ff]" data-testid="text-user-name">{userName}</span>
           </span>
         </h1>
         <h2 className="text-2xl font-bold mt-2 text-white">How Can I Help You Today?</h2>

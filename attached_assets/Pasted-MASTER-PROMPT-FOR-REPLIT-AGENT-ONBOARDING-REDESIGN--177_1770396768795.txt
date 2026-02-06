@@ -1,0 +1,477 @@
+MASTER PROMPT FOR REPLIT AGENT - ONBOARDING REDESIGN
+=====================================================
+
+I need you to completely redesign the `/onboarding` page for my fitness coach app (IDO - AI Coach). The current flow is functional but missing critical features: muscle group focus selection and assistant name personalization. Right now users have to type preferences manually in a generic text area, which is poor UX.
+
+CURRENT PROBLEMS:
+- Users can't visually select which muscle groups they want to focus on
+- No way to personalize the AI coach's name
+- The "additional information" text area is ugly and unclear
+- No visual/interactive way to communicate fitness preferences
+
+COMPLETE ONBOARDING FLOW (UPDATED):
+====================================
+
+1. **Welcome Screen**
+   - AI Coach avatar appears
+   - "Hey there! Welcome to MGP.AI! I'm your personal AI fitness coach, and I'm super excited to help you crush your fitness goals! Before we start, what would you like to call me? Give me a fun name!"
+   - Text input for assistant name
+   - Placeholder: "e.g., Coach Max, Fitness Buddy, Iron Mike..."
+   - Auto-focus on input
+   - Validation: Name required (2-20 characters)
+
+2. **User Name Input**
+   - "[Assistant Name]: Love it! Now tell me, what's YOUR name? I want to get to know the awesome person I'll be training!"
+   - Text input for user's name
+   - Placeholder: "Enter your name..."
+   - Auto-focus
+
+3. **Gender Selection**
+   - "[Assistant Name]: Nice to meet you, [User Name]! Just so I can personalize things a bit more - what's your gender?"
+   - Options: Female (♀ icon) / Male (♂ icon) / Other (⚥ icon)
+   - Clean radio button cards with icons
+   - Selected state with gradient border
+
+4. **Current Weight**
+   - "[Assistant Name]: Great, [User Name]! Now let's get a bit more personal - what's your current weight? Don't worry, this helps me tailor workouts just for you!"
+   - Toggle between Kg / Lbs
+   - Slider: 30kg - 200kg (or Lbs equivalent)
+   - Large number display showing current selection
+   - Real-time unit conversion
+   - Smooth slider with haptic-like feedback
+
+5. **Main Goal Selection**
+   - "[Assistant Name]: Alright, [User Name]! What's your main goal? What gets you excited to train?"
+   - Beautiful cards with icons:
+     * 💪 Build Muscle
+     * 🔥 Lose Fat
+     * 🏃 Get Fit
+     * ⚡ Athletic Performance
+   - Single select
+   - Gradient border when selected
+   - Hover/tap animations
+
+6. **⭐ NEW: MUSCLE FOCUS SELECTION - Interactive Body Diagram**
+   - "[Assistant Name]: Awesome, [User Name]! 💪 Now let's dial in your focus. Which muscle groups are you most excited to develop? (Don't worry, we'll create a balanced program!)"
+   
+   **Interactive Body Diagram Implementation:**
+   - Display a clean, minimalist human body silhouette (front view)
+   - SVG-based illustration with modern, clean style
+   - Clickable/tappable muscle zones:
+     * Chest
+     * Shoulders
+     * Arms (Biceps/Triceps)
+     * Abs/Core
+     * Back
+     * Legs (Quads/Hamstrings)
+     * Glutes
+     * Calves
+   
+   **Interaction Design:**
+   - Zones have subtle borders when hoverable (on desktop)
+   - On click/tap: zone fills with app's gradient colors (purple/blue)
+   - Selected muscles appear as gradient pills/badges below diagram
+   - Multi-select enabled (users can focus on multiple areas)
+   - Click zone again or X on pill to deselect
+   - Add "Full Body Program" quick-select button above diagram
+   - If "Full Body" selected, all zones highlight
+   
+   **Visual Feedback:**
+   - Smooth transitions (0.3s ease)
+   - Pulse animation on selection
+   - Scale effect on hover (1.05x)
+   - Celebratory message when 3+ muscles selected: "Love it! We're going to build an incredible [list muscles] program for you!"
+   
+   **Layout:**
+   - Desktop: Body diagram on left, selection pills on right
+   - Mobile: Body diagram on top, pills below
+   - Minimum touch target: 44x44px for accessibility
+   
+   **Accessibility:**
+   - Keyboard navigation (Tab, Enter, Space)
+   - ARIA labels for each muscle zone
+   - Screen reader announces selections
+   - Focus indicators clearly visible
+
+7. **Fitness Level**
+   - "[Assistant Name]: Love those goals! Now, where are you on your fitness journey so far?"
+   - Options with descriptions:
+     * 🌱 Beginner - "Just starting out or getting back into it"
+     * 💪 Intermediate - "Been training consistently for 6+ months"
+     * 🏆 Advanced - "Training for years, know my way around"
+   - Card selection with gradient borders
+   - Show appropriate encouragement based on selection
+
+8. **Training Days Selection**
+   - "[Assistant Name]: Alright, let's plan your week! Which days work best for you to train?"
+   - Weekly calendar view: S M T W T F S
+   - Circular buttons for each day
+   - Multi-select
+   - Selected days: gradient fill with white text
+   - Show count: "3 days selected - Perfect for building muscle!"
+   - Minimum 2 days, maximum 7 days
+   - Validation message if < 2 selected
+
+9. **⭐ NEW: Equipment & Training Preferences**
+   - "[Assistant Name]: Based on your choices, you'll train [X] days/week focusing on [muscle groups]. Now, what equipment do you have access to?"
+   
+   **Equipment Selection:**
+   - Multi-select chip buttons with icons:
+     * 🏋️ Full Gym Access
+     * 🪝 Dumbbells
+     * 💪 Barbell & Weights
+     * 🎯 Resistance Bands
+     * 🚪 Pull-up Bar
+     * 🧘 Bodyweight Only
+   - Chips toggle on/off with gradient fill
+   - Allow multiple selections
+   - "What equipment do you have?" as header
+   
+   **Training Preferences (Optional):**
+   - "[Assistant Name]: Any preferences for your training style? (Optional)"
+   - Multi-select chips:
+     * ☀️ Morning Workouts
+     * 🏠 Home Workouts  
+     * 🏢 Gym Workouts
+     * ⚡ Quick Sessions (20-30min)
+     * ⏱️ Full Sessions (45-60min+)
+     * 🎯 Minimal Equipment
+   - Gradient-colored when selected
+   - Smooth toggle animations
+
+10. **Injury Check**
+    - "[Assistant Name]: Safety first! Do you have any injuries or physical limitations I should keep in mind?"
+    - Two options:
+      * ✅ "No, I'm injury-free"
+      * ⚠️ "Yes, I have some"
+    - If "Yes" selected, show follow-up text area:
+      * "Please tell me about your injuries or limitations so I can modify exercises for you:"
+      * Placeholder: "e.g., Lower back pain, knee issues, shoulder mobility..."
+      * Auto-expanding text area
+      * Character counter (0/300)
+
+11. **⭐ REFINED: Additional Notes (Optional)**
+    - "[Assistant Name]: Almost there, [User Name]! 🎉 Anything else about your lifestyle, dietary preferences, or specific goals you'd like to share? This helps me design the perfect program for you! (Totally optional)"
+    
+    **Better Text Area Design:**
+    - Larger, more welcoming text box
+    - Better visual integration (gradient border on focus)
+    - Helpful placeholder examples:
+      "e.g., 
+      • I'm vegetarian
+      • I prefer compound movements
+      • I want to focus on strength over size
+      • I can only train mornings before work
+      • I'm training for a specific event"
+    - Auto-expanding text area (starts at 4 rows)
+    - Character counter: (0/500)
+    - Optional badge displayed prominently
+    - Smart: "Skip" and "Submit" buttons
+    - Submit button gets gradient + animation when text is entered
+
+12. **Completion/Summary**
+    - "[Assistant Name]: Perfect, [User Name]! I've got everything I need. Let me create your personalized program..."
+    - Show loading animation with motivational text
+    - Display summary of selections as animated cards:
+      * Name: [User Name]
+      * Training: [X] days/week
+      * Focus: [Muscle groups with icons]
+      * Level: [Beginner/Intermediate/Advanced]
+      * Goal: [Build Muscle/etc]
+    - Confetti animation on completion
+    - "Get Started" button → Navigate to dashboard/program
+
+DESIGN SPECIFICATIONS:
+======================
+
+**Overall Visual Design:**
+- Maintain purple/blue gradient theme throughout
+- Primary gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%)
+- Background: Dark theme (#1a1a2e or similar)
+- Cards: Dark with subtle borders, gradient on selection
+- Text: White primary, gray-400 secondary
+- Smooth transitions between each step (slide/fade animations, 0.5s duration)
+
+**Progress Indicator:**
+- Sticky progress bar at top of screen
+- Shows: "Step X of 12" with visual progress bar
+- Gradient progress fill
+- Percentage calculation: (currentStep / 12) * 100
+- Include step labels on hover/for desktop
+- Mobile: Just show progress bar without labels
+
+**Conversational UI:**
+- AI Coach avatar (circular, 60px) appears with each question
+- Avatar can be an icon or illustration
+- Messages appear in chat-bubble style on the left
+- User selections appear as pills/responses on the right
+- Smooth fade-in animation for each new question (0.3s)
+- Previous questions/answers remain visible but dimmed (opacity: 0.5)
+- Current question: full opacity
+- Scroll to new question automatically
+
+**Interactive Elements:**
+- All buttons: Smooth hover effects (scale: 1.05, brightness: 1.1)
+- Click feedback: Scale down slightly (0.98) then bounce back
+- Gradient borders on selection
+- Smooth color transitions (0.3s ease)
+- Loading states for navigation
+- Disabled states clearly visible
+
+**Buttons:**
+- Primary CTA (Continue): Large, gradient background, white text, rounded corners
+  * Gradient: matches app theme
+  * Padding: 16px 48px
+  * Font: Bold, 16px
+  * Disabled state: Gray, 50% opacity
+  * Hover: Brightness increase, subtle shadow
+- Secondary (Back/Skip): Outline style, no fill
+  * Border: 2px solid
+  * Padding: 14px 32px
+- Button states: Enabled, Disabled, Hover, Active, Loading
+
+**Input Fields:**
+- Text inputs: Dark background, light border, rounded
+  * Focus: Gradient border, glow effect
+  * Padding: 16px
+  * Font size: 16px (prevent zoom on mobile)
+- Sliders: Custom styled with gradient track
+- All inputs: Clear error states with red accent
+
+**Cards/Selections:**
+- Default: Dark card, subtle border (1px solid rgba(255,255,255,0.1))
+- Hover: Border brightens, subtle scale (1.02)
+- Selected: Gradient border (3px), gradient background overlay (10% opacity)
+- Padding: 20px
+- Border radius: 12px
+- Shadow on hover: 0 8px 24px rgba(0,0,0,0.2)
+
+**Interactive Body Diagram Specifications:**
+```
+SVG Requirements:
+- Viewbox: "0 0 400 800" (scalable)
+- Clean, minimalist human body silhouette
+- Front view, anatomically simple
+- Muscle zones as separate SVG paths with IDs
+- Default fill: transparent or very light gray
+- Stroke: white, 2px
+- Hover state: stroke-width: 3px, stroke color: gradient
+- Selected state: fill: gradient, stroke: white 3px
+
+Muscle Zone IDs:
+- chest-zone
+- shoulders-zone  
+- arms-zone
+- abs-zone
+- back-zone (if showing back view as well)
+- legs-zone
+- glutes-zone
+- calves-zone
+
+Responsive Sizing:
+- Desktop: 400px width max
+- Tablet: 300px width
+- Mobile: 100% width, max 280px
+- Maintain aspect ratio always
+```
+
+**Animation Details:**
+- Page transitions: Slide + fade (0.5s cubic-bezier(0.4, 0, 0.2, 1))
+- Button interactions: Scale transform (0.2s ease)
+- Selections: Pulse effect on click
+- Progress bar: Smooth width transition (0.3s ease)
+- Text appear: Fade up from bottom (0.4s ease)
+- Confetti on completion: Use canvas-confetti library
+
+**Micro-interactions & Copy:**
+- When name entered: "Great name, [Name]!"
+- After weight selection: "Got it!"
+- Muscle selection (3+ muscles): "Love it! Building an incredible [muscles] program!"
+- Full Body selected: "Perfect! A complete full-body transformation coming up!"
+- Training days selected: "X days/week - Perfect for [goal]!"
+- On completion: "You're all set, [Name]! Let's build something amazing together! 💪"
+
+**Typography:**
+- Headings: 28-32px, bold, white
+- Body: 16-18px, regular, gray-100
+- Labels: 14px, medium, gray-400
+- AI Coach messages: 16px, regular, white
+- Font family: System font stack or Inter/Poppins for modern look
+
+TECHNICAL REQUIREMENTS:
+=======================
+
+**State Management:**
+```javascript
+const [onboardingData, setOnboardingData] = useState({
+  assistantName: '',
+  userName: '',
+  gender: '',
+  weight: 70,
+  weightUnit: 'kg',
+  mainGoal: '',
+  muscleFocus: [], // Array of selected muscle groups
+  fitnessLevel: '',
+  trainingDays: [], // Array of selected days
+  equipment: [], // Array of equipment
+  preferences: [], // Array of training preferences
+  hasInjuries: false,
+  injuries: '',
+  additionalNotes: ''
+});
+
+const [currentStep, setCurrentStep] = useState(1);
+const totalSteps = 12;
+```
+
+**Validation Rules:**
+- Step 1: Assistant name required (2-20 chars, alphanumeric + spaces)
+- Step 2: User name required (2-50 chars)
+- Step 3: Gender required
+- Step 4: Weight required (30-200 kg or equivalent lbs)
+- Step 5: Main goal required
+- Step 6: At least 1 muscle group OR "Full Body"
+- Step 7: Fitness level required
+- Step 8: At least 2 training days
+- Step 9: At least 1 equipment option
+- Step 10: If injuries = yes, description required
+- Step 11: Optional (no validation)
+
+**Navigation:**
+- Continue button: Only enabled when current step is valid
+- Back button: Available on all steps except step 1
+  * Goes to previous step
+  * Preserves all entered data
+- Skip button: Only on optional steps (11)
+- Form submission: On final step, collect all data and POST to backend
+
+**Responsive Breakpoints:**
+- Mobile: < 640px
+- Tablet: 640px - 1024px  
+- Desktop: > 1024px
+
+**Component Structure:**
+```
+/onboarding
+  - OnboardingContainer (main wrapper)
+  - ProgressBar (sticky header)
+  - StepContainer (animated transitions)
+    - Step1: AssistantNameInput
+    - Step2: UserNameInput
+    - Step3: GenderSelection
+    - Step4: WeightInput
+    - Step5: GoalSelection
+    - Step6: MuscleGroupSelector (Interactive body diagram)
+    - Step7: FitnessLevel
+    - Step8: TrainingDaysSelector
+    - Step9: EquipmentPreferences
+    - Step10: InjuryCheck
+    - Step11: AdditionalNotes
+    - Step12: CompletionSummary
+  - NavigationButtons (Back/Continue)
+  - AICoachAvatar (appears with each question)
+```
+
+**Animation Library:**
+- Use Framer Motion for React animations
+- Or CSS transitions/keyframes for lighter weight
+- Confetti: canvas-confetti library for completion celebration
+
+**SVG Body Diagram:**
+- Create as separate SVG component
+- Export as React component
+- Use useState to track selected zones
+- onClick handlers for each muscle zone
+- CSS classes for hover/selected states
+- Ensure touch-friendly on mobile (large hit areas)
+
+**Accessibility (CRITICAL):**
+- All interactive elements: Keyboard accessible (Tab navigation)
+- Focus indicators: Visible outline (2px solid, gradient color)
+- ARIA labels on all inputs and buttons
+- Screen reader announcements for step changes
+- Color contrast: WCAG AA minimum (4.5:1 for text)
+- Alt text for AI coach avatar
+- Semantic HTML (h1, h2, form, fieldset, legend, label)
+- Skip to content link (if needed)
+
+**Mobile Optimizations:**
+- Touch targets: Minimum 44x44px
+- No hover-only interactions
+- Swipe gestures optional (nice to have)
+- Prevent input zoom: font-size >= 16px
+- Body diagram: Simplified on small screens if needed
+- Stack layout: Everything single column on mobile
+- Bottom navigation bar instead of inline buttons
+
+**Performance:**
+- Lazy load steps (code splitting)
+- Optimize SVG (compress, remove unnecessary elements)
+- Debounce text inputs
+- Use CSS transforms for animations (GPU accelerated)
+- Minimize re-renders
+
+**Data Handling:**
+- LocalStorage backup (in case of refresh)
+- Auto-save progress every step
+- On completion: Send to backend API
+  * POST /api/onboarding
+  * Include all onboardingData
+  * Handle success/error states
+- Clear localStorage after successful submission
+
+EXPECTED OUTPUT:
+================
+
+1. Completely redesigned onboarding flow with 12 steps
+2. Interactive muscle group selection with SVG body diagram
+3. Assistant name personalization
+4. User name collection
+5. Structured equipment and preference collection
+6. Professional, attractive, app-like experience
+7. Smooth animations throughout all transitions
+8. Mobile-responsive design (works perfectly on all screen sizes)
+9. Fully accessible (keyboard navigation, screen readers)
+10. Progress tracking with visual indicator
+11. Back navigation to edit previous steps
+12. Proper validation and error handling
+13. Data persistence (localStorage backup)
+14. Celebration animation on completion
+
+PRIORITY FEATURES:
+==================
+
+**MUST HAVE (P0):**
+1. Interactive SVG body diagram for muscle selection
+2. Assistant name and user name inputs at the beginning
+3. Smooth step-by-step flow with progress indicator
+4. All validation working correctly
+5. Mobile responsive design
+6. Equipment and preference chips
+7. Professional visual design matching app theme
+
+**SHOULD HAVE (P1):**
+8. Back button navigation
+9. Animations and transitions
+10. LocalStorage backup
+11. Accessibility features
+12. Micro-interactions and encouraging copy
+
+**NICE TO HAVE (P2):**
+13. Confetti animation on completion
+14. Advanced animations (Framer Motion)
+15. Swipe gestures on mobile
+16. Progress persistence across sessions
+
+STYLE REFERENCE:
+================
+Think: Nike Training Club, Peloton, Future Fitness App
+- Premium fitness app aesthetic
+- Dark mode with gradient accents
+- Clean, modern, professional
+- Encouraging and motivational tone
+- Not generic - feels custom and high-end
+
+The muscle selection with interactive body diagram should be the WOW moment that makes users think "This is a premium app!"
+
+Make it beautiful, functional, and delightful to use! 🚀💪

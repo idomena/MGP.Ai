@@ -5,6 +5,7 @@ export type QuestionType =
   | 'assistant'
   | 'weight'
   | 'goals'
+  | 'muscleFocus'
   | 'experience'
   | 'trainingDays'
   | 'injuries'
@@ -14,7 +15,7 @@ export type QuestionType =
 export interface Question {
   id: QuestionType;
   botMessage: string;
-  componentType: 'name' | 'coachName' | 'gender' | 'assistant' | 'weight' | 'options' | 'trainingDays' | 'yesno' | 'textarea' | 'review';
+  componentType: 'name' | 'coachName' | 'gender' | 'assistant' | 'weight' | 'options' | 'muscleFocus' | 'trainingDays' | 'yesno' | 'textarea' | 'review';
   options?: { id: string; label: string; icon?: string; description?: string }[];
   multiSelect?: boolean;
   required?: boolean;
@@ -31,37 +32,45 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 'name',
-    botMessage: `Love it! Now tell me, what's YOUR name? I want to get to know the awesome person I'll be training!`,
+    botMessage: `{coachName}: Love it! Now tell me, what's YOUR name? I want to get to know the awesome person I'll be training!`,
     componentType: 'name',
     required: true,
   },
   {
     id: 'gender',
-    botMessage: "Nice to meet you, {name}! Just so I can personalize things a bit more - what's your gender?",
+    botMessage: "{coachName}: Nice to meet you, {name}! Just so I can personalize things a bit more - what's your gender?",
     componentType: 'gender',
     required: true,
   },
   {
     id: 'weight',
-    botMessage: "Great, {name}! Now let's get a bit more personal - what's your current weight? Don't worry, this helps me tailor workouts just for you!",
+    botMessage: "{coachName}: Great, {name}! Now let's get a bit more personal - what's your current weight? Don't worry, this helps me tailor workouts just for you!",
     componentType: 'weight',
     required: true,
   },
   {
     id: 'goals',
-    botMessage: "Alright {name}, this is the exciting part! What's your main goal?",
+    botMessage: "{coachName}: Alright, {name}! What's your main goal? What gets you excited to train?",
     componentType: 'options',
     multiSelect: false,
     required: true,
     options: [
-      { id: 'lose_weight', label: 'Lose Weight', icon: 'TrendingDown', description: 'Burn fat and slim down' },
       { id: 'build_muscle', label: 'Build Muscle', icon: 'Dumbbell', description: 'Gain strength and size' },
-      { id: 'improve_endurance', label: 'Improve Endurance', icon: 'Heart', description: 'Build stamina and cardio' },
+      { id: 'lose_fat', label: 'Lose Fat', icon: 'Flame', description: 'Burn fat and get lean' },
+      { id: 'get_fit', label: 'Get Fit', icon: 'Heart', description: 'Improve overall fitness' },
+      { id: 'athletic_performance', label: 'Athletic Performance', icon: 'Zap', description: 'Train like an athlete' },
     ],
   },
   {
+    id: 'muscleFocus',
+    botMessage: "{coachName}: Now let's dial in your focus. Which muscle groups are you most excited to develop? Don't worry, we'll create a balanced program!",
+    componentType: 'muscleFocus',
+    multiSelect: true,
+    required: true,
+  },
+  {
     id: 'experience',
-    botMessage: "Love those goals! Now, where are you on your fitness journey so far?",
+    botMessage: "{coachName}: Love those goals! Now, where are you on your fitness journey so far?",
     componentType: 'options',
     multiSelect: false,
     required: true,
@@ -73,26 +82,26 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: 'trainingDays',
-    botMessage: "Alright, let's plan your week! Which days work best for you to train?",
+    botMessage: "{coachName}: Alright, let's plan your week! Which days work best for you to train?",
     componentType: 'trainingDays',
     multiSelect: true,
     required: true,
   },
   {
     id: 'injuries',
-    botMessage: "Safety first! Do you have any injuries or physical limitations I should keep in mind?",
+    botMessage: "{coachName}: Safety first! Do you have any injuries or physical limitations I should keep in mind?",
     componentType: 'yesno',
     required: true,
   },
   {
     id: 'additionalInfo',
-    botMessage: "Almost done! Anything else you'd like me to know? Maybe dietary preferences, equipment you have, or just say hi!",
+    botMessage: "{coachName}: Almost there, {name}! Anything else about your lifestyle, dietary preferences, or specific goals you'd like to share? This helps me design the perfect program for you!",
     componentType: 'textarea',
     required: false,
   },
   {
     id: 'review',
-    botMessage: "You're all set! Here's your profile summary. Take a look and let's get started when you're ready!",
+    botMessage: "{coachName}: Perfect, {name}! I've got everything I need. Here's your profile summary - take a look and let's get started!",
     componentType: 'review',
     required: true,
   },
@@ -105,6 +114,7 @@ export interface UserSelections {
   assistantType: 'coach' | 'nutritionist' | 'trainer';
   weight: { value: number; unit: 'kg' | 'lbs' };
   goals: string[];
+  muscleFocus: string[];
   experience: string;
   trainingDays: string[];
   workoutTypes: string[];
@@ -121,6 +131,7 @@ export function getDefaultSelections(): UserSelections {
     assistantType: 'coach',
     weight: { value: 70, unit: 'kg' },
     goals: [],
+    muscleFocus: [],
     experience: '',
     trainingDays: [],
     workoutTypes: ['full'],
@@ -149,6 +160,7 @@ export function isOnboardingComplete(selections: UserSelections): boolean {
   return (
     selections.name.length > 0 &&
     selections.goals.length > 0 &&
+    selections.muscleFocus.length > 0 &&
     selections.experience.length > 0 &&
     selections.trainingDays.length > 0
   );
