@@ -18,6 +18,7 @@ import {
   Calendar,
   X,
   Plus,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NavigationBar from "@/components/NavigationBar";
@@ -199,6 +200,13 @@ export default function WorkoutPage() {
   const handleAddExercise = (exercise: Exercise) => {
     setAddedExercises(prev => [...prev, exercise]);
     toast.success(`${exercise.name} added to workout`);
+  };
+
+  const handleRemoveExercise = (exercise: Exercise) => {
+    const confirmed = window.confirm(`Remove "${exercise.name}" from this workout?`);
+    if (!confirmed) return;
+    setAddedExercises(prev => prev.filter(ex => ex.id !== exercise.id));
+    toast.success(`${exercise.name} removed from workout`);
   };
 
   const handleSwapExercise = (newExercise: Exercise) => {
@@ -508,17 +516,40 @@ export default function WorkoutPage() {
                     </div>
                   </button>
                   
-                  {/* Swap Action */}
+                  {/* Actions */}
                   <div className="px-4 pb-3">
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleOpenSwapExercise(exercise)}
-                      className="w-full bg-[#7c57ff]/10 rounded-xl py-2"
-                      data-testid={`button-swap-${exercise.id}`}
-                    >
-                      <ArrowRightLeft className="w-4 h-4 text-[#7c57ff] mr-2" />
-                      <span className="text-[#7c57ff] text-sm font-medium">Swap Exercise</span>
-                    </Button>
+                    {addedExercises.some(ex => ex.id === exercise.id) ? (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleOpenSwapExercise(exercise)}
+                          className="flex-1 bg-[#7c57ff]/10 rounded-xl py-2"
+                          data-testid={`button-swap-${exercise.id}`}
+                        >
+                          <ArrowRightLeft className="w-4 h-4 text-[#7c57ff] mr-2" />
+                          <span className="text-[#7c57ff] text-sm font-medium">Swap Exercise</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleRemoveExercise(exercise)}
+                          className="flex-1 bg-red-500/10 rounded-xl py-2"
+                          data-testid={`button-remove-${exercise.id}`}
+                        >
+                          <Trash2 className="w-4 h-4 text-red-400 mr-2" />
+                          <span className="text-red-400 text-sm font-medium">Remove</span>
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleOpenSwapExercise(exercise)}
+                        className="w-full bg-[#7c57ff]/10 rounded-xl py-2"
+                        data-testid={`button-swap-${exercise.id}`}
+                      >
+                        <ArrowRightLeft className="w-4 h-4 text-[#7c57ff] mr-2" />
+                        <span className="text-[#7c57ff] text-sm font-medium">Swap Exercise</span>
+                      </Button>
+                    )}
                   </div>
                 </motion.div>
               ))}
