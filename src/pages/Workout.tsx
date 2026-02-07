@@ -140,6 +140,12 @@ export default function WorkoutPage() {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [dragFromIndex, setDragFromIndex] = useState<number | null>(null);
   const hasLoadedOrder = useRef(false);
+  const [deleteConfirmExercise, setDeleteConfirmExercise] = useState<Exercise | null>(null);
+  const [hiddenExercises, setHiddenExercises] = useState<Set<number>>(new Set());
+  const hasLoadedHidden = useRef(false);
+  const touchStartY = useRef<number | null>(null);
+  const touchDragIndex = useRef<number | null>(null);
+  const [touchDragActive, setTouchDragActive] = useState(false);
 
   const currentDay = programCurrentDay || 1;
   const dayNumber = id ? parseInt(id, 10) : currentDay;
@@ -171,6 +177,37 @@ export default function WorkoutPage() {
     } catch {
     }
   }, [addedExercises, storageKey]);
+
+  const hiddenStorageKey = user?.id ? `hidden_exercises_${user.id}_day${dayNumber}` : null;
+
+  useEffect(() => {
+    hasLoadedHidden.current = false;
+    if (!hiddenStorageKey) {
+      hasLoadedHidden.current = true;
+      return;
+    }
+    try {
+      const saved = localStorage.getItem(hiddenStorageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setHiddenExercises(new Set(parsed));
+        }
+      } else {
+        setHiddenExercises(new Set());
+      }
+    } catch {
+      setHiddenExercises(new Set());
+    }
+    hasLoadedHidden.current = true;
+  }, [hiddenStorageKey]);
+
+  useEffect(() => {
+    if (!hiddenStorageKey || !hasLoadedHidden.current) return;
+    try {
+      localStorage.setItem(hiddenStorageKey, JSON.stringify(Array.from(hiddenExercises)));
+    } catch {}
+  }, [hiddenExercises, hiddenStorageKey]);
 
   const orderStorageKey = user?.id ? `exercise_order_${user.id}_day${dayNumber}` : null;
 
@@ -216,9 +253,11 @@ export default function WorkoutPage() {
     : getExercisesForWorkoutType(workoutTemplate.workoutType, dayNumber);
   
   const unorderedExercises = useMemo(() => {
-    const base = baseExercises.map(ex => customExercises[ex.id] || ex);
+    const base = baseExercises
+      .map(ex => customExercises[ex.id] || ex)
+      .filter(ex => !hiddenExercises.has(ex.id));
     return [...base, ...addedExercises];
-  }, [baseExercises, customExercises, addedExercises]);
+  }, [baseExercises, customExercises, addedExercises, hiddenExercises]);
 
   const exercises = useMemo(() => {
     if (!exerciseOrder) return unorderedExercises;
@@ -323,14 +362,23 @@ export default function WorkoutPage() {
   };
 
   const handleRemoveExercise = (exercise: Exercise) => {
-    const confirmed = window.confirm(`Remove "${exercise.name}" from this workout?`);
-    if (!confirmed) return;
-    setAddedExercises(prev => prev.filter(ex => ex.id !== exercise.id));
-    if (exerciseOrder) {
-      setExerciseOrder(prev => prev ? prev.filter(id => id !== exercise.id) : null);
-    }
-    toast.success(`${exercise.name} removed from workout`);
+    setDeleteConfirmExercise(exercise);
     setOpenActionsId(null);
+  };
+
+  const confirmDeleteExercise = () => {
+    if (!deleteConfirmExercise) return;
+    const isAdded = addedExercises.some(ex => ex.id === deleteConfirmExercise.id);
+    if (isAdded) {
+      setAddedExercises(prev => prev.filter(ex => ex.id !== deleteConfirmExercise.id));
+    } else {
+      setHiddenExercises(prev => new Set([...prev, deleteConfirmExercise.id]));
+    }
+    if (exerciseOrder) {
+      setExerciseOrder(prev => prev ? prev.filter(id => id !== deleteConfirmExercise.id) : null);
+    }
+    toast.success(`${deleteConfirmExercise.name} removed from workout`);
+    setDeleteConfirmExercise(null);
   };
 
   const handleDragStart = useCallback((index: number) => {
@@ -734,16 +782,14 @@ export default function WorkoutPage() {
                           <ArrowRightLeft className="w-3.5 h-3.5" />
                           Swap
                         </button>
-                        {isAdded && (
-                          <button
-                            onClick={() => handleRemoveExercise(exercise)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 rounded-lg text-xs text-red-400 font-medium"
-                            data-testid={`button-remove-${exercise.id}`}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            Remove
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleRemoveExercise(exercise)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 rounded-lg text-xs text-red-400 font-medium"
+                          data-testid={`button-remove-${exercise.id}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Remove
+                        </button>
                         <button
                           onClick={() => setOpenActionsId(null)}
                           className="ml-auto flex items-center px-2 py-1.5 rounded-lg text-xs text-white/30"
@@ -888,6 +934,48 @@ export default function WorkoutPage() {
         onMoveWorkout={moveWorkout}
         onChangeWorkoutType={changeWorkoutType}
       />
+
+      {deleteConfirmExercise && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-6"
+          onClick={() => setDeleteConfirmExercise(null)}
+          data-testid="modal-delete-confirm"
+        >
+          <div
+            className="w-full max-w-sm bg-[#1a1a2e] rounded-2xl p-6 border border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-semibold text-base" data-testid="text-delete-title">Remove Exercise</h3>
+                <p className="text-white/50 text-sm">This cannot be undone</p>
+              </div>
+            </div>
+            <p className="text-white/70 text-sm mb-6" data-testid="text-delete-message">
+              Are you sure you want to remove <span className="text-white font-medium">{deleteConfirmExercise.name}</span> from this workout?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirmExercise(null)}
+                className="flex-1 py-3 rounded-xl bg-white/10 text-white font-medium text-sm"
+                data-testid="button-cancel-delete"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteExercise}
+                className="flex-1 py-3 rounded-xl bg-red-500/20 text-red-400 font-medium text-sm border border-red-500/30"
+                data-testid="button-confirm-delete"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
