@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Play,
@@ -19,6 +19,7 @@ import {
   X,
   Plus,
   Trash2,
+  GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NavigationBar from "@/components/NavigationBar";
@@ -71,6 +72,10 @@ export default function WorkoutPage() {
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
   const [showSuggestion, setShowSuggestion] = useState(true);
   const hasLoadedFromStorage = useRef(false);
+  const [exerciseOrder, setExerciseOrder] = useState<number[] | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [dragFromIndex, setDragFromIndex] = useState<number | null>(null);
+  const hasLoadedOrder = useRef(false);
 
   const currentDay = programCurrentDay || 1;
   const dayNumber = id ? parseInt(id, 10) : currentDay;
@@ -103,6 +108,41 @@ export default function WorkoutPage() {
     }
   }, [addedExercises, storageKey]);
 
+  const orderStorageKey = user?.id ? `exercise_order_${user.id}_day${dayNumber}` : null;
+
+  useEffect(() => {
+    hasLoadedOrder.current = false;
+    if (!orderStorageKey) {
+      hasLoadedOrder.current = true;
+      return;
+    }
+    try {
+      const saved = localStorage.getItem(orderStorageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setExerciseOrder(parsed);
+        }
+      } else {
+        setExerciseOrder(null);
+      }
+    } catch {
+      setExerciseOrder(null);
+    }
+    hasLoadedOrder.current = true;
+  }, [orderStorageKey]);
+
+  useEffect(() => {
+    if (!orderStorageKey || !hasLoadedOrder.current) return;
+    if (exerciseOrder) {
+      try {
+        localStorage.setItem(orderStorageKey, JSON.stringify(exerciseOrder));
+      } catch {}
+    } else {
+      localStorage.removeItem(orderStorageKey);
+    }
+  }, [exerciseOrder, orderStorageKey]);
+
   const workoutTemplate = getWorkoutForDay(dayNumber);
   const workoutName = workoutTemplate.title;
 
@@ -111,10 +151,25 @@ export default function WorkoutPage() {
     ? dbExercises
     : getExercisesForWorkoutType(workoutTemplate.workoutType, dayNumber);
   
-  const exercises = useMemo(() => {
+  const unorderedExercises = useMemo(() => {
     const base = baseExercises.map(ex => customExercises[ex.id] || ex);
     return [...base, ...addedExercises];
   }, [baseExercises, customExercises, addedExercises]);
+
+  const exercises = useMemo(() => {
+    if (!exerciseOrder) return unorderedExercises;
+    const exerciseMap = new Map(unorderedExercises.map(ex => [ex.id, ex]));
+    const ordered: Exercise[] = [];
+    for (const id of exerciseOrder) {
+      const ex = exerciseMap.get(id);
+      if (ex) {
+        ordered.push(ex);
+        exerciseMap.delete(id);
+      }
+    }
+    exerciseMap.forEach(ex => ordered.push(ex));
+    return ordered;
+  }, [unorderedExercises, exerciseOrder]);
 
   const isToday = dayNumber === currentDay;
   const isCompleted = completedDays.includes(dayNumber);
@@ -206,8 +261,50 @@ export default function WorkoutPage() {
     const confirmed = window.confirm(`Remove "${exercise.name}" from this workout?`);
     if (!confirmed) return;
     setAddedExercises(prev => prev.filter(ex => ex.id !== exercise.id));
+    if (exerciseOrder) {
+      setExerciseOrder(prev => prev ? prev.filter(id => id !== exercise.id) : null);
+    }
     toast.success(`${exercise.name} removed from workout`);
   };
+
+  const handleDragStart = useCallback((index: number) => {
+    setDragFromIndex(index);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverIndex(index);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent, toIndex: number) => {
+    e.preventDefault();
+    if (dragFromIndex === null || dragFromIndex === toIndex) {
+      setDragFromIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+    const reordered = [...exercises];
+    const [moved] = reordered.splice(dragFromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+    setExerciseOrder(reordered.map(ex => ex.id));
+    setDragFromIndex(null);
+    setDragOverIndex(null);
+  }, [dragFromIndex, exercises]);
+
+  const handleDragEnd = useCallback(() => {
+    setDragFromIndex(null);
+    setDragOverIndex(null);
+  }, []);
+
+  const handleMoveExercise = useCallback((fromIndex: number, direction: 'up' | 'down') => {
+    const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
+    if (toIndex < 0 || toIndex >= exercises.length) return;
+    const reordered = [...exercises];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+    setExerciseOrder(reordered.map(ex => ex.id));
+  }, [exercises]);
 
   const handleSwapExercise = (newExercise: Exercise) => {
     if (!exerciseToSwap) return;
@@ -473,48 +570,86 @@ export default function WorkoutPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.04 }}
-                  className="bg-[#1a1a2e] rounded-2xl overflow-hidden"
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragEnd={handleDragEnd}
+                  className={`bg-[#1a1a2e] rounded-2xl overflow-hidden transition-all duration-150 ${
+                    dragFromIndex === index ? 'opacity-40 scale-[0.97]' : ''
+                  } ${
+                    dragOverIndex === index && dragFromIndex !== index ? 'ring-2 ring-[#7c57ff] ring-offset-1 ring-offset-[#0f0f1a]' : ''
+                  }`}
                   data-testid={`card-exercise-${exercise.id}`}
                 >
-                  {/* Main Content - Clickable */}
-                  <button
-                    onClick={() => handleViewDetails(exercise)}
-                    className="w-full p-4 text-left"
-                    data-testid={`button-details-${exercise.id}`}
-                  >
-                    <div className="flex items-start gap-4">
-                      {/* Number Badge */}
-                      <div 
-                        className={`
-                          w-10 h-10 rounded-xl flex items-center justify-center text-base font-bold shrink-0
-                          ${isCompleted 
-                            ? 'bg-green-500/20 text-green-400' 
-                            : 'bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] text-white'}
-                        `}
-                        data-testid={`badge-exercise-number-${exercise.id}`}
+                  {/* Main Content Row */}
+                  <div className="flex items-stretch">
+                    {/* Drag Handle + Mobile Move Buttons */}
+                    <div
+                      className="flex flex-col items-center justify-center w-10 shrink-0 gap-1 py-2"
+                      data-testid={`drag-handle-${exercise.id}`}
+                    >
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleMoveExercise(index, 'up'); }}
+                        disabled={index === 0}
+                        className={`w-6 h-6 rounded-md flex items-center justify-center ${index === 0 ? 'opacity-20' : 'opacity-50 active:opacity-100 active:bg-white/10'}`}
+                        data-testid={`button-move-up-${exercise.id}`}
+                        aria-label={`Move ${exercise.name} up`}
                       >
-                        {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-white font-semibold text-base mb-1" data-testid={`text-exercise-name-${exercise.id}`}>{exercise.name}</h4>
-                        <p className="text-white/40 text-sm mb-2" data-testid={`text-exercise-muscles-${exercise.id}`}>{exercise.muscles}</p>
-                        
-                        {/* Stats Pills */}
-                        <div className="flex flex-wrap gap-2">
-                          <span className="bg-white/5 px-2.5 py-1 rounded-lg text-white/60 text-xs" data-testid={`text-exercise-sets-${exercise.id}`}>
-                            {exercise.sets} sets × {exercise.reps} reps
-                          </span>
-                          <span className="bg-white/5 px-2.5 py-1 rounded-lg text-white/40 text-xs" data-testid={`text-exercise-time-${exercise.id}`}>
-                            {exercise.time}
-                          </span>
-                        </div>
-                      </div>
-
-                      <ChevronRight className="w-5 h-5 text-white/20 shrink-0 mt-2" />
+                        <ChevronUp className="w-3.5 h-3.5 text-white" />
+                      </button>
+                      <GripVertical className="w-4 h-4 text-white/25 cursor-grab active:cursor-grabbing" />
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleMoveExercise(index, 'down'); }}
+                        disabled={index === exercises.length - 1}
+                        className={`w-6 h-6 rounded-md flex items-center justify-center ${index === exercises.length - 1 ? 'opacity-20' : 'opacity-50 active:opacity-100 active:bg-white/10'}`}
+                        data-testid={`button-move-down-${exercise.id}`}
+                        aria-label={`Move ${exercise.name} down`}
+                      >
+                        <ChevronDown className="w-3.5 h-3.5 text-white" />
+                      </button>
                     </div>
-                  </button>
+
+                    {/* Clickable Content */}
+                    <button
+                      onClick={() => handleViewDetails(exercise)}
+                      className="flex-1 p-4 pl-0 text-left"
+                      data-testid={`button-details-${exercise.id}`}
+                    >
+                      <div className="flex items-start gap-4">
+                        {/* Number Badge */}
+                        <div 
+                          className={`
+                            w-10 h-10 rounded-xl flex items-center justify-center text-base font-bold shrink-0
+                            ${isCompleted 
+                              ? 'bg-green-500/20 text-green-400' 
+                              : 'bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] text-white'}
+                          `}
+                          data-testid={`badge-exercise-number-${exercise.id}`}
+                        >
+                          {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-white font-semibold text-base mb-1" data-testid={`text-exercise-name-${exercise.id}`}>{exercise.name}</h4>
+                          <p className="text-white/40 text-sm mb-2" data-testid={`text-exercise-muscles-${exercise.id}`}>{exercise.muscles}</p>
+                          
+                          {/* Stats Pills */}
+                          <div className="flex flex-wrap gap-2">
+                            <span className="bg-white/5 px-2.5 py-1 rounded-lg text-white/60 text-xs" data-testid={`text-exercise-sets-${exercise.id}`}>
+                              {exercise.sets} sets × {exercise.reps} reps
+                            </span>
+                            <span className="bg-white/5 px-2.5 py-1 rounded-lg text-white/40 text-xs" data-testid={`text-exercise-time-${exercise.id}`}>
+                              {exercise.time}
+                            </span>
+                          </div>
+                        </div>
+
+                        <ChevronRight className="w-5 h-5 text-white/20 shrink-0 mt-2" />
+                      </div>
+                    </button>
+                  </div>
                   
                   {/* Actions */}
                   <div className="px-4 pb-3">
