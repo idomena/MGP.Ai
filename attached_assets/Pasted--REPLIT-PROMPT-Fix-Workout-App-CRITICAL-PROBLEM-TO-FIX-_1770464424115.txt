@@ -1,0 +1,96 @@
+# REPLIT PROMPT: Fix Workout App
+
+## 🚨 CRITICAL PROBLEM TO FIX
+
+When user creates a workout and selects "Chest", they are seeing exercises from BACK, SHOULDERS, and other muscle groups mixed in. This is WRONG.
+
+**Example of the problem:**
+- User selects "Chest" muscle group
+- User sees: Bench Press (Chest) ✓ CORRECT
+- User sees: Pull-ups (Back) ✗ WRONG! 
+- User sees: Squats (Legs) ✗ WRONG!
+
+## ✅ CORRECT BEHAVIOR
+
+When user selects "Chest" → Show ONLY chest exercises
+When user selects "Back" → Show ONLY back exercises
+When user selects "Chest + Shoulders" → Show ONLY chest AND shoulder exercises
+
+## 🔧 THE FIX
+
+### Check your exercise filtering code:
+
+**WRONG CODE (don't do this):**
+```javascript
+// This shows ALL exercises regardless of selection
+const exercises = await supabase
+  .from('exercises_library')
+  .select('*');
+```
+
+**CORRECT CODE (do this):**
+```javascript
+// Filter by selected muscle groups ONLY
+const exercises = await supabase
+  .from('exercises_library')
+  .select('*')
+  .in('muscle_group', selectedMuscleGroups); // ← This is the key!
+```
+
+### Example:
+```javascript
+// User selected: ['chest', 'shoulders']
+
+const { data: exercises } = await supabase
+  .from('exercises_library')
+  .select('*')
+  .in('muscle_group', ['chest', 'shoulders']); // Show ONLY chest and shoulder exercises
+
+// Result: Bench Press ✓, Shoulder Press ✓, Pull-ups ✗ (filtered out)
+```
+
+## 🎯 REQUIREMENTS
+
+1. **When adding exercises to workout**: Filter exercises by selected muscle groups ONLY
+2. **Display clearly**: Show which muscle group each exercise belongs to
+3. **Organize by muscle group**: Group exercises under their muscle group headers
+4. **User-friendly**: Clear labels showing "Chest Exercises", "Shoulder Exercises", etc.
+
+## 📋 USER FLOW
+
+1. User creates new workout
+2. User selects muscle groups: "Chest" and "Shoulders"
+3. User clicks "Add Exercises"
+4. Screen shows:
+   ```
+   CHEST EXERCISES
+   - Bench Press
+   - Push-ups
+   - Dumbbell Flyes
+   
+   SHOULDER EXERCISES
+   - Shoulder Press
+   - Lateral Raises
+   - Front Raises
+   ```
+5. NO exercises from Back, Legs, Arms, or Core should appear!
+
+## ✨ BONUS: Make it Beautiful
+
+- Use color-coded badges for each muscle group
+- Chest = Red badge
+- Back = Blue badge
+- Shoulders = Orange badge
+- Arms = Purple badge
+- Legs = Green badge
+- Core = Pink badge
+
+## 🧪 TEST IT
+
+After fixing, test:
+- [ ] Select only "Chest" → See only chest exercises
+- [ ] Select only "Back" → See only back exercises
+- [ ] Select "Chest + Arms" → See only chest and arm exercises
+- [ ] NO exercises from unselected muscle groups appear
+
+Fix this filtering issue and make the UI clean and organized by muscle group!

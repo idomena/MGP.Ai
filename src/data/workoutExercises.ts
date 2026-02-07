@@ -676,6 +676,56 @@ export function getAllAvailableExercises(): Record<string, Exercise[]> {
   };
 }
 
+export function getMuscleGroupsForWorkoutType(workoutType: string): string[] {
+  const normalizedType = workoutType.toLowerCase().trim();
+  
+  switch (normalizedType) {
+    case "chest": return ["chest"];
+    case "back": return ["back"];
+    case "legs": return ["legs"];
+    case "shoulders": return ["shoulders"];
+    case "arms": return ["arms"];
+    case "biceps": return ["arms"];
+    case "triceps": return ["arms"];
+    case "quads": return ["legs"];
+    case "hamstrings": return ["legs"];
+    case "glutes": return ["legs"];
+    case "core": return ["core"];
+    case "chest_shoulders":
+    case "chest + shoulders": return ["chest", "shoulders"];
+    case "back_arms":
+    case "back + arms": return ["back", "arms"];
+    case "chest_back":
+    case "chest + back": return ["chest", "back"];
+    case "shoulders_arms":
+    case "shoulders + arms": return ["shoulders", "arms"];
+    case "legs_core":
+    case "legs + core": return ["legs", "core"];
+    case "upper":
+    case "upper body": return ["chest", "back", "shoulders", "arms"];
+    case "lower":
+    case "lower body": return ["legs", "core"];
+    case "push": return ["chest", "shoulders", "arms"];
+    case "pull": return ["back", "arms"];
+    case "full":
+    case "full body": return ["chest", "back", "shoulders", "arms", "legs", "core"];
+    case "cardio": return ["legs", "core"];
+    default:
+      const muscles = normalizedType.split("_").filter(m => m.length > 0);
+      const groups: string[] = [];
+      for (const muscle of muscles) {
+        if (["chest", "back", "shoulders", "arms", "legs", "core"].includes(muscle)) {
+          groups.push(muscle);
+        } else if (["biceps", "triceps"].includes(muscle)) {
+          if (!groups.includes("arms")) groups.push("arms");
+        } else if (["quads", "hamstrings", "glutes"].includes(muscle)) {
+          if (!groups.includes("legs")) groups.push("legs");
+        }
+      }
+      return groups.length > 0 ? groups : ["chest", "back", "shoulders", "arms", "legs", "core"];
+  }
+}
+
 export function getAlternativesForMuscleGroup(exercise: Exercise): Exercise[] {
   const musclesLower = exercise.muscles.toLowerCase();
   const alternatives: Exercise[] = [];
