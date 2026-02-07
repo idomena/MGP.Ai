@@ -100,7 +100,7 @@ export default function AddExerciseModal({
     return { relevant, other };
   }, [filteredExercises, relevantGroups]);
 
-  const getDefaultExpanded = (category: string): boolean => {
+  const isCategoryExpanded = (category: string): boolean => {
     if (expandedCategories[category] !== undefined) {
       return expandedCategories[category];
     }
@@ -108,10 +108,10 @@ export default function AddExerciseModal({
   };
 
   const toggleCategory = (category: string) => {
-    setExpandedCategories(prev => ({
-      ...prev,
-      [category]: !getDefaultExpanded(category),
-    }));
+    setExpandedCategories(prev => {
+      const currentState = prev[category] !== undefined ? prev[category] : relevantGroups.includes(category);
+      return { ...prev, [category]: !currentState };
+    });
   };
 
   const handleAddExercise = (exercise: Exercise) => {
@@ -122,7 +122,7 @@ export default function AddExerciseModal({
   if (!isOpen) return null;
 
   const renderCategorySection = (category: string, exercises: Exercise[]) => {
-    const isExpanded = getDefaultExpanded(category);
+    const isExpanded = isCategoryExpanded(category);
     const colors = CATEGORY_COLORS[category] || { bg: "rgba(255,255,255,0.1)", text: "#ffffff", border: "rgba(255,255,255,0.2)" };
 
     return (
