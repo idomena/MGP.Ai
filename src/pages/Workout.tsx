@@ -572,7 +572,7 @@ export default function WorkoutPage() {
             </motion.div>
           </div>
         ) : (
-          <div className="px-4">
+          <div className="px-4 pb-40">
             <div className="flex items-center justify-between mb-4 mt-2">
               <div className="flex items-center gap-2">
                 <span
