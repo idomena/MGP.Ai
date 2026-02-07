@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Lock, CheckCircle2, Play, X } from "lucide-react";
+import { Lock, CheckCircle2, Play, X, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
 
 interface DayStatus {
@@ -420,6 +420,26 @@ export default function JourneyPath({ dayStatuses, onDayClick, isLoading }: Jour
           background: 'linear-gradient(to bottom, transparent 0%, #0a0e27 100%)'
         }}
       />
+
+      {/* Coming Soon Sign */}
+      <div 
+        className="relative pb-20 flex flex-col items-center justify-center"
+        style={{ marginTop: "-20px" }}
+      >
+        <div className="w-16 h-1 rounded-full bg-white/10 mb-8" />
+        <div className="relative group">
+          <div className="absolute -inset-4 bg-gradient-to-r from-[#7c57ff]/20 to-[#60a5fa]/20 rounded-2xl blur-xl opacity-50 group-hover:opacity-100 transition-opacity" />
+          <div className="relative bg-white/5 backdrop-blur-md border border-white/10 px-8 py-6 rounded-2xl flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center shadow-lg shadow-purple-500/20">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-center">
+              <h3 className="text-white font-bold text-lg">Coming Soon</h3>
+              <p className="text-white/50 text-sm max-w-[200px]">New levels and features are being prepared for your journey.</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
