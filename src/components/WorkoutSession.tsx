@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { X, Check, Sparkles, SkipForward, Clock, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,6 +36,49 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
   const [isResting, setIsResting] = useState(false);
   const [restTimeLeft, setRestTimeLeft] = useState(90);
   const [showCelebration, setShowCelebration] = useState(false);
+
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  const requestWakeLock = useCallback(async () => {
+    if (!("wakeLock" in navigator)) {
+      console.warn("Wake Lock API is not supported in this browser");
+      return;
+    }
+    try {
+      wakeLockRef.current = await navigator.wakeLock.request("screen");
+      console.log("Wake lock acquired");
+      wakeLockRef.current.addEventListener("release", () => {
+        console.log("Wake lock released");
+      });
+    } catch (err) {
+      console.error("Failed to acquire wake lock:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    requestWakeLock();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        console.log("Page became visible, re-acquiring wake lock");
+        requestWakeLock();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release().then(() => {
+          console.log("Wake lock released on unmount");
+        }).catch((err) => {
+          console.error("Error releasing wake lock on unmount:", err);
+        });
+        wakeLockRef.current = null;
+      }
+    };
+  }, [requestWakeLock]);
 
   const currentExercise = exercises[currentExerciseIndex];
   const totalExercises = exercises.length;

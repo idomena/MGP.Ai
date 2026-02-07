@@ -1,0 +1,2121 @@
+# COMPLETE MASTER PROMPT FOR REPLIT: WORKOUT TIMER APP
+
+## PASTE THIS ENTIRE PROMPT INTO REPLIT AI
+
+-----
+
+## 🎯 PROJECT OVERVIEW
+
+I need you to build/fix a complete workout timer app with the following features:
+
+1. ✅ Interactive body diagram for exercise selection
+1. ✅ Exercises loaded from Supabase `exercises_library` table
+1. ✅ Drag & drop reordering of exercises
+1. ✅ Delete exercises with confirmation
+1. ✅ Wake Lock to keep screen on during workouts
+1. ✅ Set and rep tracking with rest timers
+1. ✅ Mobile-responsive design
+
+-----
+
+## 🔥 CRITICAL ISSUES TO FIX FIRST
+
+### ISSUE 1: Add Exercise Button Not Working
+
+- Fix the “Add Exercise” button click handler
+- Ensure modal/dialog opens properly
+- Debug any JavaScript errors preventing exercise addition
+
+### ISSUE 2: Exercise Selection Interface
+
+- Replace current exercise selection with interactive body diagram
+- Fetch exercises from Supabase based on selected muscle group
+- Display exercises in a clean, selectable grid
+
+### ISSUE 3: Drag & Drop Reordering
+
+- Add drag handles to each exercise
+- Implement drag & drop functionality (desktop)
+- Implement long-press drag on mobile
+- Update exercise order numbers dynamically
+
+### ISSUE 4: Screen Timeout During Workout
+
+- Implement Wake Lock API
+- Keep screen active from workout start to completion
+- Handle browser compatibility gracefully
+
+-----
+
+## 📋 COMPLETE IMPLEMENTATION GUIDE
+
+### PART 1: SUPABASE CONNECTION & DATA STRUCTURE
+
+#### Expected Supabase Table Structure:
+
+```sql
+-- Table: exercises_library
+-- Columns needed:
+CREATE TABLE exercises_library (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  muscle_group TEXT NOT NULL, 
+  -- Values: 'chest', 'back', 'shoulders', 'arms', 'legs', 'core'
+  description TEXT,
+  difficulty TEXT, -- 'beginner', 'intermediate', 'advanced'
+  equipment TEXT, -- 'barbell', 'dumbbell', 'bodyweight', 'machine', etc.
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+#### Supabase Connection (add to your JS):
+
+```javascript
+// Initialize Supabase client
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Test connection
+async function testSupabaseConnection() {
+  try {
+    const { data, error } = await supabase
+      .from('exercises_library')
+      .select('count');
+    
+    if (error) throw error;
+    console.log('✅ Supabase connected successfully');
+  } catch (error) {
+    console.error('❌ Supabase connection failed:', error);
+  }
+}
+
+testSupabaseConnection();
+```
+
+-----
+
+### PART 2: BODY DIAGRAM SELECTION INTERFACE
+
+#### HTML Modal Structure:
+
+```html
+<!-- Add this modal to your HTML -->
+<div id="exercise-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Add Exercise</h2>
+      <button class="close-btn" onclick="closeExerciseModal()">&times;</button>
+    </div>
+    <div id="modal-body" class="modal-body">
+      <!-- Content will be dynamically inserted here -->
+    </div>
+  </div>
+</div>
+
+<!-- Add Exercise Button -->
+<button id="add-exercise-btn" class="primary-btn" onclick="openExerciseModal()">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+  </svg>
+  Add Exercise
+</button>
+```
+
+#### JavaScript for Body Diagram:
+
+```javascript
+// Global variables
+let selectedExercises = [];
+let currentView = 'body-diagram'; // 'body-diagram' or 'exercise-list'
+let selectedMuscleGroup = null;
+
+// Body parts configuration
+const bodyParts = {
+  chest: { 
+    name: 'Chest', 
+    color: '#FF6B6B',
+    icon: '💪'
+  },
+  back: { 
+    name: 'Back', 
+    color: '#4ECDC4',
+    icon: '🦴'
+  },
+  shoulders: { 
+    name: 'Shoulders', 
+    color: '#45B7D1',
+    icon: '🏋️'
+  },
+  arms: { 
+    name: 'Arms', 
+    color: '#FFA07A',
+    icon: '💪'
+  },
+  legs: { 
+    name: 'Legs', 
+    color: '#98D8C8',
+    icon: '🦵'
+  },
+  core: { 
+    name: 'Core/Abs', 
+    color: '#F7DC6F',
+    icon: '⭐'
+  }
+};
+
+// Open exercise modal
+function openExerciseModal() {
+  const modal = document.getElementById('exercise-modal');
+  modal.style.display = 'flex';
+  currentView = 'body-diagram';
+  renderBodyDiagram();
+}
+
+// Close exercise modal
+function closeExerciseModal() {
+  const modal = document.getElementById('exercise-modal');
+  modal.style.display = 'none';
+  currentView = 'body-diagram';
+  selectedMuscleGroup = null;
+}
+
+// Render body diagram view
+function renderBodyDiagram() {
+  const modalBody = document.getElementById('modal-body');
+  
+  const html = `
+    <div class="body-diagram-container">
+      <h3>Select Muscle Group</h3>
+      <div class="body-parts-grid">
+        ${Object.entries(bodyParts).map(([key, value]) => `
+          <div class="body-part-card" 
+               onclick="selectMuscleGroup('${key}')" 
+               style="--part-color: ${value.color}">
+            <div class="body-part-icon">${value.icon}</div>
+            <h4>${value.name}</h4>
+            <div class="color-bar" style="background: ${value.color}"></div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  
+  modalBody.innerHTML = html;
+}
+
+// Select muscle group and load exercises
+async function selectMuscleGroup(muscleGroup) {
+  selectedMuscleGroup = muscleGroup;
+  currentView = 'exercise-list';
+  
+  // Show loading state
+  const modalBody = document.getElementById('modal-body');
+  modalBody.innerHTML = `
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading exercises...</p>
+    </div>
+  `;
+  
+  try {
+    // Fetch exercises from Supabase
+    const { data: exercises, error } = await supabase
+      .from('exercises_library')
+      .select('*')
+      .eq('muscle_group', muscleGroup)
+      .order('name', { ascending: true });
+    
+    if (error) throw error;
+    
+    if (exercises.length === 0) {
+      modalBody.innerHTML = `
+        <div class="empty-state">
+          <p>No exercises found for ${bodyParts[muscleGroup].name}</p>
+          <button class="secondary-btn" onclick="renderBodyDiagram()">← Back to Muscle Groups</button>
+        </div>
+      `;
+      return;
+    }
+    
+    // Render exercise list
+    renderExerciseList(exercises, muscleGroup);
+    
+  } catch (error) {
+    console.error('Error fetching exercises:', error);
+    modalBody.innerHTML = `
+      <div class="error-state">
+        <p>❌ Failed to load exercises</p>
+        <p class="error-message">${error.message}</p>
+        <button class="secondary-btn" onclick="renderBodyDiagram()">← Try Again</button>
+      </div>
+    `;
+  }
+}
+
+// Render exercise list
+function renderExerciseList(exercises, muscleGroup) {
+  const modalBody = document.getElementById('modal-body');
+  const partColor = bodyParts[muscleGroup].color;
+  
+  const html = `
+    <div class="exercise-list-container">
+      <div class="exercise-list-header">
+        <button class="back-btn" onclick="renderBodyDiagram()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Back
+        </button>
+        <h3 style="color: ${partColor}">${bodyParts[muscleGroup].name} Exercises</h3>
+        <div style="width: 60px;"></div>
+      </div>
+      
+      <div class="exercises-grid">
+        ${exercises.map(exercise => `
+          <div class="exercise-card" onclick='selectExercise(${JSON.stringify(exercise)})'>
+            <div class="exercise-card-header">
+              <h4>${exercise.name}</h4>
+              <span class="add-icon" style="color: ${partColor}">+</span>
+            </div>
+            ${exercise.description ? `<p class="exercise-description">${exercise.description}</p>` : ''}
+            <div class="exercise-meta">
+              ${exercise.difficulty ? `<span class="badge difficulty-${exercise.difficulty}">${exercise.difficulty}</span>` : ''}
+              ${exercise.equipment ? `<span class="badge equipment">${exercise.equipment}</span>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  
+  modalBody.innerHTML = html;
+}
+
+// Select exercise and add to workout
+function selectExercise(exercise) {
+  const modalBody = document.getElementById('modal-body');
+  
+  const html = `
+    <div class="exercise-config-container">
+      <h3>Configure ${exercise.name}</h3>
+      
+      <form id="exercise-config-form" onsubmit="addExerciseToWorkout(event, ${JSON.stringify(exercise)})">
+        <div class="form-group">
+          <label for="sets">Number of Sets</label>
+          <input type="number" id="sets" name="sets" min="1" max="10" value="3" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="reps">Reps per Set</label>
+          <input type="number" id="reps" name="reps" min="1" max="100" value="10" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="rest">Rest Time (seconds)</label>
+          <input type="number" id="rest" name="rest" min="15" max="300" value="60" required>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" onclick="selectMuscleGroup('${exercise.muscle_group}')">
+            Cancel
+          </button>
+          <button type="submit" class="primary-btn">
+            Add to Workout
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+  
+  modalBody.innerHTML = html;
+}
+
+// Add exercise to workout
+function addExerciseToWorkout(event, exercise) {
+  event.preventDefault();
+  
+  const sets = parseInt(document.getElementById('sets').value);
+  const reps = parseInt(document.getElementById('reps').value);
+  const rest = parseInt(document.getElementById('rest').value);
+  
+  const workoutExercise = {
+    id: exercise.id,
+    name: exercise.name,
+    muscle_group: exercise.muscle_group,
+    sets: sets,
+    reps: reps,
+    rest: rest,
+    order: selectedExercises.length,
+    currentSet: 0,
+    completed: false
+  };
+  
+  selectedExercises.push(workoutExercise);
+  
+  // Close modal
+  closeExerciseModal();
+  
+  // Update workout display
+  renderWorkoutList();
+  
+  // Show success notification
+  showNotification(`✅ ${exercise.name} added to workout!`, 'success');
+}
+```
+
+-----
+
+### PART 3: DRAG & DROP REORDERING
+
+#### HTML for Workout List:
+
+```html
+<div id="workout-container">
+  <div class="workout-header">
+    <h2>Your Workout</h2>
+    <button id="add-exercise-btn" class="icon-btn" onclick="openExerciseModal()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+  </div>
+  
+  <div id="workout-list" class="workout-list">
+    <!-- Exercises will be rendered here -->
+  </div>
+  
+  <button id="start-workout-btn" class="primary-btn full-width" onclick="startWorkout()" disabled>
+    Start Workout
+  </button>
+</div>
+```
+
+#### JavaScript for Drag & Drop:
+
+```javascript
+let draggedIndex = null;
+let draggedElement = null;
+
+// Render workout list
+function renderWorkoutList() {
+  const workoutList = document.getElementById('workout-list');
+  const startBtn = document.getElementById('start-workout-btn');
+  
+  if (selectedExercises.length === 0) {
+    workoutList.innerHTML = `
+      <div class="empty-workout">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <p>No exercises yet</p>
+        <p class="hint">Tap the + button to add exercises</p>
+      </div>
+    `;
+    startBtn.disabled = true;
+    return;
+  }
+  
+  const html = selectedExercises.map((exercise, index) => `
+    <div class="exercise-item" 
+         draggable="true"
+         data-index="${index}"
+         id="exercise-${index}">
+      
+      <!-- Drag Handle -->
+      <div class="drag-handle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="8" y1="6" x2="16" y2="6"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+          <line x1="8" y1="18" x2="16" y2="18"/>
+        </svg>
+      </div>
+      
+      <!-- Order Number -->
+      <div class="exercise-number">${index + 1}</div>
+      
+      <!-- Exercise Info -->
+      <div class="exercise-info">
+        <h4>${exercise.name}</h4>
+        <p>${exercise.sets} sets × ${exercise.reps} reps</p>
+        <p class="rest-info">Rest: ${exercise.rest}s</p>
+      </div>
+      
+      <!-- Delete Button -->
+      <button class="delete-btn" onclick="confirmDeleteExercise(${index})">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+          <line x1="10" y1="11" x2="10" y2="17"/>
+          <line x1="14" y1="11" x2="14" y2="17"/>
+        </svg>
+      </button>
+    </div>
+  `).join('');
+  
+  workoutList.innerHTML = html;
+  startBtn.disabled = false;
+  
+  // Attach drag event listeners
+  attachDragListeners();
+}
+
+// Attach drag event listeners
+function attachDragListeners() {
+  const items = document.querySelectorAll('.exercise-item');
+  
+  items.forEach((item, index) => {
+    // Desktop drag events
+    item.addEventListener('dragstart', handleDragStart);
+    item.addEventListener('dragover', handleDragOver);
+    item.addEventListener('drop', handleDrop);
+    item.addEventListener('dragend', handleDragEnd);
+    item.addEventListener('dragenter', handleDragEnter);
+    item.addEventListener('dragleave', handleDragLeave);
+    
+    // Mobile touch events for drag
+    item.addEventListener('touchstart', handleTouchStart, { passive: false });
+    item.addEventListener('touchmove', handleTouchMove, { passive: false });
+    item.addEventListener('touchend', handleTouchEnd);
+  });
+}
+
+// Desktop drag handlers
+function handleDragStart(e) {
+  draggedElement = this;
+  draggedIndex = parseInt(this.dataset.index);
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/html', this.innerHTML);
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  return false;
+}
+
+function handleDragEnter(e) {
+  if (this !== draggedElement) {
+    this.classList.add('drag-over');
+  }
+}
+
+function handleDragLeave(e) {
+  this.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  
+  const dropIndex = parseInt(this.dataset.index);
+  
+  if (draggedIndex !== dropIndex && draggedIndex !== null) {
+    // Reorder array
+    const movedExercise = selectedExercises.splice(draggedIndex, 1)[0];
+    selectedExercises.splice(dropIndex, 0, movedExercise);
+    
+    // Update order property
+    selectedExercises.forEach((ex, idx) => ex.order = idx);
+    
+    // Re-render
+    renderWorkoutList();
+    
+    // Show feedback
+    showNotification('Exercise reordered', 'info');
+  }
+  
+  return false;
+}
+
+function handleDragEnd(e) {
+  this.classList.remove('dragging');
+  
+  document.querySelectorAll('.exercise-item').forEach(item => {
+    item.classList.remove('drag-over');
+  });
+  
+  draggedIndex = null;
+  draggedElement = null;
+}
+
+// Mobile touch handlers
+let touchStartY = 0;
+let touchStartX = 0;
+let touchTimeout = null;
+let isDraggingTouch = false;
+let touchedElement = null;
+
+function handleTouchStart(e) {
+  touchedElement = this;
+  touchStartY = e.touches[0].clientY;
+  touchStartX = e.touches[0].clientX;
+  
+  // Long press to start drag
+  touchTimeout = setTimeout(() => {
+    isDraggingTouch = true;
+    touchedElement.classList.add('dragging');
+    navigator.vibrate && navigator.vibrate(50); // Haptic feedback
+  }, 500);
+}
+
+function handleTouchMove(e) {
+  if (!isDraggingTouch) {
+    clearTimeout(touchTimeout);
+    return;
+  }
+  
+  e.preventDefault();
+  
+  const touch = e.touches[0];
+  const touchY = touch.clientY;
+  
+  // Move element visually
+  touchedElement.style.transform = `translateY(${touchY - touchStartY}px)`;
+  
+  // Detect element under touch
+  const elementBelow = document.elementFromPoint(touch.clientX, touchY);
+  const targetItem = elementBelow?.closest('.exercise-item');
+  
+  if (targetItem && targetItem !== touchedElement) {
+    targetItem.classList.add('drag-over');
+  }
+}
+
+function handleTouchEnd(e) {
+  clearTimeout(touchTimeout);
+  
+  if (!isDraggingTouch) return;
+  
+  const touch = e.changedTouches[0];
+  const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+  const targetItem = elementBelow?.closest('.exercise-item');
+  
+  if (targetItem && targetItem !== touchedElement) {
+    const fromIndex = parseInt(touchedElement.dataset.index);
+    const toIndex = parseInt(targetItem.dataset.index);
+    
+    // Reorder
+    const movedExercise = selectedExercises.splice(fromIndex, 1)[0];
+    selectedExercises.splice(toIndex, 0, movedExercise);
+    
+    selectedExercises.forEach((ex, idx) => ex.order = idx);
+  }
+  
+  // Reset
+  touchedElement.style.transform = '';
+  touchedElement.classList.remove('dragging');
+  
+  document.querySelectorAll('.exercise-item').forEach(item => {
+    item.classList.remove('drag-over');
+  });
+  
+  renderWorkoutList();
+  
+  isDraggingTouch = false;
+  touchedElement = null;
+}
+```
+
+-----
+
+### PART 4: DELETE EXERCISE FUNCTIONALITY
+
+```javascript
+// Confirm and delete exercise
+function confirmDeleteExercise(index) {
+  const exercise = selectedExercises[index];
+  
+  if (confirm(`Are you sure you want to remove "${exercise.name}" from your workout?`)) {
+    deleteExercise(index);
+  }
+}
+
+// Delete exercise
+function deleteExercise(index) {
+  const exercise = selectedExercises[index];
+  
+  // Remove from array
+  selectedExercises.splice(index, 1);
+  
+  // Update orders
+  selectedExercises.forEach((ex, idx) => ex.order = idx);
+  
+  // Re-render
+  renderWorkoutList();
+  
+  // Show notification
+  showNotification(`🗑️ ${exercise.name} removed from workout`, 'info');
+}
+```
+
+-----
+
+### PART 5: WAKE LOCK IMPLEMENTATION
+
+```javascript
+// Wake Lock variables
+let wakeLock = null;
+let isWorkoutActive = false;
+
+// Request wake lock
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      console.log('✅ Wake Lock activated');
+      
+      wakeLock.addEventListener('release', () => {
+        console.log('Wake Lock released');
+        if (isWorkoutActive) {
+          // Re-acquire if workout still active
+          requestWakeLock();
+        }
+      });
+    } else {
+      console.warn('⚠️ Wake Lock API not supported');
+      showNotification('Your browser does not support screen wake lock. Please keep your screen on manually.', 'warning');
+    }
+  } catch (err) {
+    console.error('❌ Wake Lock error:', err);
+  }
+}
+
+// Release wake lock
+async function releaseWakeLock() {
+  if (wakeLock) {
+    try {
+      await wakeLock.release();
+      wakeLock = null;
+      isWorkoutActive = false;
+      console.log('✅ Wake Lock released');
+    } catch (err) {
+      console.error('❌ Error releasing wake lock:', err);
+    }
+  }
+}
+
+// Handle page visibility
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible' && isWorkoutActive) {
+    await requestWakeLock();
+  }
+});
+
+// Start workout
+function startWorkout() {
+  if (selectedExercises.length === 0) {
+    showNotification('❌ Please add exercises first', 'error');
+    return;
+  }
+  
+  // Activate wake lock
+  isWorkoutActive = true;
+  requestWakeLock();
+  
+  // Reset all exercises
+  selectedExercises.forEach(ex => {
+    ex.currentSet = 0;
+    ex.completed = false;
+  });
+  
+  // Switch to workout view
+  showWorkoutScreen();
+  
+  // Start first exercise
+  startExercise(0);
+}
+
+// Complete workout
+function completeWorkout() {
+  // Release wake lock
+  releaseWakeLock();
+  
+  // Show completion screen
+  showCompletionScreen();
+  
+  showNotification('🎉 Workout completed!', 'success');
+}
+
+// Stop/exit workout
+function stopWorkout() {
+  if (confirm('Are you sure you want to stop the workout?')) {
+    releaseWakeLock();
+    showWorkoutBuilder();
+    showNotification('Workout stopped', 'info');
+  }
+}
+```
+
+-----
+
+### PART 6: WORKOUT TIMER LOGIC
+
+```javascript
+let currentExerciseIndex = 0;
+let currentSet = 1;
+let isResting = false;
+let timerInterval = null;
+let timeRemaining = 0;
+
+// Show workout screen
+function showWorkoutScreen() {
+  const container = document.getElementById('workout-container');
+  container.innerHTML = `
+    <div class="workout-active-screen">
+      <div class="workout-header">
+        <button class="icon-btn" onclick="stopWorkout()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h2>Workout In Progress</h2>
+        <div style="width: 40px;"></div>
+      </div>
+      
+      <div class="progress-bar">
+        <div class="progress-fill" id="workout-progress" style="width: 0%"></div>
+      </div>
+      
+      <div id="exercise-display" class="exercise-display">
+        <!-- Exercise info will be rendered here -->
+      </div>
+      
+      <div id="timer-display" class="timer-display">
+        <!-- Timer will be rendered here -->
+      </div>
+      
+      <div id="workout-controls" class="workout-controls">
+        <!-- Control buttons will be rendered here -->
+      </div>
+    </div>
+  `;
+}
+
+// Start exercise
+function startExercise(exerciseIndex) {
+  currentExerciseIndex = exerciseIndex;
+  const exercise = selectedExercises[exerciseIndex];
+  currentSet = exercise.currentSet + 1;
+  
+  renderExerciseDisplay();
+  renderTimerDisplay('ready');
+  renderWorkoutControls('ready');
+}
+
+// Render exercise display
+function renderExerciseDisplay() {
+  const exercise = selectedExercises[currentExerciseIndex];
+  const display = document.getElementById('exercise-display');
+  
+  const totalSets = selectedExercises.reduce((sum, ex) => sum + ex.sets, 0);
+  const completedSets = selectedExercises.reduce((sum, ex) => sum + ex.currentSet, 0);
+  const progressPercent = (completedSets / totalSets) * 100;
+  
+  document.getElementById('workout-progress').style.width = `${progressPercent}%`;
+  
+  display.innerHTML = `
+    <div class="exercise-name">${exercise.name}</div>
+    <div class="exercise-stats">
+      <div class="stat">
+        <span class="stat-label">Set</span>
+        <span class="stat-value">${currentSet} / ${exercise.sets}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Reps</span>
+        <span class="stat-value">${exercise.reps}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Exercise</span>
+        <span class="stat-value">${currentExerciseIndex + 1} / ${selectedExercises.length}</span>
+      </div>
+    </div>
+  `;
+}
+
+// Render timer display
+function renderTimerDisplay(state) {
+  const display = document.getElementById('timer-display');
+  
+  if (state === 'ready') {
+    display.innerHTML = `
+      <div class="timer-ready">
+        <div class="ready-message">Ready to start set ${currentSet}</div>
+      </div>
+    `;
+  } else if (state === 'rest') {
+    display.innerHTML = `
+      <div class="timer-rest">
+        <div class="timer-label">Rest Time</div>
+        <div class="timer-value" id="timer-value">${formatTime(timeRemaining)}</div>
+      </div>
+    `;
+  } else if (state === 'active') {
+    display.innerHTML = `
+      <div class="timer-active">
+        <div class="active-message">Perform ${selectedExercises[currentExerciseIndex].reps} reps</div>
+      </div>
+    `;
+  }
+}
+
+// Render workout controls
+function renderWorkoutControls(state) {
+  const controls = document.getElementById('workout-controls');
+  
+  if (state === 'ready') {
+    controls.innerHTML = `
+      <button class="primary-btn full-width large" onclick="startSet()">
+        Start Set ${currentSet}
+      </button>
+    `;
+  } else if (state === 'active') {
+    controls.innerHTML = `
+      <button class="primary-btn full-width large" onclick="completeSet()">
+        Complete Set
+      </button>
+    `;
+  } else if (state === 'rest') {
+    controls.innerHTML = `
+      <button class="secondary-btn full-width" onclick="skipRest()">
+        Skip Rest
+      </button>
+    `;
+  }
+}
+
+// Start set
+function startSet() {
+  renderTimerDisplay('active');
+  renderWorkoutControls('active');
+}
+
+// Complete set
+function completeSet() {
+  const exercise = selectedExercises[currentExerciseIndex];
+  exercise.currentSet++;
+  
+  // Check if all sets completed for this exercise
+  if (exercise.currentSet >= exercise.sets) {
+    exercise.completed = true;
+    
+    // Move to next exercise
+    const nextExerciseIndex = currentExerciseIndex + 1;
+    
+    if (nextExerciseIndex < selectedExercises.length) {
+      // Start next exercise
+      setTimeout(() => {
+        startExercise(nextExerciseIndex);
+      }, 1000);
+    } else {
+      // Workout complete
+      completeWorkout();
+    }
+  } else {
+    // Start rest timer
+    startRestTimer(exercise.rest);
+  }
+}
+
+// Start rest timer
+function startRestTimer(duration) {
+  timeRemaining = duration;
+  isResting = true;
+  
+  renderTimerDisplay('rest');
+  renderWorkoutControls('rest');
+  
+  timerInterval = setInterval(() => {
+    timeRemaining--;
+    
+    document.getElementById('timer-value').textContent = formatTime(timeRemaining);
+    
+    if (timeRemaining <= 0) {
+      clearInterval(timerInterval);
+      isResting = false;
+      
+      // Vibrate and notify
+      navigator.vibrate && navigator.vibrate([200, 100, 200]);
+      showNotification('Rest complete! Ready for next set', 'info');
+      
+      // Start next set
+      startExercise(currentExerciseIndex);
+    }
+  }, 1000);
+}
+
+// Skip rest
+function skipRest() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  
+  isResting = false;
+  startExercise(currentExerciseIndex);
+}
+
+// Format time (seconds to MM:SS)
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Show completion screen
+function showCompletionScreen() {
+  const container = document.getElementById('workout-container');
+  
+  const totalSets = selectedExercises.reduce((sum, ex) => sum + ex.sets, 0);
+  const totalExercises = selectedExercises.length;
+  
+  container.innerHTML = `
+    <div class="completion-screen">
+      <div class="completion-icon">🎉</div>
+      <h1>Workout Complete!</h1>
+      <div class="completion-stats">
+        <div class="completion-stat">
+          <div class="stat-value">${totalExercises}</div>
+          <div class="stat-label">Exercises</div>
+        </div>
+        <div class="completion-stat">
+          <div class="stat-value">${totalSets}</div>
+          <div class="stat-label">Sets</div>
+        </div>
+      </div>
+      <button class="primary-btn full-width" onclick="resetWorkout()">
+        Done
+      </button>
+    </div>
+  `;
+}
+
+// Reset workout
+function resetWorkout() {
+  selectedExercises.forEach(ex => {
+    ex.currentSet = 0;
+    ex.completed = false;
+  });
+  
+  showWorkoutBuilder();
+}
+
+// Show workout builder
+function showWorkoutBuilder() {
+  location.reload(); // Simple reset - reload the page
+}
+```
+
+-----
+
+### PART 7: NOTIFICATION SYSTEM
+
+```javascript
+// Show notification
+function showNotification(message, type = 'info') {
+  // Remove existing notifications
+  const existing = document.querySelector('.notification');
+  if (existing) {
+    existing.remove();
+  }
+  
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.textContent = message;
+  
+  document.body.appendChild(notification);
+  
+  // Animate in
+  setTimeout(() => {
+    notification.classList.add('show');
+  }, 10);
+  
+  // Auto remove
+  setTimeout(() => {
+    notification.classList.remove('show');
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
+  }, 3000);
+}
+```
+
+-----
+
+### PART 8: COMPLETE CSS STYLES
+
+```css
+/* ==================== GLOBAL STYLES ==================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary-color: #4CAF50;
+  --secondary-color: #2196F3;
+  --danger-color: #f44336;
+  --warning-color: #ff9800;
+  --success-color: #4CAF50;
+  --info-color: #2196F3;
+  --text-primary: #212121;
+  --text-secondary: #757575;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --border-color: #e0e0e0;
+  --shadow: 0 2px 8px rgba(0,0,0,0.1);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==================== BUTTONS ==================== */
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.primary-btn {
+  background: var(--primary-color);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+}
+
+.primary-btn:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.primary-btn:active {
+  transform: translateY(0);
+}
+
+.primary-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.secondary-btn {
+  background: white;
+  color: var(--text-primary);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  border: 2px solid var(--border-color);
+}
+
+.secondary-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.icon-btn {
+  background: transparent;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+}
+
+.icon-btn:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.large {
+  padding: 16px 32px;
+  font-size: 18px;
+}
+
+/* ==================== MODAL ==================== */
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 32px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-btn:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* ==================== BODY DIAGRAM ==================== */
+
+.body-diagram-container {
+  padding: 20px 0;
+}
+
+.body-diagram-container h3 {
+  text-align: center;
+  margin-bottom: 24px;
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.body-parts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.body-part-card {
+  background: white;
+  border: 3px solid var(--part-color);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.body-part-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.body-part-card:active {
+  transform: translateY(-2px);
+}
+
+.body-part-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.body-part-card h4 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.color-bar {
+  height: 4px;
+  width: 100%;
+  border-radius: 2px;
+  margin-top: 12px;
+}
+
+/* ==================== EXERCISE LIST ==================== */
+
+.exercise-list-container {
+  min-height: 400px;
+}
+
+.exercise-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.exercise-list-header h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.back-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.back-btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.exercises-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.exercise-card {
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.exercise-card:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.exercise-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.exercise-card-header h4 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.add-icon {
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.exercise-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 8px 0;
+  line-height: 1.4;
+}
+
+.exercise-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.difficulty-beginner {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.difficulty-intermediate {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+.difficulty-advanced {
+  background: #FFEBEE;
+  color: #C62828;
+}
+
+.equipment {
+  background: #E3F2FD;
+  color: #1565C0;
+}
+
+/* ==================== EXERCISE CONFIG ==================== */
+
+.exercise-config-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.exercise-config-container h3 {
+  text-align: center;
+  margin-bottom: 24px;
+  font-size: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: inherit;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.form-actions button {
+  flex: 1;
+}
+
+/* ==================== WORKOUT LIST ==================== */
+
+.workout-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.workout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.workout-header h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.workout-list {
+  min-height: 200px;
+  margin-bottom: 24px;
+}
+
+.exercise-item {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow);
+  cursor: move;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.exercise-item:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.exercise-item.dragging {
+  opacity: 0.5;
+  transform: scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
+
+.exercise-item.drag-over {
+  border-top: 4px solid var(--primary-color);
+  padding-top: 12px;
+}
+
+.drag-handle {
+  cursor: grab;
+  padding: 8px;
+  color: var(--text-secondary);
+  touch-action: none;
+  flex-shrink: 0;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.exercise-number {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--primary-color);
+  min-width: 32px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.exercise-info {
+  flex: 1;
+}
+
+.exercise-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.exercise-info p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.rest-info {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.delete-btn {
+  background: var(--danger-color);
+  color: white;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+  background: #d32f2f;
+  transform: scale(1.1);
+}
+
+.delete-btn:active {
+  transform: scale(0.95);
+}
+
+.empty-workout {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+.empty-workout svg {
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-workout p {
+  margin: 8px 0;
+}
+
+.empty-workout .hint {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ==================== WORKOUT ACTIVE SCREEN ==================== */
+
+.workout-active-screen {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary-color);
+  transition: width 0.5s ease;
+}
+
+.exercise-display {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.exercise-name {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+}
+
+.exercise-stats {
+  display: flex;
+  justify-content: space-around;
+  gap: 16px;
+}
+
+.stat {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.timer-display {
+  background: white;
+  border-radius: 16px;
+  padding: 48px 32px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  text-align: center;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-ready .ready-message,
+.timer-active .active-message {
+  font-size: 20px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.timer-rest {
+  width: 100%;
+}
+
+.timer-label {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.timer-value {
+  font-size: 72px;
+  font-weight: bold;
+  color: var(--primary-color);
+  font-variant-numeric: tabular-nums;
+}
+
+.workout-controls {
+  margin-top: 24px;
+}
+
+/* ==================== COMPLETION SCREEN ==================== */
+
+.completion-screen {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.completion-icon {
+  font-size: 96px;
+  margin-bottom: 24px;
+  animation: bounce 1s ease;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.completion-screen h1 {
+  font-size: 32px;
+  margin-bottom: 32px;
+  color: var(--text-primary);
+}
+
+.completion-stats {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+
+.completion-stat {
+  text-align: center;
+}
+
+.completion-stat .stat-value {
+  font-size: 48px;
+  font-weight: bold;
+  color: var(--primary-color);
+  display: block;
+}
+
+.completion-stat .stat-label {
+  font-size: 16px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: block;
+  margin-top: 8px;
+}
+
+/* ==================== LOADING & EMPTY STATES ==================== */
+
+.loading-container,
+.empty-state,
+.error-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--bg-secondary);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-container p,
+.empty-state p,
+.error-state p {
+  color: var(--text-secondary);
+  margin: 8px 0;
+}
+
+.error-message {
+  color: var(--danger-color);
+  font-size: 14px;
+  background: #FFEBEE;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+/* ==================== NOTIFICATIONS ==================== */
+
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  max-width: 400px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  color: white;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateX(400px);
+  transition: all 0.3s ease;
+  z-index: 2000;
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.notification-success {
+  background: var(--success-color);
+}
+
+.notification-error {
+  background: var(--danger-color);
+}
+
+.notification-warning {
+  background: var(--warning-color);
+}
+
+.notification-info {
+  background: var(--info-color);
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+@media (max-width: 768px) {
+  .modal-content {
+    max-height: 95vh;
+  }
+  
+  .body-parts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .exercises-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .exercise-stats {
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .timer-value {
+    font-size: 56px;
+  }
+  
+  .notification {
+    left: 20px;
+    right: 20px;
+    max-width: none;
+    transform: translateY(-100px);
+  }
+  
+  .notification.show {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .workout-header h2 {
+    font-size: 24px;
+  }
+  
+  .exercise-name {
+    font-size: 24px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+  
+  .timer-value {
+    font-size: 48px;
+  }
+  
+  .completion-icon {
+    font-size: 72px;
+  }
+  
+  .completion-screen h1 {
+    font-size: 28px;
+  }
+  
+  .completion-stat .stat-value {
+    font-size: 36px;
+  }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==================== UTILITIES ==================== */
+
+.text-center {
+  text-align: center;
+}
+
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mt-4 { margin-top: 32px; }
+
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+.mb-4 { margin-bottom: 32px; }
+
+.p-1 { padding: 8px; }
+.p-2 { padding: 16px; }
+.p-3 { padding: 24px; }
+.p-4 { padding: 32px; }
+```
+
+-----
+
+### PART 9: HTML STRUCTURE
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Workout Timer Pro</title>
+  
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  
+  <!-- Main Container -->
+  <div id="app" class="app-container">
+    
+    <!-- Workout Builder -->
+    <div id="workout-container" class="workout-container">
+      <div class="workout-header">
+        <h2>Your Workout</h2>
+        <button id="add-exercise-btn" class="icon-btn" onclick="openExerciseModal()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+      
+      <div id="workout-list" class="workout-list">
+        <!-- Exercises will be rendered here -->
+      </div>
+      
+      <button id="start-workout-btn" class="primary-btn full-width large" onclick="startWorkout()" disabled>
+        Start Workout
+      </button>
+    </div>
+    
+  </div>
+  
+  <!-- Exercise Selection Modal -->
+  <div id="exercise-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add Exercise</h2>
+        <button class="close-btn" onclick="closeExerciseModal()">&times;</button>
+      </div>
+      <div id="modal-body" class="modal-body">
+        <!-- Content will be dynamically inserted here -->
+      </div>
+    </div>
+  </div>
+  
+  <script src="script.js"></script>
+  
+</body>
+</html>
+```
+
+-----
+
+## 🎯 FINAL TESTING CHECKLIST
+
+Before marking as complete, verify ALL of these:
+
+### Core Functionality:
+
+- [ ] Supabase connection works
+- [ ] Body diagram displays all 6 muscle groups
+- [ ] Clicking muscle group fetches exercises
+- [ ] Exercise list displays correctly
+- [ ] Can configure sets/reps/rest time
+- [ ] Exercises add to workout list
+- [ ] Workout list displays with proper numbering
+
+### Drag & Drop:
+
+- [ ] Desktop: Can drag exercises to reorder
+- [ ] Mobile: Long press activates drag mode
+- [ ] Visual feedback during drag
+- [ ] Order updates after drop
+- [ ] Numbers re-calculate correctly
+
+### Delete:
+
+- [ ] Delete button appears on each exercise
+- [ ] Confirmation dialog shows
+- [ ] Exercise removes on confirm
+- [ ] List updates correctly
+- [ ] Works during workout planning (not during active workout)
+
+### Workout Flow:
+
+- [ ] Start workout button enables when exercises added
+- [ ] Wake lock activates on start
+- [ ] Screen stays on during sets
+- [ ] Screen stays on during rest
+- [ ] Timer counts down correctly
+- [ ] Can skip rest period
+- [ ] Progresses through all exercises
+- [ ] Completion screen shows
+- [ ] Wake lock releases on completion
+
+### Mobile:
+
+- [ ] Works on iOS Safari
+- [ ] Works on Android Chrome
+- [ ] Touch interactions smooth
+- [ ] No scrolling issues
+- [ ] Buttons properly sized for touch
+- [ ] Modals work on mobile
+
+### Polish:
+
+- [ ] Notifications show properly
+- [ ] Loading states display
+- [ ] Empty states show
+- [ ] Error messages clear
+- [ ] No console errors
+- [ ] Smooth animations
+
+-----
+
+## 📦 DELIVERABLES
+
+Please provide:
+
+1. ✅ Complete `index.html` file
+1. ✅ Complete `styles.css` file
+1. ✅ Complete `script.js` file
+1. ✅ Setup instructions for Supabase
+1. ✅ Confirmation that all checklist items pass
+
+-----
+
+## 🚨 CRITICAL REMINDERS
+
+1. **REPLACE SUPABASE CREDENTIALS** - Add your actual Supabase URL and anon key
+1. **TEST ON REAL DEVICES** - Not just desktop browser
+1. **VERIFY WAKE LOCK** - Must work on actual mobile devices
+1. **CHECK ALL EDGE CASES** - Empty states, errors, network failures
+1. **ENSURE ACCESSIBILITY** - ARIA labels, keyboard navigation
+
+-----
+
+## 💡 SAMPLE DATA FOR SUPABASE
+
+Insert this into your `exercises_library` table for testing:
+
+```sql
+INSERT INTO exercises_library (name, muscle_group, description, difficulty, equipment) VALUES
+('Bench Press', 'chest', 'Compound chest exercise', 'intermediate', 'barbell'),
+('Push-ups', 'chest', 'Bodyweight chest exercise', 'beginner', 'bodyweight'),
+('Dumbbell Flyes', 'chest', 'Isolation chest exercise', 'intermediate', 'dumbbell'),
+('Pull-ups', 'back', 'Compound back exercise', 'intermediate', 'bodyweight'),
+('Barbell Rows', 'back', 'Compound back exercise', 'intermediate', 'barbell'),
+('Lat Pulldowns', 'back', 'Back isolation exercise', 'beginner', 'machine'),
+('Overhead Press', 'shoulders', 'Compound shoulder exercise', 'intermediate', 'barbell'),
+('Lateral Raises', 'shoulders', 'Shoulder isolation', 'beginner', 'dumbbell'),
+('Face Pulls', 'shoulders', 'Rear delt exercise', 'beginner', 'cable'),
+('Bicep Curls', 'arms', 'Isolation arm exercise', 'beginner', 'dumbbell'),
+('Tricep Dips', 'arms', 'Compound arm exercise', 'intermediate', 'bodyweight'),
+('Hammer Curls', 'arms', 'Arm isolation exercise', 'beginner', 'dumbbell'),
+('Squats', 'legs', 'Compound leg exercise', 'intermediate', 'barbell'),
+('Lunges', 'legs', 'Unilateral leg exercise', 'beginner', 'bodyweight'),
+('Leg Press', 'legs', 'Compound leg exercise', 'beginner', 'machine'),
+('Planks', 'core', 'Isometric core exercise', 'beginner', 'bodyweight'),
+('Crunches', 'core', 'Core isolation exercise', 'beginner', 'bodyweight'),
+('Russian Twists', 'core', 'Oblique exercise', 'intermediate', 'bodyweight');
+```
+
+-----
+
+## ✅ YOU’RE DONE WHEN:
+
+- User can open body diagram
+- User can select muscle group
+- User can add exercises with custom sets/reps
+- User can drag to reorder exercises
+- User can delete exercises
+- User can start workout
+- Screen stays on during entire workout
+- Workout completes successfully
+- All features work on mobile devices
+
+**GO BUILD IT! 💪**

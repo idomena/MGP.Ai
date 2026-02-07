@@ -55,6 +55,17 @@ const CHEST_EXERCISES: Exercise[] = [
     gifUrl: "/assets/Push-Up.gif",
     instructions: "Keep body straight from head to heels. Lower chest to floor, then push back up. Keep core tight throughout.",
   },
+  {
+    id: 105,
+    name: "Dumbbell Fly",
+    muscles: "Chest, Front Deltoids",
+    sets: 3,
+    reps: "12, 10, 8",
+    time: "8 min",
+    difficulty: "Intermediate",
+    gifUrl: "/assets/Dumbbell-Fly.gif",
+    instructions: "Lie on a flat bench holding dumbbells above chest with arms slightly bent. Lower arms out to sides in a wide arc until you feel a stretch in your chest, then squeeze arms back together.",
+  },
 ];
 
 const BACK_EXERCISES: Exercise[] = [
@@ -101,6 +112,17 @@ const BACK_EXERCISES: Exercise[] = [
     difficulty: "Intermediate",
     gifUrl: "/assets/Dumbbell-Row.gif",
     instructions: "Place one knee and hand on bench. Keep back flat. Pull dumbbell to hip, elbow close to body.",
+  },
+  {
+    id: 205,
+    name: "Pull-Ups",
+    muscles: "Back, Biceps, Lats",
+    sets: 3,
+    reps: "10, 8, 6",
+    time: "8 min",
+    difficulty: "Intermediate",
+    gifUrl: "/assets/Pull-up.gif",
+    instructions: "Hang from a pull-up bar with an overhand grip, hands slightly wider than shoulder-width. Pull yourself up until your chin is above the bar, then lower with control.",
   },
 ];
 
@@ -171,6 +193,39 @@ const LEGS_EXERCISES: Exercise[] = [
     gifUrl: "/assets/Barbell-Hip-Thrust.gif",
     instructions: "Sit with upper back against bench, barbell across hips. Drive through heels, squeeze glutes at top, then lower.",
   },
+  {
+    id: 307,
+    name: "Leg Extension",
+    muscles: "Quads",
+    sets: 3,
+    reps: "15, 12, 10",
+    time: "8 min",
+    difficulty: "Beginner",
+    gifUrl: "/assets/Leg-Extension.gif",
+    instructions: "Sit on the leg extension machine with your back flat against the pad. Extend your legs until fully straight, squeeze quads at the top, then lower with control.",
+  },
+  {
+    id: 308,
+    name: "Barbell Lunges",
+    muscles: "Quads, Glutes, Hamstrings",
+    sets: 3,
+    reps: "10, 10, 8",
+    time: "10 min",
+    difficulty: "Intermediate",
+    gifUrl: "/assets/Barbell-Lunge.gif",
+    instructions: "Stand with barbell on upper back. Step forward into a lunge, lowering until both knees are at 90 degrees. Push back to starting position and alternate legs.",
+  },
+  {
+    id: 309,
+    name: "Lying Leg Raises",
+    muscles: "Lower Abs, Hip Flexors",
+    sets: 3,
+    reps: "15, 12, 10",
+    time: "6 min",
+    difficulty: "Beginner",
+    gifUrl: "/assets/Lying-Leg-Raise.gif",
+    instructions: "Lie flat on your back with legs straight. Raise legs to 90 degrees keeping them straight, then lower slowly without touching the floor.",
+  },
 ];
 
 const SHOULDERS_EXERCISES: Exercise[] = [
@@ -228,6 +283,17 @@ const SHOULDERS_EXERCISES: Exercise[] = [
     difficulty: "Beginner",
     gifUrl: "/assets/Face-Pull.gif",
     instructions: "Set cable at face height. Pull rope towards face, separating ends and squeezing shoulder blades.",
+  },
+  {
+    id: 406,
+    name: "Dumbbell Overhead Press",
+    muscles: "Shoulders, Triceps",
+    sets: 3,
+    reps: "12, 10, 8",
+    time: "8 min",
+    difficulty: "Intermediate",
+    gifUrl: "/assets/Standing-Dumbbell-Overhead-Press.gif",
+    instructions: "Stand holding dumbbells at shoulder height with palms facing forward. Press dumbbells overhead until arms are fully extended, then lower with control.",
   },
 ];
 
@@ -333,6 +399,31 @@ const CORE_EXERCISES: Exercise[] = [
     difficulty: "Intermediate",
     gifUrl: "/assets/Hanging-Leg-Raises.gif",
     instructions: "Hang from pull-up bar. Raise legs to 90 degrees keeping them straight, then lower with control.",
+  },
+];
+
+const CARDIO_EXERCISES_LIST: Exercise[] = [
+  {
+    id: 801,
+    name: "Burpees",
+    muscles: "Full Body, Cardio",
+    sets: 3,
+    reps: "15, 12, 10",
+    time: "8 min",
+    difficulty: "Intermediate",
+    gifUrl: "/assets/Burpees.gif",
+    instructions: "Start standing. Drop into a squat, kick feet back into a push-up position, do a push-up, jump feet forward, then explode up with a jump.",
+  },
+  {
+    id: 802,
+    name: "Kettlebell Swings",
+    muscles: "Glutes, Hamstrings, Core",
+    sets: 3,
+    reps: "15, 15, 12",
+    time: "8 min",
+    difficulty: "Intermediate",
+    gifUrl: "/assets/Kettlebell-Swings.gif",
+    instructions: "Stand with feet shoulder-width apart, holding kettlebell with both hands. Hinge at hips, swing kettlebell back between legs, then drive hips forward to swing it to chest height.",
   },
 ];
 
@@ -472,24 +563,24 @@ const FULL_VARIATIONS = [
 const CARDIO_VARIATIONS = [
   // Variation 1
   () => [
-    LEGS_EXERCISES[0],     // Squats
+    CARDIO_EXERCISES_LIST[0], // Burpees
+    CARDIO_EXERCISES_LIST[1], // Kettlebell Swings
     CORE_EXERCISES[0],     // Plank
-    CORE_EXERCISES[1],     // Crunches
-    LEGS_EXERCISES[4],     // Calf Raises
+    LEGS_EXERCISES[0],     // Squats
   ],
   // Variation 2
   () => [
-    LEGS_EXERCISES[1],     // Leg Press
+    CARDIO_EXERCISES_LIST[1], // Kettlebell Swings
+    CARDIO_EXERCISES_LIST[0], // Burpees
     CORE_EXERCISES[2],     // Russian Twists
-    CORE_EXERCISES[3],     // Leg Raises
     CHEST_EXERCISES[3],    // Push-Ups
   ],
   // Variation 3
   () => [
+    CARDIO_EXERCISES_LIST[0], // Burpees
     LEGS_EXERCISES[2],     // Romanian Deadlifts
     CORE_EXERCISES[0],     // Plank
-    SHOULDERS_EXERCISES[1], // Lateral Raises
-    CORE_EXERCISES[1],     // Crunches
+    CARDIO_EXERCISES_LIST[1], // Kettlebell Swings
   ],
 ];
 
@@ -673,7 +764,58 @@ export function getAllAvailableExercises(): Record<string, Exercise[]> {
     arms: ARMS_EXERCISES,
     legs: LEGS_EXERCISES,
     core: CORE_EXERCISES,
+    cardio: CARDIO_EXERCISES_LIST,
   };
+}
+
+export function getMuscleGroupsForWorkoutType(workoutType: string): string[] {
+  const normalizedType = workoutType.toLowerCase().trim();
+  
+  switch (normalizedType) {
+    case "chest": return ["chest"];
+    case "back": return ["back"];
+    case "legs": return ["legs"];
+    case "shoulders": return ["shoulders"];
+    case "arms": return ["arms"];
+    case "biceps": return ["arms"];
+    case "triceps": return ["arms"];
+    case "quads": return ["legs"];
+    case "hamstrings": return ["legs"];
+    case "glutes": return ["legs"];
+    case "core": return ["core"];
+    case "chest_shoulders":
+    case "chest + shoulders": return ["chest", "shoulders"];
+    case "back_arms":
+    case "back + arms": return ["back", "arms"];
+    case "chest_back":
+    case "chest + back": return ["chest", "back"];
+    case "shoulders_arms":
+    case "shoulders + arms": return ["shoulders", "arms"];
+    case "legs_core":
+    case "legs + core": return ["legs", "core"];
+    case "upper":
+    case "upper body": return ["chest", "back", "shoulders", "arms"];
+    case "lower":
+    case "lower body": return ["legs", "core"];
+    case "push": return ["chest", "shoulders", "arms"];
+    case "pull": return ["back", "arms"];
+    case "full":
+    case "full body": return ["chest", "back", "shoulders", "arms", "legs", "core"];
+    case "cardio": return ["legs", "core"];
+    default:
+      const muscles = normalizedType.split("_").filter(m => m.length > 0);
+      const groups: string[] = [];
+      for (const muscle of muscles) {
+        if (["chest", "back", "shoulders", "arms", "legs", "core"].includes(muscle)) {
+          groups.push(muscle);
+        } else if (["biceps", "triceps"].includes(muscle)) {
+          if (!groups.includes("arms")) groups.push("arms");
+        } else if (["quads", "hamstrings", "glutes"].includes(muscle)) {
+          if (!groups.includes("legs")) groups.push("legs");
+        }
+      }
+      return groups.length > 0 ? groups : ["chest", "back", "shoulders", "arms", "legs", "core"];
+  }
 }
 
 export function getAlternativesForMuscleGroup(exercise: Exercise): Exercise[] {
