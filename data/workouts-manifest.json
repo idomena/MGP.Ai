@@ -1,0 +1,128 @@
+{
+  "generatedAt": "2026-03-28T12:26:12.886Z",
+  "total": 20,
+  "succeeded": 20,
+  "failed": 0,
+  "videos": [
+    {
+      "slug": "barbell_squat",
+      "name": "Barbell Squat",
+      "animation": "squat",
+      "path": "src/assets/workouts/barbell_squat.gif"
+    },
+    {
+      "slug": "bodyweight_squat",
+      "name": "Bodyweight Squat",
+      "animation": "squat",
+      "path": "src/assets/workouts/bodyweight_squat.gif"
+    },
+    {
+      "slug": "jump_squat",
+      "name": "Jump Squat",
+      "animation": "squat",
+      "path": "src/assets/workouts/jump_squat.gif"
+    },
+    {
+      "slug": "pushup",
+      "name": "Push-Up",
+      "animation": "pushup",
+      "path": "src/assets/workouts/pushup.gif"
+    },
+    {
+      "slug": "diamond_pushup",
+      "name": "Diamond Push-Up",
+      "animation": "pushup",
+      "path": "src/assets/workouts/diamond_pushup.gif"
+    },
+    {
+      "slug": "wide_pushup",
+      "name": "Wide Push-Up",
+      "animation": "pushup",
+      "path": "src/assets/workouts/wide_pushup.gif"
+    },
+    {
+      "slug": "forward_lunge",
+      "name": "Forward Lunge",
+      "animation": "lunge",
+      "path": "src/assets/workouts/forward_lunge.gif"
+    },
+    {
+      "slug": "reverse_lunge",
+      "name": "Reverse Lunge",
+      "animation": "lunge",
+      "path": "src/assets/workouts/reverse_lunge.gif"
+    },
+    {
+      "slug": "walking_lunge",
+      "name": "Walking Lunge",
+      "animation": "lunge",
+      "path": "src/assets/workouts/walking_lunge.gif"
+    },
+    {
+      "slug": "bench_press",
+      "name": "Bench Press",
+      "animation": "press",
+      "path": "src/assets/workouts/bench_press.gif"
+    },
+    {
+      "slug": "overhead_press",
+      "name": "Overhead Press",
+      "animation": "press",
+      "path": "src/assets/workouts/overhead_press.gif"
+    },
+    {
+      "slug": "dumbbell_press",
+      "name": "Dumbbell Press",
+      "animation": "press",
+      "path": "src/assets/workouts/dumbbell_press.gif"
+    },
+    {
+      "slug": "bicep_curl",
+      "name": "Bicep Curl",
+      "animation": "curl",
+      "path": "src/assets/workouts/bicep_curl.gif"
+    },
+    {
+      "slug": "hammer_curl",
+      "name": "Hammer Curl",
+      "animation": "curl",
+      "path": "src/assets/workouts/hammer_curl.gif"
+    },
+    {
+      "slug": "barbell_curl",
+      "name": "Barbell Curl",
+      "animation": "curl",
+      "path": "src/assets/workouts/barbell_curl.gif"
+    },
+    {
+      "slug": "bent_over_row",
+      "name": "Bent Over Row",
+      "animation": "row",
+      "path": "src/assets/workouts/bent_over_row.gif"
+    },
+    {
+      "slug": "dumbbell_row",
+      "name": "Dumbbell Row",
+      "animation": "row",
+      "path": "src/assets/workouts/dumbbell_row.gif"
+    },
+    {
+      "slug": "cable_row",
+      "name": "Cable Row",
+      "animation": "row",
+      "path": "src/assets/workouts/cable_row.gif"
+    },
+    {
+      "slug": "deadlift",
+      "name": "Deadlift",
+      "animation": "deadlift",
+      "path": "src/assets/workouts/deadlift.gif"
+    },
+    {
+      "slug": "romanian_deadlift",
+      "name": "Romanian Deadlift",
+      "animation": "deadlift",
+      "path": "src/assets/workouts/romanian_deadlift.gif"
+    }
+  ]
+}

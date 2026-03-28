@@ -1,0 +1,222 @@
+[
+  {
+    "id": 1,
+    "name": "Barbell Squat",
+    "slug": "barbell_squat",
+    "category": "legs",
+    "difficulty": "intermediate",
+    "equipment": "barbell",
+    "animation": "squat",
+    "duration": 4,
+    "loop": true
+  },
+  {
+    "id": 2,
+    "name": "Bodyweight Squat",
+    "slug": "bodyweight_squat",
+    "category": "legs",
+    "difficulty": "beginner",
+    "equipment": "none",
+    "animation": "squat",
+    "duration": 3,
+    "loop": true
+  },
+  {
+    "id": 3,
+    "name": "Jump Squat",
+    "slug": "jump_squat",
+    "category": "legs",
+    "difficulty": "intermediate",
+    "equipment": "none",
+    "animation": "squat",
+    "duration": 3,
+    "loop": true
+  },
+  {
+    "id": 4,
+    "name": "Push-Up",
+    "slug": "pushup",
+    "category": "chest",
+    "difficulty": "beginner",
+    "equipment": "none",
+    "animation": "pushup",
+    "duration": 3,
+    "loop": true
+  },
+  {
+    "id": 5,
+    "name": "Diamond Push-Up",
+    "slug": "diamond_pushup",
+    "category": "chest",
+    "difficulty": "intermediate",
+    "equipment": "none",
+    "animation": "pushup",
+    "duration": 3,
+    "loop": true
+  },
+  {
+    "id": 6,
+    "name": "Wide Push-Up",
+    "slug": "wide_pushup",
+    "category": "chest",
+    "difficulty": "beginner",
+    "equipment": "none",
+    "animation": "pushup",
+    "duration": 3,
+    "loop": true
+  },
+  {
+    "id": 7,
+    "name": "Forward Lunge",
+    "slug": "forward_lunge",
+    "category": "legs",
+    "difficulty": "beginner",
+    "equipment": "none",
+    "animation": "lunge",
+    "duration": 4,
+    "loop": true
+  },
+  {
+    "id": 8,
+    "name": "Reverse Lunge",
+    "slug": "reverse_lunge",
+    "category": "legs",
+    "difficulty": "beginner",
+    "equipment": "none",
+    "animation": "lunge",
+    "duration": 4,
+    "loop": true
+  },
+  {
+    "id": 9,
+    "name": "Walking Lunge",
+    "slug": "walking_lunge",
+    "category": "legs",
+    "difficulty": "intermediate",
+    "equipment": "none",
+    "animation": "lunge",
+    "duration": 5,
+    "loop": true
+  },
+  {
+    "id": 10,
+    "name": "Bench Press",
+    "slug": "bench_press",
+    "category": "chest",
+    "difficulty": "intermediate",
+    "equipment": "barbell",
+    "animation": "press",
+    "duration": 4,
+    "loop": true
+  },
+  {
+    "id": 11,
+    "name": "Overhead Press",
+    "slug": "overhead_press",
+    "category": "shoulders",
+    "difficulty": "intermediate",
+    "equipment": "barbell",
+    "animation": "press",
+    "duration": 4,
+    "loop": true
+  },
+  {
+    "id": 12,
+    "name": "Dumbbell Press",
+    "slug": "dumbbell_press",
+    "category": "chest",
+    "difficulty": "beginner",
+    "equipment": "dumbbell",
+    "animation": "press",
+    "duration": 4,
+    "loop": true
+  },
+  {
+    "id": 13,
+    "name": "Bicep Curl",
+    "slug": "bicep_curl",
+    "category": "arms",
+    "difficulty": "beginner",
+    "equipment": "dumbbell",
+    "animation": "curl",
+    "duration": 3,
+    "loop": true
+  },
+  {
+    "id": 14,
+    "name": "Hammer Curl",
+    "slug": "hammer_curl",
+    "category": "arms",
+    "difficulty": "beginner",
+    "equipment": "dumbbell",
+    "animation": "curl",
+    "duration": 3,
+    "loop": true
+  },
+  {
+    "id": 15,
+    "name": "Barbell Curl",
+    "slug": "barbell_curl",
+    "category": "arms",
+    "difficulty": "beginner",
+    "equipment": "barbell",
+    "animation": "curl",
+    "duration": 3,
+    "loop": true
+  },
+  {
+    "id": 16,
+    "name": "Bent Over Row",
+    "slug": "bent_over_row",
+    "category": "back",
+    "difficulty": "intermediate",
+    "equipment": "barbell",
+    "animation": "row",
+    "duration": 4,
+    "loop": true
+  },
+  {
+    "id": 17,
+    "name": "Dumbbell Row",
+    "slug": "dumbbell_row",
+    "category": "back",
+    "difficulty": "beginner",
+    "equipment": "dumbbell",
+    "animation": "row",
+    "duration": 4,
+    "loop": true
+  },
+  {
+    "id": 18,
+    "name": "Cable Row",
+    "slug": "cable_row",
+    "category": "back",
+    "difficulty": "beginner",
+    "equipment": "cable",
+    "animation": "row",
+    "duration": 3,
+    "loop": true
+  },
+  {
+    "id": 19,
+    "name": "Deadlift",
+    "slug": "deadlift",
+    "category": "back",
+    "difficulty": "advanced",
+    "equipment": "barbell",
+    "animation": "deadlift",
+    "duration": 5,
+    "loop": true
+  },
+  {
+    "id": 20,
+    "name": "Romanian Deadlift",
+    "slug": "romanian_deadlift",
+    "category": "back",
+    "difficulty": "intermediate",
+    "equipment": "barbell",
+    "animation": "deadlift",
+    "duration": 5,
+    "loop": true
+  }
+]

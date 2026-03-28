@@ -1,0 +1,103 @@
+{
+  "baseAnimations": {
+    "squat": {
+      "id": "squat",
+      "label": "Squat",
+      "keyframes": [
+        { "time": 0.0, "pose": "stand" },
+        { "time": 0.5, "pose": "squat_down" },
+        { "time": 1.0, "pose": "stand" }
+      ],
+      "color": "#4f46e5",
+      "cameraAngle": "side"
+    },
+    "pushup": {
+      "id": "pushup",
+      "label": "Push-Up",
+      "keyframes": [
+        { "time": 0.0, "pose": "plank_up" },
+        { "time": 0.5, "pose": "plank_down" },
+        { "time": 1.0, "pose": "plank_up" }
+      ],
+      "color": "#dc2626",
+      "cameraAngle": "side"
+    },
+    "lunge": {
+      "id": "lunge",
+      "label": "Lunge",
+      "keyframes": [
+        { "time": 0.0, "pose": "stand" },
+        { "time": 0.5, "pose": "lunge_down" },
+        { "time": 1.0, "pose": "stand" }
+      ],
+      "color": "#16a34a",
+      "cameraAngle": "front_45"
+    },
+    "press": {
+      "id": "press",
+      "label": "Press",
+      "keyframes": [
+        { "time": 0.0, "pose": "press_start" },
+        { "time": 0.5, "pose": "press_top" },
+        { "time": 1.0, "pose": "press_start" }
+      ],
+      "color": "#d97706",
+      "cameraAngle": "side"
+    },
+    "curl": {
+      "id": "curl",
+      "label": "Curl",
+      "keyframes": [
+        { "time": 0.0, "pose": "arms_down" },
+        { "time": 0.5, "pose": "arms_curled" },
+        { "time": 1.0, "pose": "arms_down" }
+      ],
+      "color": "#7c3aed",
+      "cameraAngle": "front"
+    },
+    "row": {
+      "id": "row",
+      "label": "Row",
+      "keyframes": [
+        { "time": 0.0, "pose": "bent_arms_extended" },
+        { "time": 0.5, "pose": "bent_arms_pulled" },
+        { "time": 1.0, "pose": "bent_arms_extended" }
+      ],
+      "color": "#0891b2",
+      "cameraAngle": "side"
+    },
+    "deadlift": {
+      "id": "deadlift",
+      "label": "Deadlift",
+      "keyframes": [
+        { "time": 0.0, "pose": "hinge_down" },
+        { "time": 0.5, "pose": "stand_tall" },
+        { "time": 1.0, "pose": "hinge_down" }
+      ],
+      "color": "#be123c",
+      "cameraAngle": "side"
+    }
+  },
+  "exerciseMap": {
+    "barbell_squat": "squat",
+    "bodyweight_squat": "squat",
+    "jump_squat": "squat",
+    "pushup": "pushup",
+    "diamond_pushup": "pushup",
+    "wide_pushup": "pushup",
+    "forward_lunge": "lunge",
+    "reverse_lunge": "lunge",
+    "walking_lunge": "lunge",
+    "bench_press": "press",
+    "overhead_press": "press",
+    "dumbbell_press": "press",
+    "bicep_curl": "curl",
+    "hammer_curl": "curl",
+    "barbell_curl": "curl",
+    "bent_over_row": "row",
+    "dumbbell_row": "row",
+    "cable_row": "row",
+    "deadlift": "deadlift",
+    "romanian_deadlift": "deadlift"
+  }
+}

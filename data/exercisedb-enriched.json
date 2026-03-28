@@ -1,0 +1,523 @@
+[
+  {
+    "id": "11d20621-4349-4cbe-adfa-10a94429ba47",
+    "title": "Barbell Bench Press",
+    "exerciseDbId": "0025",
+    "target": "pectorals",
+    "bodyPart": "chest",
+    "equipmentName": "barbell",
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "instructions": [
+      "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
+      "Grasp the barbell with an overhand grip slightly wider than shoulder-width apart.",
+      "Lift the barbell off the rack and hold it directly above your chest with your arms fully extended.",
+      "Lower the barbell slowly towards your chest, keeping your elbows tucked in.",
+      "Pause for a moment when the barbell touches your chest.",
+      "Push the barbell back up to the starting position by extending your arms.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "ad7cafa0-42df-420c-a607-24f50e171626",
+    "title": "Dumbbell Bench Press",
+    "exerciseDbId": "0289",
+    "target": "pectorals",
+    "bodyPart": "chest",
+    "equipmentName": "dumbbell",
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "instructions": [
+      "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
+      "Hold a dumbbell in each hand, with your palms facing forward and your arms extended above your chest.",
+      "Lower the dumbbells slowly to the sides of your chest, keeping your elbows at a 90-degree angle.",
+      "Pause for a moment, then push the dumbbells back up to the starting position, fully extending your arms.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "9a690535-a8d2-4283-8331-d32459092913",
+    "title": "Incline Dumbbell Press",
+    "matched": false
+  },
+  {
+    "id": "08f2a145-c371-43fd-ae59-3ef74135da11",
+    "title": "Push-Up",
+    "exerciseDbId": "0258",
+    "target": "pectorals",
+    "bodyPart": "chest",
+    "equipmentName": "body weight",
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders",
+      "core"
+    ],
+    "instructions": [
+      "Start in a high plank position with your hands directly under your shoulders and your body in a straight line.",
+      "Lower your body towards the ground by bending your elbows, keeping them close to your sides.",
+      "As you lower, rotate your body to the left, extending your left arm straight out to the side.",
+      "Push back up to the starting position, while rotating your body to the center.",
+      "Repeat the push-up, this time rotating your body to the right and extending your right arm out to the side.",
+      "Continue alternating sides with each repetition."
+    ]
+  },
+  {
+    "id": "39717bd3-bf9c-48bd-afa1-84ef26def665",
+    "title": "Pull-Up",
+    "exerciseDbId": "0652",
+    "target": "lats",
+    "bodyPart": "back",
+    "equipmentName": "body weight",
+    "secondaryMuscles": [
+      "biceps",
+      "forearms"
+    ],
+    "instructions": [
+      "Hang from a pull-up bar with your palms facing away from you and your arms fully extended.",
+      "Engage your core and squeeze your shoulder blades together.",
+      "Pull your body up towards the bar by bending your elbows and bringing your chest towards the bar.",
+      "Pause at the top of the movement, then slowly lower your body back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "b3cf9aff-a48c-472a-8be1-5f713624b544",
+    "title": "Lat Pulldown",
+    "exerciseDbId": "0673",
+    "target": "lats",
+    "bodyPart": "back",
+    "equipmentName": "leverage machine",
+    "secondaryMuscles": [
+      "biceps",
+      "forearms"
+    ],
+    "instructions": [
+      "Adjust the seat height and position yourself on the machine with your knees under the pads and your feet flat on the ground.",
+      "Grasp the handles with an underhand grip, slightly wider than shoulder-width apart.",
+      "Sit upright with your chest out and shoulders back, maintaining a slight arch in your lower back.",
+      "Pull the handles down towards your chest, squeezing your shoulder blades together.",
+      "Pause for a moment at the bottom of the movement, then slowly release the handles back to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "0901ba6a-649e-427a-b81a-efa290af7959",
+    "title": "Barbell Row",
+    "matched": false
+  },
+  {
+    "id": "ef496255-3b5c-4484-ac45-c958826381e5",
+    "title": "Dumbbell Row",
+    "matched": false
+  },
+  {
+    "id": "6f602693-63a0-4a2a-93d8-3a6dcb27c16c",
+    "title": "Seated Cable Row",
+    "matched": false
+  },
+  {
+    "id": "d37cda0c-e608-484e-aca1-6a5af000e163",
+    "title": "Face Pull",
+    "matched": false
+  },
+  {
+    "id": "7a30339d-1020-48e5-a2b0-fa8ef9d64521",
+    "title": "Barbell Squat",
+    "exerciseDbId": "0102",
+    "target": "quads",
+    "bodyPart": "upper legs",
+    "equipmentName": "barbell",
+    "secondaryMuscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "instructions": [
+      "Start by kneeling on the ground with your knees hip-width apart and your toes pointing forward.",
+      "Place a barbell across your shoulders, gripping it with an overhand grip and your hands slightly wider than shoulder-width apart.",
+      "Engage your core and keep your chest lifted as you slowly lower your body down by bending your knees, keeping your back straight.",
+      "Continue lowering until your thighs are parallel to the ground, or as low as you can comfortably go.",
+      "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "20502f4e-0b88-41dd-acac-d770de63e11b",
+    "title": "Leg Press",
+    "exerciseDbId": "0739",
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "equipmentName": "sled machine",
+    "secondaryMuscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "instructions": [
+      "Adjust the seat and footplate of the sled machine to a comfortable position.",
+      "Sit on the sled machine with your back against the backrest and your feet shoulder-width apart on the footplate.",
+      "Grip the handles on the sides of the seat for stability.",
+      "Push the footplate away from your body by extending your legs, keeping your heels on the footplate.",
+      "Continue pushing until your legs are almost fully extended, but without locking your knees.",
+      "Pause for a moment at the top of the movement, then slowly lower the footplate back towards your body by bending your knees.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "be391d77-a9fa-410a-9ab8-ee3b6fda34a4",
+    "title": "Romanian Deadlift",
+    "exerciseDbId": "0085",
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "equipmentName": "barbell",
+    "secondaryMuscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "instructions": [
+      "Stand with your feet shoulder-width apart and your toes pointing forward.",
+      "Hold the barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+      "Bend at the hips, keeping your back straight and your knees slightly bent.",
+      "Lower the barbell towards the ground, keeping it close to your body.",
+      "Feel the stretch in your hamstrings as you lower the barbell.",
+      "Once you feel a stretch in your hamstrings, push your hips forward and stand up straight.",
+      "Squeeze your glutes at the top of the movement.",
+      "Lower the barbell back down to the starting position and repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "d4590fdc-e602-4e19-bb79-9081d9d277b1",
+    "title": "Walking Lunges",
+    "matched": false
+  },
+  {
+    "id": "a63bcca5-ead0-41a2-96c2-9b1fbb72e22b",
+    "title": "Leg Curl (Machine)",
+    "matched": false
+  },
+  {
+    "id": "2b7b3e62-ab22-4674-b56b-bdb9cdd3589e",
+    "title": "Leg Extension",
+    "exerciseDbId": "0585",
+    "target": "quads",
+    "bodyPart": "upper legs",
+    "equipmentName": "leverage machine",
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "instructions": [
+      "Adjust the seat height and backrest of the machine to fit your body.",
+      "Sit on the machine with your back against the backrest and your feet on the footpad.",
+      "Grasp the handles or sidebars for stability.",
+      "Extend your legs forward by straightening your knees, lifting the weight.",
+      "Pause for a moment at the top, then slowly lower the weight back to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "78b72587-2f72-4a7f-99fe-afd23f3dcb00",
+    "title": "Overhead Press (Barbell)",
+    "matched": false
+  },
+  {
+    "id": "b51af716-4f88-43a6-a17b-1045d0aa4464",
+    "title": "Dumbbell Shoulder Press",
+    "matched": false
+  },
+  {
+    "id": "a0cce8ee-55f0-4d3d-a87f-d6197320aefd",
+    "title": "Lateral Raise",
+    "exerciseDbId": "0178",
+    "target": "delts",
+    "bodyPart": "shoulders",
+    "equipmentName": "cable",
+    "secondaryMuscles": [
+      "traps",
+      "triceps"
+    ],
+    "instructions": [
+      "Stand with your feet shoulder-width apart and grasp the cable handles with an overhand grip.",
+      "Keep your arms straight and your core engaged.",
+      "Raise your arms out to the sides until they are parallel to the floor.",
+      "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "f377e6e6-5f3d-4224-b7e8-cbfa65c7f061",
+    "title": "Front Raise",
+    "exerciseDbId": "0040",
+    "target": "pectorals",
+    "bodyPart": "chest",
+    "equipmentName": "barbell",
+    "secondaryMuscles": [
+      "deltoids",
+      "triceps"
+    ],
+    "instructions": [
+      "Stand with your feet shoulder-width apart and hold a barbell with an overhand grip, palms facing down.",
+      "Keep your arms straight and raise the barbell in front of you until it reaches shoulder height.",
+      "Pause for a moment at the top, then slowly lower the barbell back down to the starting position.",
+      "Next, lower the barbell behind your head, keeping your arms straight.",
+      "Pause for a moment at the bottom, then raise the barbell back up to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "ccf76cd7-8e9c-41ec-95f5-7644b4d4af56",
+    "title": "Rear Delt Fly",
+    "matched": false
+  },
+  {
+    "id": "30eafdca-d70a-4393-b188-2bab195a9dae",
+    "title": "Barbell Bicep Curl",
+    "matched": false
+  },
+  {
+    "id": "b7d84dc1-4672-4b68-a19d-4b8bdaf186e8",
+    "title": "Dumbbell Bicep Curl",
+    "exerciseDbId": "1651",
+    "target": "biceps",
+    "bodyPart": "upper arms",
+    "equipmentName": "dumbbell",
+    "secondaryMuscles": [
+      "forearms",
+      "shoulders"
+    ],
+    "instructions": [
+      "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with your palms facing forward.",
+      "Take a step forward with your right foot, bending your right knee and lowering your body into a lunge position.",
+      "As you lunge forward, curl the dumbbells up towards your shoulders, keeping your elbows close to your body.",
+      "At the bottom of the lunge, rotate your torso to the right, as if you were bowling a ball.",
+      "Reverse the motion, stepping back with your right foot and returning to the starting position while lowering the dumbbells back down.",
+      "Repeat the lunge and curl motion, this time rotating your torso to the left.",
+      "Continue alternating sides for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "e53277b9-f956-4ed7-b6a0-58184ea74d49",
+    "title": "Triceps Pushdown",
+    "exerciseDbId": "0241",
+    "target": "triceps",
+    "bodyPart": "upper arms",
+    "equipmentName": "cable",
+    "secondaryMuscles": [
+      "forearms"
+    ],
+    "instructions": [
+      "Attach a v-bar attachment to the cable machine at the highest setting.",
+      "Stand facing the cable machine with your feet shoulder-width apart.",
+      "Grasp the v-bar with an overhand grip, palms facing down, and your hands shoulder-width apart.",
+      "Keep your elbows close to your sides and your upper arms stationary throughout the exercise.",
+      "Engage your triceps and exhale as you push the v-bar down until your arms are fully extended.",
+      "Pause for a moment at the bottom of the movement, squeezing your triceps.",
+      "Inhale as you slowly return the v-bar to the starting position, maintaining control.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "c4342d03-61e2-44cd-bc9b-83797a2c3ea9",
+    "title": "Dips",
+    "exerciseDbId": "0677",
+    "target": "triceps",
+    "bodyPart": "upper arms",
+    "equipmentName": "body weight",
+    "secondaryMuscles": [
+      "chest",
+      "shoulders"
+    ],
+    "instructions": [
+      "Start by hanging from the rings with your arms fully extended and your body straight.",
+      "Lower your body by bending your elbows until your shoulders are below your elbows.",
+      "Push yourself back up to the starting position by straightening your arms.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "2ff08663-d221-4454-89c5-46aa81267b63",
+    "title": "Plank",
+    "exerciseDbId": "0464",
+    "target": "abs",
+    "bodyPart": "waist",
+    "equipmentName": "body weight",
+    "secondaryMuscles": [
+      "obliques",
+      "shoulders"
+    ],
+    "instructions": [
+      "Start in a high plank position with your hands directly under your shoulders and your body in a straight line from head to toe.",
+      "Engage your core and glutes to maintain a stable position.",
+      "Rotate your torso to the right, lifting your right arm and extending it towards the ceiling.",
+      "Keep your hips and legs stable as you twist.",
+      "Hold for a moment, then return to the starting position.",
+      "Repeat the twist on the left side.",
+      "Continue alternating sides for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "fef42f89-bfd3-4353-a10c-48b1f2fd77f9",
+    "title": "Hanging Leg Raises",
+    "exerciseDbId": "0472",
+    "target": "abs",
+    "bodyPart": "waist",
+    "equipmentName": "body weight",
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "instructions": [
+      "Hang from a pull-up bar with your arms fully extended and your palms facing away from you.",
+      "Engage your core and lift your legs up in front of you, keeping them straight.",
+      "Continue lifting until your legs are parallel to the ground or as high as you can comfortably go.",
+      "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "3e7b0d8b-e99d-4a88-bcf0-7c88d29e953b",
+    "title": "Russian Twist",
+    "exerciseDbId": "0687",
+    "target": "abs",
+    "bodyPart": "waist",
+    "equipmentName": "body weight",
+    "secondaryMuscles": [
+      "obliques"
+    ],
+    "instructions": [
+      "Sit on the ground with your knees bent and feet flat on the floor.",
+      "Lean back slightly while keeping your back straight and your core engaged.",
+      "Hold your hands together in front of your chest or hold a weight if desired.",
+      "Lift your feet off the ground, balancing on your sit bones.",
+      "Twist your torso to the right, bringing your hands or weight towards the right side of your body.",
+      "Pause for a moment, then twist your torso to the left, bringing your hands or weight towards the left side of your body.",
+      "Continue alternating sides for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "944f51e7-b7ff-47f9-ad1c-da1accc35c8e",
+    "title": "Cable Crunch",
+    "matched": false
+  },
+  {
+    "id": "843dd83e-9192-42a9-882c-203d4c8c49d6",
+    "title": "Ab Wheel Rollout",
+    "matched": false
+  },
+  {
+    "id": "88e01009-8bcb-42f1-b588-e7700d4aad6e",
+    "title": "Deadlift",
+    "exerciseDbId": "0032",
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "equipmentName": "barbell",
+    "secondaryMuscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "instructions": [
+      "Stand with your feet shoulder-width apart and the barbell on the ground in front of you.",
+      "Bend your knees and hinge at the hips to lower your torso and grip the barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+      "Keep your back straight and chest lifted as you drive through your heels to lift the barbell off the ground, extending your hips and knees.",
+      "As you stand up straight, squeeze your glutes and keep your core engaged.",
+      "Lower the barbell back down to the ground by bending at the hips and knees, keeping your back straight.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "d3398133-de4d-472d-90f2-41f756972994",
+    "title": "Kettlebell Swing",
+    "exerciseDbId": "0549",
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "equipmentName": "kettlebell",
+    "secondaryMuscles": [
+      "hamstrings",
+      "core"
+    ],
+    "instructions": [
+      "Stand with your feet shoulder-width apart, toes pointed slightly outward.",
+      "Hold the kettlebell with both hands in front of your body, arms extended.",
+      "Bend your knees slightly and hinge at the hips, pushing your butt back.",
+      "Swing the kettlebell back between your legs, keeping your arms straight and maintaining a flat back.",
+      "Drive your hips forward and swing the kettlebell up to shoulder height, using the momentum generated by your hips.",
+      "Allow the kettlebell to swing back down between your legs and repeat the movement for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "30e44f2b-fbcf-49a8-a7cb-d174e1cb1368",
+    "title": "Farmer's Carry",
+    "matched": false
+  },
+  {
+    "id": "53eac4ae-d0ba-4019-9b5e-b5f38499a608",
+    "title": "Hip Thrust",
+    "exerciseDbId": "3236",
+    "target": "glutes",
+    "bodyPart": "upper legs",
+    "equipmentName": "resistance band",
+    "secondaryMuscles": [
+      "hamstrings",
+      "quadriceps"
+    ],
+    "instructions": [
+      "Start by kneeling on the ground with your knees hip-width apart and your feet flexed.",
+      "Wrap the resistance band around your thighs, just above your knees.",
+      "Place your hands on your hips or extend them out in front of you for balance.",
+      "Engage your glutes and core muscles.",
+      "Push your hips forward and squeeze your glutes as you lift your knees off the ground, extending your hips until your thighs are parallel to the ground.",
+      "Hold the position for a moment, then slowly lower your knees back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "358ecebb-2db3-4850-90df-211bb55f5bb3",
+    "title": "Burpees",
+    "matched": false
+  },
+  {
+    "id": "4a65bb2d-5d5d-4702-b9bd-1f20362b1847",
+    "title": "dumbbell Fly ",
+    "exerciseDbId": "1277",
+    "target": "pectorals",
+    "bodyPart": "chest",
+    "equipmentName": "dumbbell",
+    "secondaryMuscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "instructions": [
+      "Sit on an exercise ball and hold a dumbbell in each hand.",
+      "Walk your feet forward and roll your body down until your head, neck, and upper back are supported by the ball.",
+      "Extend your arms straight up above your chest, palms facing each other.",
+      "Bend your elbows slightly and lower your arms out to the sides in a wide arc until you feel a stretch in your chest.",
+      "Pause for a moment, then reverse the movement and squeeze your chest muscles as you bring the dumbbells back to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "4be6d20a-8cab-41e6-8254-e8850c9fcab3",
+    "title": "Skull Crushers",
+    "exerciseDbId": "0060",
+    "target": "triceps",
+    "bodyPart": "upper arms",
+    "equipmentName": "barbell",
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "instructions": [
+      "Lie flat on a bench with your feet flat on the ground and your head at the end of the bench.",
+      "Hold the barbell with an overhand grip, hands shoulder-width apart, and extend your arms straight up over your chest.",
+      "Keeping your upper arms stationary, slowly lower the barbell towards your forehead by bending your elbows.",
+      "Pause for a moment when the barbell is just above your forehead, then extend your arms back up to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ]
+  },
+  {
+    "id": "e4e812ff-4f2a-491a-b74b-584f61fca966",
+    "title": "Z-Bar Curl",
+    "matched": false
+  }
+]

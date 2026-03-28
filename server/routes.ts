@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { generateContent, generateCoachResponse, extractTextFromImage, selectExercisesWithAI, type ExerciseFromDB } from "./gemini";
+import { searchByName, getByBodyPart, MUSCLE_TO_BODY_PART, type ExerciseDBEntry } from "./services/exerciseDb";
 import {
   generateRequestSchema,
   ocrRequestSchema,
@@ -458,5 +459,40 @@ export function registerRoutes(app: Express): void {
       serverDate: serverNow.toISOString(),
       formattedDate,
     });
+  }));
+
+  // ── ExerciseDB proxy routes ────────────────────────────────────────────────
+
+  /** GET /api/exercisedb/search?name=bench+press
+   *  Returns up to 5 ExerciseDB entries matching the name. */
+  app.get("/api/exercisedb/search", asyncHandler(async (req, res) => {
+    const name = (req.query.name as string || "").trim();
+    if (!name) return sendError(res, "name query param required", 400);
+    if (!process.env.EXERCISE_API_KEY) {
+      return sendError(res, "ExerciseDB not configured", 503);
+    }
+    const results = await searchByName(name, 5);
+    sendSuccess(res, { results });
+  }));
+
+  /** GET /api/exercisedb/muscle/:group
+   *  Returns exercises for a MGP muscle group (chest, back, shoulders, arms, legs, core).
+   *  Used by the frontend to replace static GIF lookups with real ExerciseDB data. */
+  app.get("/api/exercisedb/muscle/:group", asyncHandler(async (req, res) => {
+    const group = req.params.group.toLowerCase();
+    const bodyParts = MUSCLE_TO_BODY_PART[group];
+    if (!bodyParts || bodyParts.length === 0) {
+      return sendError(res, `Unknown muscle group: ${group}`, 400);
+    }
+    if (!process.env.EXERCISE_API_KEY) {
+      return sendError(res, "ExerciseDB not configured", 503);
+    }
+    const limit = parseInt((req.query.limit as string) || "25", 10);
+    const results: ExerciseDBEntry[] = [];
+    for (const bp of bodyParts) {
+      const data = await getByBodyPart(bp, limit);
+      results.push(...data);
+    }
+    sendSuccess(res, { results });
   }));
 }

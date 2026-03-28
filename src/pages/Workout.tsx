@@ -698,7 +698,7 @@ export default function WorkoutPage() {
                         data-testid={`button-details-${exercise.id}`}
                       >
                         <div className="flex items-center gap-3">
-                          <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-[#252540]" data-testid={`thumbnail-${exercise.id}`}>
+                          <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-[#1e1e38]" data-testid={`thumbnail-${exercise.id}`}>
                             {exercise.gifUrl ? (
                               <LazyGif
                                 src={exercise.gifUrl}
@@ -707,7 +707,7 @@ export default function WorkoutPage() {
                                 objectFit="cover"
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center">
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#252550] to-[#1a1a3a]">
                                 <Dumbbell className="w-6 h-6 text-white/20" />
                               </div>
                             )}
@@ -738,17 +738,23 @@ export default function WorkoutPage() {
                             
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-white/50 text-xs" data-testid={`text-exercise-sets-${exercise.id}`}>
-                                {exercise.sets}s x {exercise.reps}
+                                {exercise.sets}s × {exercise.reps}
                               </span>
-                              <span className="text-white/20">|</span>
+                              <span className="text-white/20">·</span>
                               <span className="text-white/35 text-xs" data-testid={`text-exercise-time-${exercise.id}`}>
                                 {exercise.time}
                               </span>
-                              <span className="text-white/20">|</span>
+                              <span className="text-white/20">·</span>
                               <span className="flex items-center gap-1 text-xs" data-testid={`badge-difficulty-${exercise.id}`}>
                                 <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: diffColor }} />
                                 <span style={{ color: diffColor, opacity: 0.8 }}>{exercise.difficulty}</span>
                               </span>
+                              {exercise.equipmentName && (
+                                <>
+                                  <span className="text-white/20">·</span>
+                                  <span className="text-white/30 text-xs capitalize">{exercise.equipmentName}</span>
+                                </>
+                              )}
                             </div>
                           </div>
 

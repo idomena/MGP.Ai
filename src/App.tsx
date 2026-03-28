@@ -28,6 +28,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Pricing = lazy(() => import("./pages/Pricing"));
+const ExerciseDemo = lazy(() => import("./pages/ExerciseDemo"));
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const App = () => (
             <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/ocr" element={<ProtectedRoute><OCR /></ProtectedRoute>} />
+            <Route path="/exercise-demo" element={<ExerciseDemo />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>

@@ -8,6 +8,12 @@ export interface Exercise {
   difficulty: string;
   gifUrl: string;
   instructions: string;
+  // ExerciseDB enriched fields (optional — present when fetched from API)
+  target?: string;
+  bodyPart?: string;
+  equipmentName?: string;
+  secondaryMuscles?: string[];
+  instructionsList?: string[];
 }
 
 const CHEST_EXERCISES: Exercise[] = [
