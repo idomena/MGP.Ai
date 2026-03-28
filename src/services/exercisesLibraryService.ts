@@ -50,7 +50,7 @@ export function mapToExercise(ex: SupabaseExercise): Exercise {
     reps:             '12, 10, 8',
     time:             '10 min',
     difficulty:       capitalize(ex.difficulty),
-    gifUrl:           ex.gif_url ?? '',
+    gifUrl:           ex.gif_url ? `/api/proxy-image?url=${encodeURIComponent(ex.gif_url)}` : '',
     instructions:     ex.instructions_list?.[0] ?? ex.description ?? '',
     // Enriched fields
     target:           ex.target_muscle ?? undefined,

@@ -495,4 +495,37 @@ export function registerRoutes(app: Express): void {
     }
     sendSuccess(res, { results });
   }));
+
+  /** GET /api/proxy-image?url=...
+   *  Proxies ExerciseDB GIF images through the backend so the browser never
+   *  hits the CDN directly (avoids CORS / auth redirects).
+   *  Only exercisedb.io URLs are allowed. */
+  app.get("/api/proxy-image", asyncHandler(async (req: Request, res: Response) => {
+    const url = ((req.query.url as string) || "").trim();
+    if (!url) return sendError(res, "url query param required", 400);
+
+    // Allowlist: only proxy exercisedb.io assets
+    if (!url.startsWith("https://exercisedb.io/")) {
+      return sendError(res, "URL not allowed", 403);
+    }
+
+    const upstream = await fetch(url, {
+      headers: {
+        "X-RapidAPI-Key":  process.env.EXERCISE_API_KEY || "",
+        "X-RapidAPI-Host": "exercisedb.p.rapidapi.com",
+      },
+    });
+
+    if (!upstream.ok) {
+      return sendError(res, "Failed to fetch image", upstream.status as any);
+    }
+
+    const contentType = upstream.headers.get("content-type") || "image/gif";
+    const buffer = Buffer.from(await upstream.arrayBuffer());
+
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Cache-Control", "public, max-age=86400, immutable");
+    res.setHeader("Content-Length", buffer.length);
+    res.send(buffer);
+  }));
 }
