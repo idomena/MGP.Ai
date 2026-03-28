@@ -217,7 +217,7 @@ export default function SwapExerciseModal({
                                   {exercise.gifUrl && (
                                     <div className="rounded-xl overflow-hidden bg-black/30 aspect-video" data-testid={`preview-gif-swap-${exercise.id}`}>
                                       <LazyGif
-                                        src={exercise.gifUrl}
+                                        src={exercise.gifUrl.startsWith('/api/') ? exercise.gifUrl : `/api/proxy-image?url=${encodeURIComponent(exercise.gifUrl)}`}
                                         alt={exercise.name}
                                         className="w-full h-full object-cover"
                                       />

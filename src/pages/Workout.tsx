@@ -701,10 +701,15 @@ export default function WorkoutPage() {
                           <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-[#1e1e38]" data-testid={`thumbnail-${exercise.id}`}>
                             {exercise.gifUrl ? (
                               <LazyGif
-                                src={exercise.gifUrl}
+                                src={exercise.gifUrl.startsWith('/api/') ? exercise.gifUrl : `/api/proxy-image?url=${encodeURIComponent(exercise.gifUrl)}`}
                                 alt={exercise.name}
                                 className="w-full h-full"
                                 objectFit="cover"
+                                fallback={
+                                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#252550] to-[#1a1a3a]">
+                                    <Dumbbell className="w-6 h-6 text-white/20" />
+                                  </div>
+                                }
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#252550] to-[#1a1a3a]">

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { X, Check, Sparkles, SkipForward, Clock, Zap } from "lucide-react";
+import { X, Check, Sparkles, SkipForward, Clock, Zap, Dumbbell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import ExerciseAIAssistant from "./ExerciseAIAssistant";
@@ -168,15 +168,16 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
             {currentExercise.gifUrl ? (
               <div className="relative w-full h-full">
                 <LazyGif
-                  src={currentExercise.gifUrl}
+                  src={currentExercise.gifUrl.startsWith('/api/') ? currentExercise.gifUrl : `/api/proxy-image?url=${encodeURIComponent(currentExercise.gifUrl)}`}
                   alt={`${currentExercise.name} demonstration`}
                   className="w-full h-full"
                   objectFit="contain"
+                  fallback={
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1e1e38] to-[#14142a]">
+                      <Dumbbell className="w-16 h-16 text-white/10" />
+                    </div>
+                  }
                 />
-                {/* Demo Watermark */}
-                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-xs text-white/80 font-medium">
-                  Demo Only
-                </div>
               </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-zinc-800 to-zinc-900">

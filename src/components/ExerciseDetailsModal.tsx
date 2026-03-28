@@ -82,10 +82,15 @@ export default function ExerciseDetailsModal({ exercise, isOpen, onClose }: Exer
         <div className="relative w-full h-56 bg-gradient-to-br from-[#1e1e38] to-[#14142a] overflow-hidden">
           {exercise.gifUrl ? (
             <LazyGif
-              src={exercise.gifUrl}
+              src={exercise.gifUrl.startsWith('/api/') ? exercise.gifUrl : `/api/proxy-image?url=${encodeURIComponent(exercise.gifUrl)}`}
               alt={`${exercise.name} demonstration`}
               className="w-full h-full"
               objectFit="contain"
+              fallback={
+                <div className="w-full h-full flex items-center justify-center">
+                  <Dumbbell className="w-16 h-16 text-white/10" />
+                </div>
+              }
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
