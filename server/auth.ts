@@ -17,8 +17,8 @@ export const configurePassport = () => {
     return;
   }
   
-  const callbackURL = process.env.REPLIT_DEV_DOMAIN 
-    ? `https://${process.env.REPLIT_DEV_DOMAIN}/auth/google/callback`
+  const callbackURL = process.env.FRONTEND_URL
+    ? `${process.env.FRONTEND_URL}/auth/google/callback`
     : "/auth/google/callback";
   
   console.log('- Callback URL:', callbackURL);

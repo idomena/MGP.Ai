@@ -1,16 +1,19 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { generateContent, generateCoachResponse, extractTextFromImage, selectExercisesWithAI, type ExerciseFromDB } from "./gemini";
-import { 
-  generateRequestSchema, 
-  ocrRequestSchema, 
-  completeWorkoutRequestSchema, 
+import {
+  generateRequestSchema,
+  ocrRequestSchema,
+  completeWorkoutRequestSchema,
   aiCoachRequestSchema,
   exerciseSelectionSchema,
-  userPrograms, 
-  workoutCompletions 
+  userPrograms,
+  workoutCompletions,
+  nutritionLogs,
+  insertNutritionLogSchema,
 } from "../shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
+import { createCheckoutSession, createPortalSession, getSubscription, handleWebhook } from "./stripe";
 import { sendSuccess, sendError, sendValidationError, sendForbidden } from "./utils/response";
 import { asyncHandler } from "./middleware/errorHandler";
 import { aiLimiter, strictAiLimiter } from "./middleware/rateLimiter";
@@ -77,10 +80,11 @@ export function registerRoutes(app: Express): void {
       return sendValidationError(res, validation.error.errors[0].message);
     }
 
-    const { 
-      message, 
-      context, 
-      workoutName, 
+    const {
+      message,
+      assistantType,
+      context,
+      workoutName,
       allExercises,
       currentExerciseIndex,
       completedExercises,
@@ -128,7 +132,7 @@ export function registerRoutes(app: Express): void {
       ? `${message}\n${workoutOverview}`
       : message;
 
-    const response = await generateCoachResponse(contextualMessage, enhancedContext, history);
+    const response = await generateCoachResponse(contextualMessage, enhancedContext, history, assistantType);
 
     const actions: Array<{ type: string; data: Record<string, unknown> }> = [];
     let cleanResponse = response;
@@ -296,6 +300,109 @@ export function registerRoutes(app: Express): void {
     });
 
     sendSuccess(res, { completed: true }, `Day ${dayNumber} workout completed successfully!`);
+  }));
+
+  // ── Email ─────────────────────────────────────────────────────────────────
+
+  app.post("/api/email/welcome", asyncHandler(async (req: Request, res: Response) => {
+    const { email, name } = req.body;
+    if (!email) return sendError(res, "email required", 400);
+
+    const key = process.env.RESEND_API_KEY;
+    if (!key) {
+      console.warn("[Email] RESEND_API_KEY not set — skipping welcome email");
+      return sendSuccess(res, { sent: false });
+    }
+
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5000";
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "MGP.AI <onboarding@resend.dev>",
+        to: email,
+        subject: "Welcome to MGP.AI — your coach is ready",
+        html: `
+          <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#0f0f1a;color:#fff;padding:32px;border-radius:16px;">
+            <h1 style="color:#a88bff;margin-bottom:8px;">Welcome to MGP.AI${name ? `, ${name}` : ''}!</h1>
+            <p style="color:#aaa;line-height:1.6;">Your AI fitness coach is ready. Complete your onboarding to get your personalized 21-day workout plan.</p>
+            <a href="${frontendUrl}/onboarding"
+               style="display:inline-block;margin-top:24px;padding:14px 28px;background:linear-gradient(135deg,#7c57ff,#60a5fa);color:#fff;border-radius:999px;text-decoration:none;font-weight:600;">
+              Get Started →
+            </a>
+            <p style="color:#555;font-size:12px;margin-top:32px;">You're receiving this because you signed up for MGP.AI.</p>
+          </div>
+        `,
+      }),
+    });
+
+    if (!r.ok) {
+      const errText = await r.text();
+      console.error("[Email] Resend error:", errText);
+    }
+
+    sendSuccess(res, { sent: r.ok });
+  }));
+
+  // ── Stripe / Payments ──────────────────────────────────────────────────────
+
+  app.post("/api/payments/checkout", asyncHandler(async (req: Request, res: Response) => {
+    const { userId, userEmail } = req.body;
+    if (!userId || !userEmail) return sendError(res, "userId and userEmail required", 400);
+    const origin = req.headers.origin || process.env.FRONTEND_URL || "http://localhost:5000";
+    const session = await createCheckoutSession(userId, userEmail, origin);
+    sendSuccess(res, { url: session.url });
+  }));
+
+  app.post("/api/payments/portal", asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = req.body;
+    if (!userId) return sendError(res, "userId required", 400);
+    const origin = req.headers.origin || process.env.FRONTEND_URL || "http://localhost:5000";
+    const session = await createPortalSession(userId, origin);
+    sendSuccess(res, { url: session.url });
+  }));
+
+  app.get("/api/payments/subscription/:userId", asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const sub = await getSubscription(userId);
+    sendSuccess(res, { subscription: sub });
+  }));
+
+  app.post("/api/payments/webhook", asyncHandler(async (req: Request, res: Response) => {
+    const sig = req.headers["stripe-signature"] as string;
+    if (!sig) return sendError(res, "Missing stripe-signature header", 400);
+    const result = await handleWebhook(req.body as Buffer, sig);
+    res.json(result);
+  }));
+
+  // ── Nutrition Logs ─────────────────────────────────────────────────────────
+
+  app.post("/api/nutrition/log", asyncHandler(async (req: Request, res: Response) => {
+    const validation = insertNutritionLogSchema.safeParse(req.body);
+    if (!validation.success) return sendValidationError(res, validation.error.errors[0].message);
+    const entry = await db.insert(nutritionLogs).values(validation.data).returning();
+    sendSuccess(res, { entry: entry[0] }, "Food logged successfully");
+  }));
+
+  app.get("/api/nutrition/:userId/:date", asyncHandler(async (req: Request, res: Response) => {
+    const { userId, date } = req.params;
+    if (!userId || !date) return sendValidationError(res, "userId and date required");
+    const logs = await db
+      .select()
+      .from(nutritionLogs)
+      .where(and(eq(nutritionLogs.userId, userId), eq(nutritionLogs.logDate, date)));
+    const totalCalories = logs.reduce((sum, l) => sum + (l.calories ?? 0), 0);
+    sendSuccess(res, { logs, totalCalories });
+  }));
+
+  app.delete("/api/nutrition/log/:id", asyncHandler(async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) return sendValidationError(res, "Invalid log ID");
+    await db.delete(nutritionLogs).where(eq(nutritionLogs.id, id));
+    sendSuccess(res, { deleted: true });
   }));
 
   app.get("/api/progress/validate/:userId/:dayNumber", asyncHandler(async (req, res) => {

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { pgTable, serial, text, integer, date, timestamp, varchar, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, date, timestamp, varchar, uniqueIndex, boolean, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 
 export const userPrograms = pgTable("user_programs", {
@@ -20,6 +20,41 @@ export const workoutCompletions = pgTable("workout_completions", {
 }, (table) => ({
   userDayUnique: uniqueIndex("workout_completions_user_day_unique").on(table.userId, table.dayNumber),
 }));
+
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull().unique(),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  stripePriceId: text("stripe_price_id"),
+  status: varchar("status", { length: 50 }).notNull().default("trialing"),
+  trialEndsAt: timestamp("trial_ends_at"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const nutritionLogs = pgTable("nutrition_logs", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  logDate: date("log_date").notNull(),
+  foodName: text("food_name").notNull(),
+  calories: integer("calories"),
+  proteinG: decimal("protein_g", { precision: 6, scale: 1 }),
+  carbsG: decimal("carbs_g", { precision: 6, scale: 1 }),
+  fatG: decimal("fat_g", { precision: 6, scale: 1 }),
+  servingSize: text("serving_size"),
+  loggedAt: timestamp("logged_at").defaultNow(),
+});
+
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertNutritionLogSchema = createInsertSchema(nutritionLogs).omit({ id: true, loggedAt: true });
+
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
+export type NutritionLog = typeof nutritionLogs.$inferSelect;
+export type InsertNutritionLog = z.infer<typeof insertNutritionLogSchema>;
 
 export const insertUserProgramSchema = createInsertSchema(userPrograms).omit({ id: true });
 export const insertWorkoutCompletionSchema = createInsertSchema(workoutCompletions).omit({ id: true, completedAt: true });
@@ -104,6 +139,7 @@ export const exerciseContextSchema = z.object({
 
 export const aiCoachRequestSchema = z.object({
   message: z.string().min(1).max(5000),
+  assistantType: z.enum(["coach", "nutritionist", "trainer"]).optional().default("coach"),
   context: exerciseContextSchema,
   workoutName: z.string().optional(),
   allExercises: z.array(z.object({

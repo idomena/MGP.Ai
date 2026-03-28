@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Sparkles, Send, Loader2, Headphones, Plus, Trash2, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { API_BASE } from "@/lib/api";
 
 interface Message {
   id: string;
@@ -133,7 +134,7 @@ export default function WorkoutAIAssistant({
       } : undefined;
 
       // Send full context to the API
-      const response = await fetch("/api/ai-coach", {
+      const response = await fetch(`${API_BASE}/api/ai-coach`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 

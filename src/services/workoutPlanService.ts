@@ -115,6 +115,14 @@ export async function saveOnboardingAndGeneratePlan(
           training_days: data.trainingDays,
           selected_workouts: focusWorkouts,
           onboarding_completed: false,
+          weight_value: data.weight?.value ?? null,
+          weight_unit: data.weight?.unit ?? 'kg',
+          goals: data.goals ?? [],
+          experience: data.experience ?? null,
+          gender: data.gender ?? null,
+          assistant_type: data.assistantType ?? 'coach',
+          user_name: data.userName ?? null,
+          coach_name: data.coachName ?? null,
         },
         { onConflict: "user_id" }
       );

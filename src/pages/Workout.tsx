@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import posthog from "posthog-js";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Play,
@@ -315,6 +316,7 @@ export default function WorkoutPage() {
       return;
     }
     setIsWorkoutActive(true);
+    posthog.capture('workout_started', { day: dayNumber });
   };
 
   const handleViewDetails = (exercise: Exercise) => {
@@ -326,6 +328,7 @@ export default function WorkoutPage() {
     setIsWorkoutActive(false);
     const success = await completeWorkout(dayNumber);
     if (success) {
+      posthog.capture('workout_completed', { day: dayNumber });
       toast.success("Great job! Come back tomorrow for your next workout.");
     } else {
       toast.error("Failed to save workout. Please try again.");

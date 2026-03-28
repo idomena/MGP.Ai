@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Sparkles, Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { API_BASE } from "@/lib/api";
 
 interface Message {
   id: string;
@@ -74,7 +75,7 @@ ${recentHistory ? `Recent conversation:\n${recentHistory}\n\n` : ""}User's new q
 
 Provide a helpful, concise answer (2-4 sentences) focused on this specific exercise. Be encouraging and practical.`;
 
-      const response = await fetch("/api/ai-coach", {
+      const response = await fetch(`${API_BASE}/api/ai-coach`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: contextualPrompt })

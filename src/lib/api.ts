@@ -1,13 +1,16 @@
+export const API_BASE = import.meta.env.VITE_API_URL ?? "";
+
 export async function callAiCoach(
   message: string,
-  history?: Array<{ role: "user" | "assistant"; content: string }>
+  history?: Array<{ role: "user" | "assistant"; content: string }>,
+  assistantType?: string
 ): Promise<{ response: string; advice: string }> {
-  const res = await fetch("/api/ai-coach", {
+  const res = await fetch(`${API_BASE}/api/ai-coach`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ message, history: history || [] }),
+    body: JSON.stringify({ message, history: history || [], assistantType: assistantType || "coach" }),
   });
 
   if (!res.ok) {
@@ -19,7 +22,7 @@ export async function callAiCoach(
 }
 
 export async function extractOcrText(image: string, mimeType: string = "image/jpeg"): Promise<{ text: string }> {
-  const res = await fetch("/api/ocr-extract", {
+  const res = await fetch(`${API_BASE}/api/ocr-extract`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -39,7 +42,7 @@ export async function generateContent(
   prompt: string,
   systemPrompt?: string
 ): Promise<{ text: string }> {
-  const res = await fetch("/api/generate", {
+  const res = await fetch(`${API_BASE}/api/generate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

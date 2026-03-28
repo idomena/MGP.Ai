@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { API_BASE } from "@/lib/api";
+import posthog from "posthog-js";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, Loader2, Check, X } from "lucide-react";
@@ -88,6 +90,12 @@ export default function Signup() {
         title: "Account created!",
         description: "Please check your email to verify your account.",
       });
+      posthog.capture('user_signed_up', { method: 'email' });
+      fetch(`${API_BASE}/api/email/welcome`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name: fullName }),
+      }).catch(() => {});
       navigate("/login");
     }
   };

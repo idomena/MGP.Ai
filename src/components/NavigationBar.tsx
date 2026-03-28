@@ -1,4 +1,4 @@
-import { Home, Dumbbell, MessageCircle, Banana, MoreHorizontal } from "lucide-react";
+import { Home, Dumbbell, MessageCircle, Salad, MoreHorizontal } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 export default function NavigationBar() {
@@ -9,7 +9,7 @@ export default function NavigationBar() {
     { name: "Home", path: "/", icon: Home },
     { name: "Workout", path: "/workout", icon: Dumbbell },
     { name: "Assistant", path: "/assistant", icon: MessageCircle },
-    { name: "Nutrition", path: "/nutrition", icon: Banana },
+    { name: "Nutrition", path: "/nutrition", icon: Salad },
     { name: "More", path: "/profile", icon: MoreHorizontal },
   ];
 

@@ -228,18 +228,28 @@ export async function generateContent(
   return text;
 }
 
+const PERSONA_PREFIX: Record<string, string> = {
+  coach: "You are a motivational coach. Lead with encouragement and accountability. Celebrate effort, push through resistance, and keep energy high.",
+  nutritionist: "You are a nutritionist-focused coach. Tie every exercise and recovery discussion back to nutrition, fueling, and meal timing. Recommend foods and eating strategies that support the user's goals.",
+  trainer: "You are a technical fitness trainer. Emphasize form, biomechanics, progressive overload, and exercise science. Be precise and instructional over motivational.",
+};
+
 export async function generateCoachResponse(
   message: string,
   context?: ExerciseContext,
-  history?: Array<{ role: string; content: string }>
+  history?: Array<{ role: string; content: string }>,
+  assistantType?: string
 ): Promise<string> {
   if (!apiKey) {
     throw new Error("Gemini API key is not configured");
   }
 
-  const systemPrompt = context
+  const basePrompt = context
     ? buildExerciseSystemPrompt(context)
     : GENERAL_COACH_PROMPT;
+
+  const persona = PERSONA_PREFIX[assistantType || "coach"] ?? PERSONA_PREFIX.coach;
+  const systemPrompt = `${persona}\n\n${basePrompt}`;
 
   const historyMessages = (history || []).map(msg => ({
     role: (msg.role === "assistant" ? "model" : "user") as "model" | "user",

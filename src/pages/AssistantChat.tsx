@@ -6,6 +6,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { callAiCoach } from "@/lib/api";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import posthog from "posthog-js";
 
 interface Message {
   role: "user" | "assistant";
@@ -42,10 +43,20 @@ function saveChatHistory(userId: string, messages: Message[]): void {
   }
 }
 
+function getAssistantType(): string {
+  try {
+    const prefs = JSON.parse(localStorage.getItem('mgp_workout_preferences') || '{}');
+    return prefs.assistantType || 'coach';
+  } catch {
+    return 'coach';
+  }
+}
+
 export default function AssistantChatPage() {
   const [searchParams] = useSearchParams();
   const initialPrompt = searchParams.get("prompt");
   const { user } = useAuth();
+  const assistantType = getAssistantType();
   
   const [messages, setMessages] = useState<Message[]>([DEFAULT_GREETING]);
   const [inputValue, setInputValue] = useState("");
@@ -105,11 +116,12 @@ export default function AssistantChatPage() {
     setIsTyping(true);
 
     try {
+      posthog.capture('ai_message_sent');
       const historyForApi = messages
         .map(m => ({ role: m.role, content: m.content }))
         .slice(-MAX_HISTORY_FOR_API);
 
-      const data = await callAiCoach(messageText, historyForApi);
+      const data = await callAiCoach(messageText, historyForApi, assistantType);
 
       const assistantMessage: Message = {
         role: "assistant",

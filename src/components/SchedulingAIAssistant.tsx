@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Send, Loader2, Calendar, Check, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { API_BASE } from "@/lib/api";
 
 interface Message {
   id: string;
@@ -318,7 +319,7 @@ export default function SchedulingAIAssistant({
         .map((d) => `Day ${d.day}: ${d.title} (${d.workoutType})${d.day === currentDay ? " - TODAY" : ""}`)
         .join("\n");
       
-      const response = await fetch("/api/ai-coach", {
+      const response = await fetch(`${API_BASE}/api/ai-coach`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

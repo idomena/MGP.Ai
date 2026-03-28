@@ -5,6 +5,7 @@ import { Bot, User, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { saveOnboardingAndGeneratePlan } from "@/services/workoutPlanService";
+import posthog from "posthog-js";
 
 import {
   QUESTIONS,
@@ -261,6 +262,11 @@ export default function Onboarding() {
       const result = await saveOnboardingAndGeneratePlan(user.id, onboardingData);
 
       if (result.success) {
+        posthog.capture('onboarding_completed', {
+          coach_type: selections.assistantType,
+          training_days: selections.trainingDays?.length,
+          experience: selections.experience,
+        });
         addBotMessage(`Awesome, ${selections.name}! I'm ${selections.coachName}, and your personalized 21-day workout plan is ready. Let's crush it together!`);
         
         safeSetTimeout(() => {

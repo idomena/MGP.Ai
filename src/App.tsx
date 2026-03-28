@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import LoadingScreen from "./components/LoadingScreen";
+import ErrorBoundary from "./components/ErrorBoundary";
 import NotificationManager from "./components/NotificationManager";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -25,6 +26,8 @@ const OCR = lazy(() => import("./pages/OCR"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/Terms"));
+const Landing = lazy(() => import("./pages/Landing"));
+const Pricing = lazy(() => import("./pages/Pricing"));
 
 const queryClient = new QueryClient();
 
@@ -40,10 +43,13 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ErrorBoundary>
         <AuthProvider>
           <NotificationManagerWrapper />
           <Suspense fallback={<LoadingScreen />}>
           <Routes>
+            <Route path="/landing" element={<Landing />} />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/reset-password" element={<ResetPassword />} />
@@ -63,6 +69,7 @@ const App = () => (
           </Routes>
           </Suspense>
         </AuthProvider>
+        </ErrorBoundary>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

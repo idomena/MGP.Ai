@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
-import { Dumbbell, Banana, Activity, MessageCircle, Weight, Heart, ClipboardList } from "lucide-react";
+import { Dumbbell, Salad, Activity, MessageCircle, Weight, Heart, ClipboardList } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -26,7 +26,7 @@ export default function AssistantPage() {
   const categories = [
     { id: 1, label: "Exercises", icon: Dumbbell, prompt: "Tell me about effective exercises for building strength" },
     { id: 2, label: "Pain", icon: Activity, prompt: "I'm experiencing some workout-related pain, can you help?" },
-    { id: 3, label: "Diet", icon: Banana, prompt: "What should I eat for my fitness goals?" },
+    { id: 3, label: "Diet", icon: Salad, prompt: "What should I eat for my fitness goals?" },
     { id: 4, label: "Mass", icon: Weight, prompt: "How can I build muscle mass effectively?" },
     { id: 5, label: "Toning", icon: Heart, prompt: "What's the best way to tone my body?" },
     { id: 6, label: "Program", icon: ClipboardList, prompt: "Help me create a workout program" },

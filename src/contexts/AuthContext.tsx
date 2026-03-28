@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import posthog from 'posthog-js';
 
 interface AuthContextType {
   user: User | null;
@@ -21,22 +22,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error("Error getting session:", error);
-      }
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Timeout fallback — never hang forever
+    const timeout = setTimeout(() => setLoading(false), 5000);
+
+    supabase.auth.getSession()
+      .then(({ data: { session }, error }) => {
+        if (error) console.error("Error getting session:", error);
+        setSession(session);
+        setUser(session?.user ?? null);
+      })
+      .catch((err) => console.error("getSession failed:", err))
+      .finally(() => {
+        clearTimeout(timeout);
+        setLoading(false);
+      });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      if (event === 'SIGNED_IN' && session?.user) {
+        posthog.identify(session.user.id, {
+          email: session.user.email,
+          name: session.user.user_metadata?.full_name,
+        });
+      }
+      if (event === 'SIGNED_OUT') {
+        posthog.reset();
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {

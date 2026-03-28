@@ -1,20 +1,98 @@
 import NavigationBar from "@/components/NavigationBar";
 import MobileHeader from "@/components/MobileHeader";
-import { useState, useRef } from "react";
-import { Camera, Image as ImageIcon, Sun, Maximize, UtensilsCrossed, Loader2, Copy, RotateCcw, AlertCircle } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Camera, Image as ImageIcon, Sun, Maximize, UtensilsCrossed, Loader2, Copy, RotateCcw, AlertCircle, Plus, Trash2, Flame } from "lucide-react";
 import { toast } from "sonner";
-import { extractOcrText } from "@/lib/api";
+import { extractOcrText, API_BASE } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface FoodEntry {
+  id: number;
+  foodName: string;
+  calories: number | null;
+  proteinG: string | null;
+  carbsG: string | null;
+  fatG: string | null;
+  servingSize: string | null;
+}
+
+const todayStr = () => new Date().toISOString().split("T")[0];
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024;
 
 export default function NutritionPage() {
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [extractedText, setExtractedText] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
   const [error, setError] = useState("");
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  // Food log state
+  const [foodLog, setFoodLog] = useState<FoodEntry[]>([]);
+  const [totalCalories, setTotalCalories] = useState(0);
+  const [logLoading, setLogLoading] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newFood, setNewFood] = useState({ foodName: "", calories: "", proteinG: "", carbsG: "", fatG: "", servingSize: "" });
+
+  useEffect(() => {
+    if (!user) return;
+    fetch(`${API_BASE}/api/nutrition/${user.id}/${todayStr()}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.data) {
+          setFoodLog(data.data.logs ?? []);
+          setTotalCalories(data.data.totalCalories ?? 0);
+        }
+      })
+      .catch(() => {});
+  }, [user]);
+
+  async function handleAddFood(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user || !newFood.foodName.trim()) return;
+    setLogLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/nutrition/log`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          logDate: todayStr(),
+          foodName: newFood.foodName.trim(),
+          calories: newFood.calories ? parseInt(newFood.calories) : null,
+          proteinG: newFood.proteinG || null,
+          carbsG: newFood.carbsG || null,
+          fatG: newFood.fatG || null,
+          servingSize: newFood.servingSize || null,
+        }),
+      });
+      const data = await res.json();
+      if (data.data?.entry) {
+        setFoodLog((prev) => [...prev, data.data.entry]);
+        setTotalCalories((prev) => prev + (data.data.entry.calories ?? 0));
+        setNewFood({ foodName: "", calories: "", proteinG: "", carbsG: "", fatG: "", servingSize: "" });
+        setShowAddForm(false);
+        toast.success("Food logged!");
+      }
+    } catch {
+      toast.error("Failed to log food");
+    } finally {
+      setLogLoading(false);
+    }
+  }
+
+  async function handleDeleteFood(id: number, cal: number | null) {
+    try {
+      await fetch(`${API_BASE}/api/nutrition/log/${id}`, { method: "DELETE" });
+      setFoodLog((prev) => prev.filter((f) => f.id !== id));
+      setTotalCalories((prev) => prev - (cal ?? 0));
+    } catch {
+      toast.error("Failed to delete entry");
+    }
+  }
 
   const handleCameraClick = () => {
     cameraInputRef.current?.click();
@@ -295,6 +373,111 @@ export default function NutritionPage() {
           </div>
         )}
       </div>
+
+        {/* Food Log Section */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-white font-semibold text-base">Today's Food Log</h2>
+              <div className="flex items-center gap-1 mt-0.5">
+                <Flame className="w-3.5 h-3.5 text-orange-400" />
+                <span className="text-orange-400 text-sm font-medium">{totalCalories} kcal</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowAddForm((v) => !v)}
+              className="flex items-center gap-1 bg-[#7c57ff] text-white text-sm px-3 py-1.5 rounded-full font-medium"
+            >
+              <Plus className="w-4 h-4" />
+              Add food
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {showAddForm && (
+              <motion.form
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                onSubmit={handleAddFood}
+                className="bg-[#1a1a2e]/80 border border-white/10 rounded-2xl p-4 mb-3 overflow-hidden"
+              >
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  <input
+                    className="col-span-2 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-[#7c57ff]"
+                    placeholder="Food name *"
+                    value={newFood.foodName}
+                    onChange={(e) => setNewFood((p) => ({ ...p, foodName: e.target.value }))}
+                    required
+                  />
+                  <input
+                    className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-[#7c57ff]"
+                    placeholder="Calories"
+                    type="number"
+                    value={newFood.calories}
+                    onChange={(e) => setNewFood((p) => ({ ...p, calories: e.target.value }))}
+                  />
+                  <input
+                    className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-[#7c57ff]"
+                    placeholder="Serving (e.g. 100g)"
+                    value={newFood.servingSize}
+                    onChange={(e) => setNewFood((p) => ({ ...p, servingSize: e.target.value }))}
+                  />
+                  <input
+                    className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-[#7c57ff]"
+                    placeholder="Protein (g)"
+                    type="number"
+                    value={newFood.proteinG}
+                    onChange={(e) => setNewFood((p) => ({ ...p, proteinG: e.target.value }))}
+                  />
+                  <input
+                    className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-[#7c57ff]"
+                    placeholder="Carbs (g)"
+                    type="number"
+                    value={newFood.carbsG}
+                    onChange={(e) => setNewFood((p) => ({ ...p, carbsG: e.target.value }))}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={logLoading}
+                  className="w-full py-2.5 rounded-xl bg-[#7c57ff] text-white text-sm font-medium disabled:opacity-50"
+                >
+                  {logLoading ? "Logging..." : "Log food"}
+                </button>
+              </motion.form>
+            )}
+          </AnimatePresence>
+
+          {foodLog.length === 0 ? (
+            <div className="bg-[#1a1a2e]/60 border border-white/5 rounded-2xl p-6 text-center">
+              <UtensilsCrossed className="w-8 h-8 text-white/20 mx-auto mb-2" />
+              <p className="text-white/40 text-sm">No food logged today yet</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {foodLog.map((entry) => (
+                <div key={entry.id} className="flex items-center justify-between bg-[#1a1a2e]/60 border border-white/5 rounded-xl px-4 py-3">
+                  <div>
+                    <p className="text-white text-sm font-medium">{entry.foodName}</p>
+                    <p className="text-white/40 text-xs mt-0.5">
+                      {entry.calories != null ? `${entry.calories} kcal` : ""}
+                      {entry.servingSize ? ` · ${entry.servingSize}` : ""}
+                      {entry.proteinG ? ` · ${entry.proteinG}g protein` : ""}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteFood(entry.id, entry.calories)}
+                    className="p-2 text-white/30 hover:text-red-400 transition-colors"
+                    aria-label="Delete food entry"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
       <NavigationBar />
     </div>
