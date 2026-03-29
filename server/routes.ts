@@ -477,7 +477,7 @@ export function registerRoutes(app: Express): void {
 
   /** GET /api/exercisedb/muscle/:group
    *  Returns exercises for a MGP muscle group (chest, back, shoulders, arms, legs, core).
-   *  Used by the frontend to replace static GIF lookups with real ExerciseDB data. */
+   *  Each exercise is enriched with imageUrl pointing to our backend image proxy. */
   app.get("/api/exercisedb/muscle/:group", asyncHandler(async (req, res) => {
     const group = req.params.group.toLowerCase();
     const bodyParts = MUSCLE_TO_BODY_PART[group];
@@ -488,18 +488,21 @@ export function registerRoutes(app: Express): void {
       return sendError(res, "ExerciseDB not configured", 503);
     }
     const limit = parseInt((req.query.limit as string) || "25", 10);
-    const results: ExerciseDBEntry[] = [];
+    const raw: ExerciseDBEntry[] = [];
     for (const bp of bodyParts) {
       const data = await getByBodyPart(bp, limit);
-      results.push(...data);
+      raw.push(...data);
     }
+    const results = raw.map(ex => ({
+      ...ex,
+      imageUrl: `/api/exercises/image/${ex.id}?resolution=360`,
+    }));
     sendSuccess(res, { results });
   }));
 
-  /** GET /api/exercises/image/:id
-   *  Fetches an ExerciseDB GIF by numeric ID (e.g. "0001").
-   *  Tries /exercises/gif/:id (PRO endpoint), then /image/:id, then v2 CDN.
-   *  Every attempt is logged so Fly.io logs show the exact upstream status. */
+  /** GET /api/exercises/image/:id?resolution=360
+   *  Fetches an exercise GIF from the ExerciseDB v2 Image Service.
+   *  Uses: GET /image?exerciseId={id}&resolution={resolution} */
   app.get("/api/exercises/image/:id", asyncHandler(async (req: Request, res: Response) => {
     const id = req.params.id.replace(/[^a-zA-Z0-9_-]/g, "");
     if (!id) return sendError(res, "Invalid exercise id", 400);
@@ -507,59 +510,30 @@ export function registerRoutes(app: Express): void {
     const apiKey = process.env.EXERCISE_API_KEY;
     if (!apiKey) return sendError(res, "EXERCISE_API_KEY not configured", 500);
 
-    const rapidApiHeaders = {
-      "X-RapidAPI-Key":  apiKey,
-      "X-RapidAPI-Host": "exercisedb.p.rapidapi.com",
-    };
+    const resolution = (req.query.resolution as string) || "360";
 
-    // Ordered candidate URLs — /exercises/gif/:id is the PRO endpoint
-    const candidates = [
-      `https://exercisedb.p.rapidapi.com/exercises/gif/${id}`,
-      `https://exercisedb.p.rapidapi.com/image/${id}`,
-      `https://v2.exercisedb.io/image/${id}.gif`,
-    ];
-
-    for (const startUrl of candidates) {
-      let targetUrl = startUrl;
-      let served = false;
-
-      for (let hop = 0; hop < 5; hop++) {
-        const attempt = await fetch(targetUrl, { headers: rapidApiHeaders, redirect: "manual" });
-
-        // Log every upstream response so it appears in Fly.io logs
-        console.log(`[gif-proxy] id=${id} url=${targetUrl} status=${attempt.status} ct=${attempt.headers.get("content-type") ?? "-"}`);
-
-        if (attempt.status >= 300 && attempt.status < 400) {
-          const loc = attempt.headers.get("location");
-          console.log(`[gif-proxy] redirect → ${loc}`);
-          if (!loc) break;
-          targetUrl = loc.startsWith("http") ? loc : new URL(loc, targetUrl).href;
-          continue;
-        }
-
-        if (attempt.ok) {
-          const contentType = attempt.headers.get("content-type") || "image/gif";
-          const buffer = Buffer.from(await attempt.arrayBuffer());
-          console.log(`[gif-proxy] served ${buffer.length}b as ${contentType}`);
-          res.setHeader("Content-Type", contentType);
-          res.setHeader("Cache-Control", "public, max-age=86400, immutable");
-          res.setHeader("Content-Length", buffer.length);
-          res.send(buffer);
-          served = true;
-          break;
-        }
-
-        // Non-2xx, non-3xx — log body snippet and try next candidate
-        const errBody = await attempt.text().catch(() => "");
-        console.log(`[gif-proxy] failed ${attempt.status}: ${errBody.slice(0, 120)}`);
-        break;
+    const upstream = await fetch(
+      `https://exercisedb.p.rapidapi.com/image?exerciseId=${id}&resolution=${resolution}`,
+      {
+        headers: {
+          "X-RapidAPI-Key":  apiKey,
+          "X-RapidAPI-Host": "exercisedb.p.rapidapi.com",
+        },
       }
+    );
 
-      if (served) return;
+    if (!upstream.ok) {
+      console.warn(`[image] ${id} → ${upstream.status}`);
+      return sendError(res, "Exercise image not available", 404);
     }
 
-    console.log(`[gif-proxy] all candidates exhausted for id=${id}`);
-    return sendError(res, "Exercise image not available", 404);
+    const contentType = upstream.headers.get("content-type") || "image/gif";
+    const buffer = Buffer.from(await upstream.arrayBuffer());
+
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Cache-Control", "public, max-age=86400, immutable");
+    res.setHeader("Content-Length", buffer.length);
+    res.send(buffer);
   }));
 
   /** GET /api/proxy-image?url=...

@@ -3,7 +3,6 @@ import { X, Check, Sparkles, SkipForward, Clock, Zap, Dumbbell } from "lucide-re
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import ExerciseAIAssistant from "./ExerciseAIAssistant";
-import LazyGif from "./LazyGif";
 
 interface Exercise {
   id: number;
@@ -167,16 +166,12 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
           >
             {currentExercise.gifUrl ? (
               <div className="relative w-full h-full">
-                <LazyGif
-                  src={currentExercise.gifUrl.startsWith('/api/') ? currentExercise.gifUrl : `/api/proxy-image?url=${encodeURIComponent(currentExercise.gifUrl)}`}
+                <img
+                  src={currentExercise.imageUrl || currentExercise.gifUrl}
                   alt={`${currentExercise.name} demonstration`}
-                  className="w-full h-full"
-                  objectFit="contain"
-                  fallback={
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1e1e38] to-[#14142a]">
-                      <Dumbbell className="w-16 h-16 text-white/10" />
-                    </div>
-                  }
+                  className="w-full h-full object-contain"
+                  loading="lazy"
+                  onError={(e) => console.warn(`[gif] failed for exercise: ${currentExercise.name}`, e)}
                 />
               </div>
             ) : (

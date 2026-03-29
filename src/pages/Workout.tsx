@@ -34,7 +34,6 @@ import SwapExerciseModal from "@/components/SwapExerciseModal";
 import SchedulingAIAssistant from "@/components/SchedulingAIAssistant";
 import MuscleAnatomyDiagram from "@/components/MuscleAnatomyDiagram";
 import AddExerciseModal from "@/components/AddExerciseModal";
-import LazyGif from "@/components/LazyGif";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
 import { useExercises } from "@/hooks/useExercises";
@@ -699,17 +698,13 @@ export default function WorkoutPage() {
                       >
                         <div className="flex items-center gap-3">
                           <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-[#1e1e38]" data-testid={`thumbnail-${exercise.id}`}>
-                            {exercise.gifUrl ? (
-                              <LazyGif
-                                src={exercise.gifUrl.startsWith('/api/') ? exercise.gifUrl : `/api/proxy-image?url=${encodeURIComponent(exercise.gifUrl)}`}
+                            {(exercise.imageUrl || exercise.gifUrl) ? (
+                              <img
+                                src={exercise.imageUrl || exercise.gifUrl}
                                 alt={exercise.name}
-                                className="w-full h-full"
-                                objectFit="cover"
-                                fallback={
-                                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#252550] to-[#1a1a3a]">
-                                    <Dumbbell className="w-6 h-6 text-white/20" />
-                                  </div>
-                                }
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                                onError={(e) => console.warn(`[gif] failed for exercise: ${exercise.name}`, e)}
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#252550] to-[#1a1a3a]">

@@ -18,7 +18,8 @@ function getHeaders() {
 export interface ExerciseDBEntry {
   id: string;
   name: string;
-  gifUrl: string;
+  gifUrl?: string;    // may be absent on free/v2 plans
+  imageUrl?: string;  // injected by our API: /api/exercises/image/:id
   target: string;
   bodyPart: string;
   equipment: string;

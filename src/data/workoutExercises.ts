@@ -7,6 +7,7 @@ export interface Exercise {
   time: string;
   difficulty: string;
   gifUrl: string;
+  imageUrl?: string;  // canonical image URL via /api/exercises/image/:id
   instructions: string;
   // ExerciseDB enriched fields (optional — present when fetched from API)
   target?: string;

@@ -22,6 +22,14 @@ export type Database = {
           selected_workouts: string[]
           onboarding_completed: boolean
           created_at: string
+          weight_value: number | null
+          weight_unit: string | null
+          goals: string[] | null
+          experience: string | null
+          gender: string | null
+          assistant_type: string | null
+          user_name: string | null
+          coach_name: string | null
         }
         Insert: {
           id?: string
@@ -30,6 +38,14 @@ export type Database = {
           selected_workouts: string[]
           onboarding_completed?: boolean
           created_at?: string
+          weight_value?: number | null
+          weight_unit?: string | null
+          goals?: string[] | null
+          experience?: string | null
+          gender?: string | null
+          assistant_type?: string | null
+          user_name?: string | null
+          coach_name?: string | null
         }
         Update: {
           id?: string
@@ -38,6 +54,14 @@ export type Database = {
           selected_workouts?: string[]
           onboarding_completed?: boolean
           created_at?: string
+          weight_value?: number | null
+          weight_unit?: string | null
+          goals?: string[] | null
+          experience?: string | null
+          gender?: string | null
+          assistant_type?: string | null
+          user_name?: string | null
+          coach_name?: string | null
         }
         Relationships: []
       }

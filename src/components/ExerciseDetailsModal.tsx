@@ -2,7 +2,6 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Dumbbell, Clock, Target, X, Zap, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
-import LazyGif from "./LazyGif";
 
 interface Exercise {
   id: number;
@@ -81,16 +80,12 @@ export default function ExerciseDetailsModal({ exercise, isOpen, onClose }: Exer
         {/* ── GIF Hero ──────────────────────────────────────────────────────── */}
         <div className="relative w-full h-56 bg-gradient-to-br from-[#1e1e38] to-[#14142a] overflow-hidden">
           {exercise.gifUrl ? (
-            <LazyGif
-              src={exercise.gifUrl.startsWith('/api/') ? exercise.gifUrl : `/api/proxy-image?url=${encodeURIComponent(exercise.gifUrl)}`}
+            <img
+              src={exercise.imageUrl || exercise.gifUrl}
               alt={`${exercise.name} demonstration`}
-              className="w-full h-full"
-              objectFit="contain"
-              fallback={
-                <div className="w-full h-full flex items-center justify-center">
-                  <Dumbbell className="w-16 h-16 text-white/10" />
-                </div>
-              }
+              className="w-full h-full object-contain"
+              loading="lazy"
+              onError={(e) => console.warn(`[gif] failed for exercise: ${exercise.name}`, e)}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">

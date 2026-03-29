@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, Dumbbell, ArrowRightLeft, ChevronDown, ChevronUp, Zap } from "lucide-react";
 import { Exercise } from "@/data/workoutExercises";
-import LazyGif from "@/components/LazyGif";
 
 interface SwapExerciseModalProps {
   isOpen: boolean;
@@ -216,10 +215,12 @@ export default function SwapExerciseModal({
                                 <div className={`px-4 pb-4 space-y-3 ${isSelected ? "" : "border-t border-white/10 pt-3 mx-4 mb-0 px-0 pb-4"}`}>
                                   {exercise.gifUrl && (
                                     <div className="rounded-xl overflow-hidden bg-black/30 aspect-video" data-testid={`preview-gif-swap-${exercise.id}`}>
-                                      <LazyGif
-                                        src={exercise.gifUrl.startsWith('/api/') ? exercise.gifUrl : `/api/proxy-image?url=${encodeURIComponent(exercise.gifUrl)}`}
+                                      <img
+                                        src={exercise.imageUrl || exercise.gifUrl}
                                         alt={exercise.name}
                                         className="w-full h-full object-cover"
+                                        loading="lazy"
+                                        onError={(e) => console.warn(`[gif] failed for exercise: ${exercise.name}`, e)}
                                       />
                                     </div>
                                   )}

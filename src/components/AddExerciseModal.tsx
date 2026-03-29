@@ -5,7 +5,6 @@ import { Exercise, getAllAvailableExercises, getMuscleGroupsForWorkoutType } fro
 import { fetchAndMapExercisesByMuscleGroup } from "@/services/exercisesLibraryService";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import InteractiveBodyDiagram from "@/components/InteractiveBodyDiagram";
-import LazyGif from "@/components/LazyGif";
 
 interface AddExerciseModalProps {
   isOpen: boolean;
@@ -321,11 +320,12 @@ export default function AddExerciseModal({
                             <div className="px-3 pb-3 space-y-3">
                               {exercise.gifUrl && (
                                 <div className="rounded-xl overflow-hidden bg-black/30 aspect-video" data-testid={`preview-gif-${exercise.id}`}>
-                                  <LazyGif
-                                    src={exercise.gifUrl.startsWith('/api/') ? exercise.gifUrl : `/api/proxy-image?url=${encodeURIComponent(exercise.gifUrl)}`}
+                                  <img
+                                    src={exercise.imageUrl || exercise.gifUrl}
                                     alt={exercise.name}
-                                    className="w-full h-full"
-                                    objectFit="contain"
+                                    className="w-full h-full object-contain"
+                                    loading="lazy"
+                                    onError={(e) => console.warn(`[gif] failed for exercise: ${exercise.name}`, e)}
                                   />
                                 </div>
                               )}
