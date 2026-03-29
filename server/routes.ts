@@ -498,8 +498,8 @@ export function registerRoutes(app: Express): void {
 
   /** GET /api/exercises/image/:id
    *  Fetches an ExerciseDB GIF by numeric ID (e.g. "0001").
-   *  Tries the RapidAPI gateway first (live on PRO plan), then the v2 CDN.
-   *  Auth headers are forwarded on every redirect hop. */
+   *  Tries /exercises/gif/:id (PRO endpoint), then /image/:id, then v2 CDN.
+   *  Every attempt is logged so Fly.io logs show the exact upstream status. */
   app.get("/api/exercises/image/:id", asyncHandler(async (req: Request, res: Response) => {
     const id = req.params.id.replace(/[^a-zA-Z0-9_-]/g, "");
     if (!id) return sendError(res, "Invalid exercise id", 400);
@@ -512,8 +512,9 @@ export function registerRoutes(app: Express): void {
       "X-RapidAPI-Host": "exercisedb.p.rapidapi.com",
     };
 
-    // Try RapidAPI gateway first (PRO), then v2 CDN fallback
+    // Ordered candidate URLs — /exercises/gif/:id is the PRO endpoint
     const candidates = [
+      `https://exercisedb.p.rapidapi.com/exercises/gif/${id}`,
       `https://exercisedb.p.rapidapi.com/image/${id}`,
       `https://v2.exercisedb.io/image/${id}.gif`,
     ];
@@ -525,8 +526,12 @@ export function registerRoutes(app: Express): void {
       for (let hop = 0; hop < 5; hop++) {
         const attempt = await fetch(targetUrl, { headers: rapidApiHeaders, redirect: "manual" });
 
+        // Log every upstream response so it appears in Fly.io logs
+        console.log(`[gif-proxy] id=${id} url=${targetUrl} status=${attempt.status} ct=${attempt.headers.get("content-type") ?? "-"}`);
+
         if (attempt.status >= 300 && attempt.status < 400) {
           const loc = attempt.headers.get("location");
+          console.log(`[gif-proxy] redirect → ${loc}`);
           if (!loc) break;
           targetUrl = loc.startsWith("http") ? loc : new URL(loc, targetUrl).href;
           continue;
@@ -535,6 +540,7 @@ export function registerRoutes(app: Express): void {
         if (attempt.ok) {
           const contentType = attempt.headers.get("content-type") || "image/gif";
           const buffer = Buffer.from(await attempt.arrayBuffer());
+          console.log(`[gif-proxy] served ${buffer.length}b as ${contentType}`);
           res.setHeader("Content-Type", contentType);
           res.setHeader("Cache-Control", "public, max-age=86400, immutable");
           res.setHeader("Content-Length", buffer.length);
@@ -542,12 +548,17 @@ export function registerRoutes(app: Express): void {
           served = true;
           break;
         }
+
+        // Non-2xx, non-3xx — log body snippet and try next candidate
+        const errBody = await attempt.text().catch(() => "");
+        console.log(`[gif-proxy] failed ${attempt.status}: ${errBody.slice(0, 120)}`);
         break;
       }
 
       if (served) return;
     }
 
+    console.log(`[gif-proxy] all candidates exhausted for id=${id}`);
     return sendError(res, "Exercise image not available", 404);
   }));
 
