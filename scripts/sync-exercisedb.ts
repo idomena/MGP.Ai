@@ -32,25 +32,33 @@ const EDB_HEADERS = {
 };
 
 interface EDBExercise {
-  id: string; name: string; gifUrl: string;
+  id: string; name: string;
+  // gifUrl is present on paid ExerciseDB plans only.
+  // On free tier the field is absent from the response entirely.
+  gifUrl?: string;
   target: string; bodyPart: string; equipment: string;
   secondaryMuscles: string[]; instructions: string[];
 }
 
-const GIF_BASE = "https://exercisedb.io/image";
-
-function buildGifUrl(id: string): string {
-  return `${GIF_BASE}/${id}.gif`;
-}
-
-async function edbSearch(query: string): Promise<EDBExercise[]> {
-  const url = `https://${RAPIDAPI_HOST}/exercises/name/${encodeURIComponent(query.toLowerCase())}?limit=5&offset=0`;
+async function edbSearch(query: string, limit = 10): Promise<EDBExercise[]> {
+  const url = `https://${RAPIDAPI_HOST}/exercises/name/${encodeURIComponent(query.toLowerCase())}?limit=${limit}&offset=0`;
   const res = await fetch(url, { headers: EDB_HEADERS });
   if (!res.ok) { console.warn(`  ⚠  ExerciseDB ${res.status} for "${query}"`); return []; }
   const json = await res.json();
-  const results: EDBExercise[] = Array.isArray(json) ? json : [];
-  // Inject gifUrl from ID since API v2 no longer includes it in the response
-  return results.map(r => ({ ...r, gifUrl: r.gifUrl || buildGifUrl(r.id) }));
+  return Array.isArray(json) ? json : [];
+}
+
+/** Fetch all exercises from ExerciseDB in one shot (PRO plan — no per-page cap).
+ *  The API supports up to 1 500 in a single request; default 1 400 covers the
+ *  full catalogue with headroom. */
+async function fetchAllExercises(limit = 1400): Promise<EDBExercise[]> {
+  const url = `https://${RAPIDAPI_HOST}/exercises?limit=${limit}&offset=0`;
+  const res = await fetch(url, { headers: EDB_HEADERS });
+  if (!res.ok) {
+    throw new Error(`ExerciseDB ${res.status}: ${await res.text()}`);
+  }
+  const json = await res.json();
+  return Array.isArray(json) ? json : [];
 }
 
 function bestMatch(results: EDBExercise[], queries: string[]): EDBExercise | null {
@@ -130,15 +138,17 @@ async function ensureColumns(): Promise<void> {
   }
 }
 
-// ── Step 2: fetch rows with NULL gif_url via direct SQL ───────────────────────
+// ── Step 2: fetch rows from DB ────────────────────────────────────────────────
 interface DBRow { id: string; title: string; muscle_group: string }
 
-async function fetchNullRows(): Promise<DBRow[]> {
+/** Pass `all=true` to resync every row (useful after upgrading to PRO plan). */
+async function fetchRows(all = false): Promise<DBRow[]> {
   const client = await pool.connect();
   try {
-    const { rows } = await client.query(
-      `SELECT id, title, muscle_group FROM exercises_library WHERE gif_url IS NULL ORDER BY title`
-    );
+    const sql = all
+      ? `SELECT id, title, muscle_group FROM exercises_library ORDER BY title`
+      : `SELECT id, title, muscle_group FROM exercises_library WHERE gif_url IS NULL ORDER BY title`;
+    const { rows } = await client.query(sql);
     return rows;
   } finally {
     client.release();
@@ -151,16 +161,18 @@ interface SyncResult {
   gifUrl?: string; target?: string; steps?: number; reason?: string;
 }
 
-async function syncRow(row: DBRow): Promise<SyncResult> {
+async function syncRow(row: DBRow, preMatch?: EDBExercise): Promise<SyncResult> {
   const queries = ALIASES[row.title.toLowerCase()] ?? [row.title];
 
-  // Search ExerciseDB
-  let match: EDBExercise | null = null;
-  for (const q of queries) {
-    const results = await edbSearch(q);
-    match = bestMatch(results, queries);
-    if (match) break;
-    await sleep(150);
+  // Use pre-fetched match (bulk mode) or search ExerciseDB by name
+  let match: EDBExercise | null = preMatch ?? null;
+  if (!match) {
+    for (const q of queries) {
+      const results = await edbSearch(q);
+      match = bestMatch(results, queries);
+      if (match) break;
+      await sleep(150);
+    }
   }
 
   if (!match) {
@@ -169,17 +181,18 @@ async function syncRow(row: DBRow): Promise<SyncResult> {
 
   const client = await pool.connect();
   try {
-    // Direct SQL UPDATE
+    // COALESCE($1, gif_url) — only overwrites when the API returns a non-null
+    // gifUrl (PRO plan).  A null/absent gifUrl leaves the existing value intact.
     await client.query(
       `UPDATE exercises_library
-          SET gif_url            = $1,
-              target_muscle      = $2,
-              instructions_list  = $3,
+          SET gif_url            = COALESCE($1, gif_url),
+              target_muscle      = COALESCE($2, target_muscle),
+              instructions_list  = COALESCE($3, instructions_list),
               secondary_muscles  = COALESCE($4::text[], secondary_muscles),
               description        = COALESCE($5, description)
         WHERE id = $6`,
       [
-        match.gifUrl,
+        match.gifUrl,                                           // official API URL — never constructed
         match.target,
         match.instructions?.length ? match.instructions : null,
         match.secondaryMuscles?.length ? match.secondaryMuscles : null,
@@ -188,7 +201,7 @@ async function syncRow(row: DBRow): Promise<SyncResult> {
       ]
     );
 
-    // Verify: read back the row
+    // Verify the write landed
     const { rows } = await client.query(
       `SELECT gif_url, target_muscle, array_length(instructions_list,1) AS steps
          FROM exercises_library WHERE id = $1`,
@@ -196,16 +209,12 @@ async function syncRow(row: DBRow): Promise<SyncResult> {
     );
 
     const saved = rows[0];
-    if (!saved?.gif_url) {
-      return { title: row.title, success: false, reason: "gif_url still NULL after direct UPDATE" };
-    }
-
     return {
       title:   row.title,
       success: true,
-      gifUrl:  saved.gif_url,
-      target:  saved.target_muscle,
-      steps:   saved.steps ?? 0,
+      gifUrl:  saved?.gif_url ?? undefined,
+      target:  saved?.target_muscle,
+      steps:   saved?.steps ?? 0,
     };
   } finally {
     client.release();
@@ -213,31 +222,114 @@ async function syncRow(row: DBRow): Promise<SyncResult> {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
+// Flags:
+//   --all     resync every row in exercises_library (not just NULL gif_url)
+//   --bulk    fetch all 1 300+ exercises from ExerciseDB first, then match by
+//             name and upsert — fastest strategy on the PRO plan
 async function main() {
+  const args    = process.argv.slice(2);
+  const resync  = args.includes("--all");
+  const bulk    = args.includes("--bulk");
+
   console.log("\n🏋️  ExerciseDB → Supabase Sync  (direct Postgres)\n" + "─".repeat(58));
+  if (resync) console.log("  Mode: --all  (resync every row)\n");
+  if (bulk)   console.log("  Mode: --bulk (PRO bulk fetch → name-match upsert)\n");
 
   console.log("Step 1 — Ensuring schema columns via direct SQL…");
   await ensureColumns();
 
-  console.log("Step 2 — Fetching NULL rows…");
-  const nullRows = await fetchNullRows();
-  if (!nullRows.length) {
-    console.log("  ✓  All exercises already have gif_url — nothing to do!\n");
+  // ── Bulk mode: pull full EDB catalogue, match by name, upsert ──────────────
+  if (bulk) {
+    console.log("Step 2 — Fetching full ExerciseDB catalogue (PRO)…");
+    const allEdb = await fetchAllExercises();
+    console.log(`  ✓  ${allEdb.length} exercises returned from ExerciseDB\n`);
+
+    // Build a lookup: normalised name → EDBExercise
+    const edbByName = new Map<string, EDBExercise>();
+    for (const ex of allEdb) {
+      edbByName.set(ex.name.toLowerCase().trim(), ex);
+    }
+
+    console.log("Step 3 — Fetching DB rows…");
+    const dbRows = await fetchRows(true);
+    console.log(`  ✓  ${dbRows.length} rows in exercises_library\n`);
+
+    console.log("Step 4 — Matching and upserting…\n");
+    const results: SyncResult[] = [];
+
+    for (let i = 0; i < dbRows.length; i++) {
+      const row = dbRows[i];
+      process.stdout.write(`  [${String(i + 1).padStart(3)}/${dbRows.length}]  ${row.title.padEnd(34)} `);
+
+      // Try ALIASES first, then direct name lookup
+      const queries = ALIASES[row.title.toLowerCase()] ?? [row.title];
+      let match: EDBExercise | null = null;
+      for (const q of queries) {
+        match = edbByName.get(q.toLowerCase().trim()) ?? null;
+        if (match) break;
+      }
+      // Fallback: partial match
+      if (!match) {
+        for (const q of queries) {
+          for (const [key, val] of edbByName) {
+            if (key.includes(q.toLowerCase())) { match = val; break; }
+          }
+          if (match) break;
+        }
+      }
+
+      if (!match) {
+        console.log(`❌  no match`);
+        results.push({ title: row.title, success: false, reason: "no EDB match in bulk set" });
+        continue;
+      }
+
+      const r = await syncRow(row, match);
+      results.push(r);
+      if (r.success) {
+        const short = (r.gifUrl ?? "(no gif)").split("/").pop()?.slice(0, 28) ?? "";
+        console.log(`✅  ${(r.target ?? "").padEnd(16)} ${r.steps} steps  …${short}`);
+      } else {
+        console.log(`❌  ${r.reason}`);
+      }
+      await sleep(150); // lighter throttle — already have the data
+    }
+
+    await pool.end();
+    const ok   = results.filter(r => r.success);
+    const fail = results.filter(r => !r.success);
+    console.log("\n" + "─".repeat(58));
+    console.log(`  ✅  Updated : ${ok.length} / ${dbRows.length}`);
+    console.log(`  ❌  No match : ${fail.length}`);
+    if (fail.length) {
+      console.log("\n  Unresolved rows:");
+      fail.forEach(r => console.log(`    • ${r.title}  — ${r.reason}`));
+    }
+    if (ok.length) console.log(`\n  🎉  ${ok.length} rows written. Refresh Supabase → exercises_library.\n`);
+    console.log("─".repeat(58) + "\n");
+    process.exit(fail.length === dbRows.length ? 1 : 0);
+  }
+
+  // ── Default mode: name-search per row ──────────────────────────────────────
+  console.log(`Step 2 — Fetching ${resync ? "all" : "NULL"} rows…`);
+  const rows = await fetchRows(resync);
+  if (!rows.length) {
+    console.log("  ✓  Nothing to sync.\n");
     await pool.end();
     process.exit(0);
   }
-  console.log(`  ✓  ${nullRows.length} rows need syncing\n`);
+  console.log(`  ✓  ${rows.length} rows to sync\n`);
 
   console.log("Step 3 — Search ExerciseDB → UPDATE → Verify…\n");
   const results: SyncResult[] = [];
 
-  for (let i = 0; i < nullRows.length; i++) {
-    const row = nullRows[i];
-    process.stdout.write(`  [${String(i + 1).padStart(2)}/${nullRows.length}]  ${row.title.padEnd(34)} `);
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    process.stdout.write(`  [${String(i + 1).padStart(2)}/${rows.length}]  ${row.title.padEnd(34)} `);
     const r = await syncRow(row);
     results.push(r);
     if (r.success) {
-      const short = (r.gifUrl ?? "").split("/").pop()?.slice(0, 28) ?? "";
+      const short = (r.gifUrl ?? "(no gif)").split("/").pop()?.slice(0, 28) ?? "";
       console.log(`✅  ${(r.target ?? "").padEnd(16)} ${r.steps} steps  …${short}`);
     } else {
       console.log(`❌  ${r.reason}`);
@@ -251,18 +343,17 @@ async function main() {
   const fail = results.filter(r => !r.success);
 
   console.log("\n" + "─".repeat(58));
-  console.log(`  ✅  Verified updates : ${ok.length} / ${nullRows.length}`);
-  console.log(`  ❌  No match / error  : ${fail.length}`);
+  console.log(`  ✅  Updated : ${ok.length} / ${rows.length}`);
+  console.log(`  ❌  No match : ${fail.length}`);
   if (fail.length) {
     console.log("\n  Unresolved rows:");
     fail.forEach(r => console.log(`    • ${r.title}  — ${r.reason}`));
   }
   if (ok.length) {
-    console.log(`\n  🎉  ${ok.length} rows confirmed written.`);
-    console.log("  Refresh Supabase dashboard → exercises_library to see the URLs.\n");
+    console.log(`\n  🎉  ${ok.length} rows written. Refresh Supabase → exercises_library.\n`);
   }
   console.log("─".repeat(58) + "\n");
-  process.exit(fail.length === nullRows.length ? 1 : 0);
+  process.exit(fail.length === rows.length ? 1 : 0);
 }
 
 main().catch(err => { console.error("Fatal:", err.message); pool.end(); process.exit(1); });

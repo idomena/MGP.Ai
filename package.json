@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "start": "NODE_ENV=production tsx server/index.ts",
     "exercise:migrate": "tsx --tsconfig tsconfig.scripts.json scripts/migrate-exercisedb.ts",
-    "exercise:sync-db": "tsx --tsconfig tsconfig.scripts.json scripts/sync-exercisedb.ts"
+    "exercise:sync-db": "tsx --tsconfig tsconfig.scripts.json scripts/sync-exercisedb.ts",
+    "exercise:resync-gifs": "tsx --tsconfig tsconfig.scripts.json scripts/resync-gifs.ts"
   },
   "dependencies": {
     "@google/genai": "^1.33.0",

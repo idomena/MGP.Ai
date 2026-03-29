@@ -499,33 +499,64 @@ export function registerRoutes(app: Express): void {
   /** GET /api/proxy-image?url=...
    *  Proxies ExerciseDB GIF images through the backend so the browser never
    *  hits the CDN directly (avoids CORS / auth redirects).
-   *  Only exercisedb.io URLs are allowed. */
+   *
+   *  Allowed origins: exercisedb.io  and  v2.exercisedb.io
+   *  Auth:  X-RapidAPI-Key forwarded on every hop (manual redirect loop).
+   *  Cache: 24 h browser cache on successful responses. */
   app.get("/api/proxy-image", asyncHandler(async (req: Request, res: Response) => {
     const url = ((req.query.url as string) || "").trim();
     if (!url) return sendError(res, "url query param required", 400);
 
-    // Allowlist: only proxy exercisedb.io assets
-    if (!url.startsWith("https://exercisedb.io/")) {
-      return sendError(res, "URL not allowed", 403);
+    // Allowlist — only proxy known ExerciseDB CDN origins (free + PRO plan)
+    const isAllowed =
+      url.startsWith("https://exercisedb.io/") ||
+      url.startsWith("https://v2.exercisedb.io/") ||
+      url.startsWith("https://cdn.exercisedb.io/") ||
+      url.startsWith("https://media.exercisedb.io/");
+    if (!isAllowed) return sendError(res, "URL not allowed", 403);
+
+    // Guard: key must be present at runtime
+    const apiKey = process.env.EXERCISE_API_KEY;
+    if (!apiKey) return sendError(res, "EXERCISE_API_KEY not configured", 500);
+
+    const rapidApiHeaders = {
+      "X-RapidAPI-Key":  apiKey,
+      "X-RapidAPI-Host": "exercisedb.p.rapidapi.com",
+    };
+
+    // Manual redirect loop — fetch(redirect:'follow') strips auth headers on
+    // cross-domain hops. We re-attach them on every hop instead.
+    let targetUrl = url;
+    for (let hop = 0; hop < 5; hop++) {
+      const attempt = await fetch(targetUrl, {
+        headers: rapidApiHeaders,
+        redirect: "manual",
+      });
+
+      // 3xx — follow the Location header with headers still attached
+      if (attempt.status >= 300 && attempt.status < 400) {
+        const location = attempt.headers.get("location");
+        if (!location) break;
+        targetUrl = location.startsWith("http")
+          ? location
+          : new URL(location, targetUrl).href;
+        continue;
+      }
+
+      if (!attempt.ok) {
+        // Surface the real upstream status (e.g. 403, 422) to aid debugging
+        return sendError(res, `Upstream returned ${attempt.status}`, attempt.status as any);
+      }
+
+      const contentType = attempt.headers.get("content-type") || "image/gif";
+      const buffer = Buffer.from(await attempt.arrayBuffer());
+
+      res.setHeader("Content-Type", contentType);
+      res.setHeader("Cache-Control", "public, max-age=86400, immutable");
+      res.setHeader("Content-Length", buffer.length);
+      return res.send(buffer);
     }
 
-    const upstream = await fetch(url, {
-      headers: {
-        "X-RapidAPI-Key":  process.env.EXERCISE_API_KEY || "",
-        "X-RapidAPI-Host": "exercisedb.p.rapidapi.com",
-      },
-    });
-
-    if (!upstream.ok) {
-      return sendError(res, "Failed to fetch image", upstream.status as any);
-    }
-
-    const contentType = upstream.headers.get("content-type") || "image/gif";
-    const buffer = Buffer.from(await upstream.arrayBuffer());
-
-    res.setHeader("Content-Type", contentType);
-    res.setHeader("Cache-Control", "public, max-age=86400, immutable");
-    res.setHeader("Content-Length", buffer.length);
-    res.send(buffer);
+    return sendError(res, "Too many redirects fetching image", 502);
   }));
 }
