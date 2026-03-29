@@ -59,7 +59,8 @@
       "Bash(npx tsx:*)",
       "Bash(npm show:*)",
       "Bash(fly secrets:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(\"$env:USERPROFILE\\\\.fly\\\\bin\\\\flyctl.exe\" deploy:*)"
     ]
   }
 }
