@@ -213,14 +213,13 @@ export default function SwapExerciseModal({
                                 data-testid={`preview-details-swap-${exercise.id}`}
                               >
                                 <div className={`px-4 pb-4 space-y-3 ${isSelected ? "" : "border-t border-white/10 pt-3 mx-4 mb-0 px-0 pb-4"}`}>
-                                  {exercise.gifUrl && (
+                                  {exercise.gif_url && (
                                     <div className="rounded-xl overflow-hidden bg-black/30 aspect-video" data-testid={`preview-gif-swap-${exercise.id}`}>
                                       <img
-                                        src={exercise.imageUrl || exercise.gifUrl}
+                                        src={`https://wsrv.nl/?url=${exercise.gif_url}&output=gif`}
                                         alt={exercise.name}
                                         className="w-full h-full object-cover"
                                         loading="lazy"
-                                        onError={(e) => console.warn(`[gif] failed for exercise: ${exercise.name}`, e)}
                                       />
                                     </div>
                                   )}

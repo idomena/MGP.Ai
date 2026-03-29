@@ -476,8 +476,7 @@ export function registerRoutes(app: Express): void {
   }));
 
   /** GET /api/exercisedb/muscle/:group
-   *  Returns exercises for a MGP muscle group (chest, back, shoulders, arms, legs, core).
-   *  Each exercise is enriched with imageUrl pointing to our backend image proxy. */
+   *  Returns exercises for a MGP muscle group (chest, back, shoulders, arms, legs, core). */
   app.get("/api/exercisedb/muscle/:group", asyncHandler(async (req, res) => {
     const group = req.params.group.toLowerCase();
     const bodyParts = MUSCLE_TO_BODY_PART[group];
@@ -493,111 +492,8 @@ export function registerRoutes(app: Express): void {
       const data = await getByBodyPart(bp, limit);
       raw.push(...data);
     }
-    const results = raw.map(ex => ({
-      ...ex,
-      imageUrl: `/api/exercises/image/${ex.id}?resolution=360`,
-    }));
+    const results = raw;
     sendSuccess(res, { results });
   }));
 
-  /** GET /api/exercises/image/:id?resolution=360
-   *  Fetches an exercise GIF from the ExerciseDB v2 Image Service.
-   *  Uses: GET /image?exerciseId={id}&resolution={resolution} */
-  app.get("/api/exercises/image/:id", asyncHandler(async (req: Request, res: Response) => {
-    const id = req.params.id.replace(/[^a-zA-Z0-9_-]/g, "");
-    if (!id) return sendError(res, "Invalid exercise id", 400);
-
-    const apiKey = process.env.EXERCISE_API_KEY;
-    if (!apiKey) return sendError(res, "EXERCISE_API_KEY not configured", 500);
-
-    const resolution = (req.query.resolution as string) || "360";
-
-    const upstream = await fetch(
-      `https://exercisedb.p.rapidapi.com/image?exerciseId=${id}&resolution=${resolution}`,
-      {
-        headers: {
-          "X-RapidAPI-Key":  apiKey,
-          "X-RapidAPI-Host": "exercisedb.p.rapidapi.com",
-        },
-      }
-    );
-
-    if (!upstream.ok) {
-      console.warn(`[image] ${id} → ${upstream.status}`);
-      return sendError(res, "Exercise image not available", 404);
-    }
-
-    const contentType = upstream.headers.get("content-type") || "image/gif";
-    const buffer = Buffer.from(await upstream.arrayBuffer());
-
-    res.setHeader("Content-Type", contentType);
-    res.setHeader("Cache-Control", "public, max-age=86400, immutable");
-    res.setHeader("Content-Length", buffer.length);
-    res.send(buffer);
-  }));
-
-  /** GET /api/proxy-image?url=...
-   *  Proxies ExerciseDB GIF images through the backend so the browser never
-   *  hits the CDN directly (avoids CORS / auth redirects).
-   *
-   *  Allowed origins: exercisedb.io, v2.exercisedb.io, exercisedb.p.rapidapi.com
-   *  Auth:  X-RapidAPI-Key forwarded on every hop (manual redirect loop).
-   *  Cache: 24 h browser cache on successful responses. */
-  app.get("/api/proxy-image", asyncHandler(async (req: Request, res: Response) => {
-    const url = ((req.query.url as string) || "").trim();
-    if (!url) return sendError(res, "url query param required", 400);
-
-    // Allowlist — all known ExerciseDB origins (free + PRO plan)
-    const isAllowed =
-      url.startsWith("https://exercisedb.io/") ||
-      url.startsWith("https://v2.exercisedb.io/") ||
-      url.startsWith("https://cdn.exercisedb.io/") ||
-      url.startsWith("https://media.exercisedb.io/") ||
-      url.startsWith("https://exercisedb.p.rapidapi.com/");
-    if (!isAllowed) return sendError(res, "URL not allowed", 403);
-
-    // Guard: key must be present at runtime
-    const apiKey = process.env.EXERCISE_API_KEY;
-    if (!apiKey) return sendError(res, "EXERCISE_API_KEY not configured", 500);
-
-    const rapidApiHeaders = {
-      "X-RapidAPI-Key":  apiKey,
-      "X-RapidAPI-Host": "exercisedb.p.rapidapi.com",
-    };
-
-    // Manual redirect loop — fetch(redirect:'follow') strips auth headers on
-    // cross-domain hops. We re-attach them on every hop instead.
-    let targetUrl = url;
-    for (let hop = 0; hop < 5; hop++) {
-      const attempt = await fetch(targetUrl, {
-        headers: rapidApiHeaders,
-        redirect: "manual",
-      });
-
-      // 3xx — follow the Location header with headers still attached
-      if (attempt.status >= 300 && attempt.status < 400) {
-        const location = attempt.headers.get("location");
-        if (!location) break;
-        targetUrl = location.startsWith("http")
-          ? location
-          : new URL(location, targetUrl).href;
-        continue;
-      }
-
-      if (!attempt.ok) {
-        // Surface the real upstream status (e.g. 403, 422) to aid debugging
-        return sendError(res, `Upstream returned ${attempt.status}`, attempt.status as any);
-      }
-
-      const contentType = attempt.headers.get("content-type") || "image/gif";
-      const buffer = Buffer.from(await attempt.arrayBuffer());
-
-      res.setHeader("Content-Type", contentType);
-      res.setHeader("Cache-Control", "public, max-age=86400, immutable");
-      res.setHeader("Content-Length", buffer.length);
-      return res.send(buffer);
-    }
-
-    return sendError(res, "Too many redirects fetching image", 502);
-  }));
 }

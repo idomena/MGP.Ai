@@ -6,8 +6,7 @@ export interface Exercise {
   reps: string;
   time: string;
   difficulty: string;
-  gifUrl: string;
-  imageUrl?: string;  // canonical image URL via /api/exercises/image/:id
+  gif_url: string;
   instructions: string;
   // ExerciseDB enriched fields (optional — present when fetched from API)
   target?: string;
@@ -26,7 +25,7 @@ const CHEST_EXERCISES: Exercise[] = [
     reps: "12, 10, 8, 6",
     time: "12 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Bench-Press.gif",
+    gif_url: "/assets/Bench-Press.gif",
     instructions: "Lie on a flat bench with feet on the floor. Grip the bar slightly wider than shoulder-width. Lower the bar to your chest, then push up explosively.",
   },
   {
@@ -37,7 +36,7 @@ const CHEST_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "10 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Incline-Dumbbell-Press.gif",
+    gif_url: "/assets/Incline-Dumbbell-Press.gif",
     instructions: "Set bench to 30-45 degrees. Press dumbbells up from chest level, keeping elbows at 45 degrees from your body.",
   },
   {
@@ -48,7 +47,7 @@ const CHEST_EXERCISES: Exercise[] = [
     reps: "15, 12, 10",
     time: "8 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Dumbbell-Press.gif",
+    gif_url: "/assets/Dumbbell-Press.gif",
     instructions: "Lie flat on bench with dumbbells at chest level. Press up until arms are extended. Lower with control.",
   },
   {
@@ -59,7 +58,7 @@ const CHEST_EXERCISES: Exercise[] = [
     reps: "15, 15, 15",
     time: "5 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Push-Up.gif",
+    gif_url: "/assets/Push-Up.gif",
     instructions: "Keep body straight from head to heels. Lower chest to floor, then push back up. Keep core tight throughout.",
   },
   {
@@ -70,7 +69,7 @@ const CHEST_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "8 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Dumbbell-Fly.gif",
+    gif_url: "/assets/Dumbbell-Fly.gif",
     instructions: "Lie on a flat bench holding dumbbells above chest with arms slightly bent. Lower arms out to sides in a wide arc until you feel a stretch in your chest, then squeeze arms back together.",
   },
 ];
@@ -84,7 +83,7 @@ const BACK_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "10 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Barbell-Bent-Over-Row.gif",
+    gif_url: "/assets/Barbell-Bent-Over-Row.gif",
     instructions: "Bend at hips with slight knee bend, grip barbell. Pull bar to lower chest, squeezing back muscles. Lower with control.",
   },
   {
@@ -95,7 +94,7 @@ const BACK_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "8 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Lat-Pulldown.gif",
+    gif_url: "/assets/Lat-Pulldown.gif",
     instructions: "Sit down and grab the bar with a wide grip. Pull the bar down to your chest while keeping your back straight.",
   },
   {
@@ -106,7 +105,7 @@ const BACK_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "8 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Seated-Cable-Row.gif",
+    gif_url: "/assets/Seated-Cable-Row.gif",
     instructions: "Sit with feet on platform, knees slightly bent. Pull handles to your stomach, squeezing shoulder blades together.",
   },
   {
@@ -117,7 +116,7 @@ const BACK_EXERCISES: Exercise[] = [
     reps: "10, 10, 10",
     time: "8 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Dumbbell-Row.gif",
+    gif_url: "/assets/Dumbbell-Row.gif",
     instructions: "Place one knee and hand on bench. Keep back flat. Pull dumbbell to hip, elbow close to body.",
   },
   {
@@ -128,7 +127,7 @@ const BACK_EXERCISES: Exercise[] = [
     reps: "10, 8, 6",
     time: "8 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Pull-up.gif",
+    gif_url: "/assets/Pull-up.gif",
     instructions: "Hang from a pull-up bar with an overhand grip, hands slightly wider than shoulder-width. Pull yourself up until your chin is above the bar, then lower with control.",
   },
 ];
@@ -142,7 +141,7 @@ const LEGS_EXERCISES: Exercise[] = [
     reps: "12, 10, 8, 6",
     time: "15 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Barbell-Squat.gif",
+    gif_url: "/assets/Barbell-Squat.gif",
     instructions: "Stand with bar on upper back. Feet shoulder-width apart. Squat down until thighs are parallel to floor, then drive up.",
   },
   {
@@ -153,7 +152,7 @@ const LEGS_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "10 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Leg-Press.gif",
+    gif_url: "/assets/Leg-Press.gif",
     instructions: "Sit in machine with feet shoulder-width on platform. Lower weight until knees reach 90 degrees, then push back up.",
   },
   {
@@ -164,7 +163,7 @@ const LEGS_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "10 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Barbell-Deadlift.gif",
+    gif_url: "/assets/Barbell-Deadlift.gif",
     instructions: "Hold barbell with straight arms. Hinge at hips, lowering bar along legs while keeping back straight. Feel stretch in hamstrings.",
   },
   {
@@ -175,7 +174,7 @@ const LEGS_EXERCISES: Exercise[] = [
     reps: "15, 12, 10",
     time: "8 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Seated-Leg-Curl.gif",
+    gif_url: "/assets/Seated-Leg-Curl.gif",
     instructions: "Lie face down on machine. Curl heels towards glutes, squeezing hamstrings at the top. Lower with control.",
   },
   {
@@ -186,7 +185,7 @@ const LEGS_EXERCISES: Exercise[] = [
     reps: "20, 15, 15, 12",
     time: "5 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Barbell-Squat.gif",
+    gif_url: "/assets/Barbell-Squat.gif",
     instructions: "Stand on platform edge with heels hanging off. Rise up on toes, squeeze calves at top, then lower below platform level.",
   },
   {
@@ -197,7 +196,7 @@ const LEGS_EXERCISES: Exercise[] = [
     reps: "12, 10, 10",
     time: "10 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Barbell-Hip-Thrust.gif",
+    gif_url: "/assets/Barbell-Hip-Thrust.gif",
     instructions: "Sit with upper back against bench, barbell across hips. Drive through heels, squeeze glutes at top, then lower.",
   },
   {
@@ -208,7 +207,7 @@ const LEGS_EXERCISES: Exercise[] = [
     reps: "15, 12, 10",
     time: "8 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Leg-Extension.gif",
+    gif_url: "/assets/Leg-Extension.gif",
     instructions: "Sit on the leg extension machine with your back flat against the pad. Extend your legs until fully straight, squeeze quads at the top, then lower with control.",
   },
   {
@@ -219,7 +218,7 @@ const LEGS_EXERCISES: Exercise[] = [
     reps: "10, 10, 8",
     time: "10 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Barbell-Lunge.gif",
+    gif_url: "/assets/Barbell-Lunge.gif",
     instructions: "Stand with barbell on upper back. Step forward into a lunge, lowering until both knees are at 90 degrees. Push back to starting position and alternate legs.",
   },
   {
@@ -230,7 +229,7 @@ const LEGS_EXERCISES: Exercise[] = [
     reps: "15, 12, 10",
     time: "6 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Lying-Leg-Raise.gif",
+    gif_url: "/assets/Lying-Leg-Raise.gif",
     instructions: "Lie flat on your back with legs straight. Raise legs to 90 degrees keeping them straight, then lower slowly without touching the floor.",
   },
 ];
@@ -244,7 +243,7 @@ const SHOULDERS_EXERCISES: Exercise[] = [
     reps: "12, 10, 8, 6",
     time: "10 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Barbell-Standing-Military-Press.gif",
+    gif_url: "/assets/Barbell-Standing-Military-Press.gif",
     instructions: "Stand with bar at shoulder level. Press bar overhead until arms are fully extended. Lower with control.",
   },
   {
@@ -255,7 +254,7 @@ const SHOULDERS_EXERCISES: Exercise[] = [
     reps: "15, 12, 12",
     time: "8 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Dumbbell-Lateral-Raise.gif",
+    gif_url: "/assets/Dumbbell-Lateral-Raise.gif",
     instructions: "Stand with dumbbells at sides. Raise arms out to sides until parallel to floor. Keep slight bend in elbows.",
   },
   {
@@ -266,7 +265,7 @@ const SHOULDERS_EXERCISES: Exercise[] = [
     reps: "12, 12, 10",
     time: "6 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Dumbbell-Front-Raise.gif",
+    gif_url: "/assets/Dumbbell-Front-Raise.gif",
     instructions: "Hold dumbbells in front of thighs. Raise one arm at a time to shoulder height, then lower. Alternate arms.",
   },
   {
@@ -277,7 +276,7 @@ const SHOULDERS_EXERCISES: Exercise[] = [
     reps: "15, 12, 10",
     time: "6 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Dumbbell-Reverse-Fly.gif",
+    gif_url: "/assets/Dumbbell-Reverse-Fly.gif",
     instructions: "Bend forward at hips. Raise dumbbells out to sides, squeezing rear delts. Keep slight bend in elbows.",
   },
   {
@@ -288,7 +287,7 @@ const SHOULDERS_EXERCISES: Exercise[] = [
     reps: "15, 12, 12",
     time: "6 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Face-Pull.gif",
+    gif_url: "/assets/Face-Pull.gif",
     instructions: "Set cable at face height. Pull rope towards face, separating ends and squeezing shoulder blades.",
   },
   {
@@ -299,7 +298,7 @@ const SHOULDERS_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "8 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Standing-Dumbbell-Overhead-Press.gif",
+    gif_url: "/assets/Standing-Dumbbell-Overhead-Press.gif",
     instructions: "Stand holding dumbbells at shoulder height with palms facing forward. Press dumbbells overhead until arms are fully extended, then lower with control.",
   },
 ];
@@ -313,7 +312,7 @@ const ARMS_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "8 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Barbell-Curl.gif",
+    gif_url: "/assets/Barbell-Curl.gif",
     instructions: "Stand with barbell, arms extended. Curl bar up to shoulders, keeping elbows pinned to sides. Lower with control.",
   },
   {
@@ -324,7 +323,7 @@ const ARMS_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "8 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Z-Bar-Curl.gif",
+    gif_url: "/assets/Z-Bar-Curl.gif",
     instructions: "Hold EZ bar with underhand grip. Curl up while keeping elbows pinned to sides. Lower slowly.",
   },
   {
@@ -335,7 +334,7 @@ const ARMS_EXERCISES: Exercise[] = [
     reps: "15, 12, 10",
     time: "8 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Tricep-Pushdown.gif",
+    gif_url: "/assets/Tricep-Pushdown.gif",
     instructions: "Stand at cable machine with rope attachment. Push down until arms are fully extended. Squeeze triceps at bottom.",
   },
   {
@@ -346,7 +345,7 @@ const ARMS_EXERCISES: Exercise[] = [
     reps: "12, 10, 8",
     time: "8 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Skull-Crusher.gif",
+    gif_url: "/assets/Skull-Crusher.gif",
     instructions: "Lie on bench with bar overhead. Lower bar towards forehead by bending elbows. Extend arms back up.",
   },
   {
@@ -357,7 +356,7 @@ const ARMS_EXERCISES: Exercise[] = [
     reps: "20, 15, 15",
     time: "5 min",
     difficulty: "Beginner",
-    gifUrl: "https://media.giphy.com/media/l0MYyv6UK0Bd4DE76/giphy.gif",
+    gif_url: "https://media.giphy.com/media/l0MYyv6UK0Bd4DE76/giphy.gif",
     instructions: "Sit with forearms on thighs, wrists over knees. Curl dumbbells up using only wrist motion. Lower slowly.",
   },
 ];
@@ -371,7 +370,7 @@ const CORE_EXERCISES: Exercise[] = [
     reps: "60s, 45s, 30s",
     time: "5 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Ab-Wheel-Rollout.gif",
+    gif_url: "/assets/Ab-Wheel-Rollout.gif",
     instructions: "Hold push-up position on forearms. Keep body straight from head to heels. Engage core throughout.",
   },
   {
@@ -382,7 +381,7 @@ const CORE_EXERCISES: Exercise[] = [
     reps: "20, 20, 15",
     time: "6 min",
     difficulty: "Beginner",
-    gifUrl: "/assets/Kneeling-Cable-Crunch.gif",
+    gif_url: "/assets/Kneeling-Cable-Crunch.gif",
     instructions: "Kneel facing cable machine. Hold rope behind head. Crunch down, bringing elbows to knees. Squeeze abs at bottom.",
   },
   {
@@ -393,7 +392,7 @@ const CORE_EXERCISES: Exercise[] = [
     reps: "20, 20, 15",
     time: "6 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Russian-Twist.gif",
+    gif_url: "/assets/Russian-Twist.gif",
     instructions: "Sit with knees bent, feet off floor. Lean back slightly. Rotate torso side to side, touching floor each side.",
   },
   {
@@ -404,7 +403,7 @@ const CORE_EXERCISES: Exercise[] = [
     reps: "15, 12, 10",
     time: "6 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Hanging-Leg-Raises.gif",
+    gif_url: "/assets/Hanging-Leg-Raises.gif",
     instructions: "Hang from pull-up bar. Raise legs to 90 degrees keeping them straight, then lower with control.",
   },
 ];
@@ -418,7 +417,7 @@ const CARDIO_EXERCISES_LIST: Exercise[] = [
     reps: "15, 12, 10",
     time: "8 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Burpees.gif",
+    gif_url: "/assets/Burpees.gif",
     instructions: "Start standing. Drop into a squat, kick feet back into a push-up position, do a push-up, jump feet forward, then explode up with a jump.",
   },
   {
@@ -429,7 +428,7 @@ const CARDIO_EXERCISES_LIST: Exercise[] = [
     reps: "15, 15, 12",
     time: "8 min",
     difficulty: "Intermediate",
-    gifUrl: "/assets/Kettlebell-Swings.gif",
+    gif_url: "/assets/Kettlebell-Swings.gif",
     instructions: "Stand with feet shoulder-width apart, holding kettlebell with both hands. Hinge at hips, swing kettlebell back between legs, then drive hips forward to swing it to chest height.",
   },
 ];
@@ -443,7 +442,7 @@ const REST_DAY_EXERCISES: Exercise[] = [
     reps: "10 min",
     time: "10 min",
     difficulty: "Beginner",
-    gifUrl: "https://media.giphy.com/media/l0MYyv6UK0Bd4DE76/giphy.gif",
+    gif_url: "https://media.giphy.com/media/l0MYyv6UK0Bd4DE76/giphy.gif",
     instructions: "Perform gentle stretches for all major muscle groups. Hold each stretch for 30 seconds. Focus on breathing.",
   },
   {
@@ -454,7 +453,7 @@ const REST_DAY_EXERCISES: Exercise[] = [
     reps: "10 min",
     time: "10 min",
     difficulty: "Beginner",
-    gifUrl: "https://media.giphy.com/media/3o7TKB3oifq46DDhOE/giphy.gif",
+    gif_url: "https://media.giphy.com/media/3o7TKB3oifq46DDhOE/giphy.gif",
     instructions: "Roll slowly over tight muscles. Pause on tender spots for 30-60 seconds. Cover legs, back, and shoulders.",
   },
   {
@@ -465,7 +464,7 @@ const REST_DAY_EXERCISES: Exercise[] = [
     reps: "20-30 min",
     time: "25 min",
     difficulty: "Beginner",
-    gifUrl: "https://media.giphy.com/media/xT0xeIbYVQcBFDSdVu/giphy.gif",
+    gif_url: "https://media.giphy.com/media/xT0xeIbYVQcBFDSdVu/giphy.gif",
     instructions: "Take a light walk at a comfortable pace. Focus on active recovery without straining muscles.",
   },
 ];

@@ -60,7 +60,8 @@
       "Bash(npm show:*)",
       "Bash(fly secrets:*)",
       "Bash(node:*)",
-      "Bash(\"$env:USERPROFILE\\\\.fly\\\\bin\\\\flyctl.exe\" deploy:*)"
+      "Bash(\"$env:USERPROFILE\\\\.fly\\\\bin\\\\flyctl.exe\" deploy:*)",
+      "Bash(done)"
     ]
   }
 }

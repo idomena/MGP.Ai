@@ -227,14 +227,12 @@ async function main() {
       continue;
     }
 
-    // Use official gifUrl from paid plan, or fall back to RapidAPI image URL
-    // (served via /api/exercises/image/:id proxy with auth headers)
-    const gifUrl = match.gifUrl ?? `https://exercisedb.p.rapidapi.com/image/${match.id}`;
+    // Always use the public v2 CDN — no auth required, works with wsrv.nl
+    const gifUrl = `https://v2.exercisedb.io/image/${match.id}.gif`;
 
     await updateRow(client, row.id, match, gifUrl);
     updated++;
-    const gif = match.gifUrl ? "…" + match.gifUrl.split("/").pop()!.slice(0, 28) : `rapidapi/image/${match.id}`;
-    console.log(`  ✅  ${row.title.padEnd(32)}  →  ${match.name.padEnd(36)}  ${gif}`);
+    console.log(`  ✅  ${row.title.padEnd(32)}  →  ${match.name.padEnd(36)}  v2/${match.id}.gif`);
   }
 
   client.release();

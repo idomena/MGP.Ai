@@ -42,14 +42,18 @@ export function mapToExercise(ex: SupabaseExercise): Exercise {
     ? `${primary}, ${secondary.slice(0, 2).map(capitalize).join(', ')}`
     : primary;
 
-  // gif_url is stored as "https://exercisedb.p.rapidapi.com/image/0001"
-  // Extract the numeric ExerciseDB ID from the path to build our proxy URL.
-  const exerciseDbId = ex.gif_url
-    ? ex.gif_url.split('/').pop()?.split('?')[0] ?? null
-    : null;
-  const imageUrl = exerciseDbId
-    ? `/api/exercises/image/${exerciseDbId}?resolution=360`
-    : undefined;
+  // If gif_url is the private RapidAPI URL, convert to the public v2 CDN.
+  let gif_url = '';
+  if (ex.gif_url) {
+    if (ex.gif_url.includes('exercisedb.p.rapidapi.com')) {
+      const exerciseDbId = ex.gif_url.split('/').pop()?.split('?')[0];
+      if (exerciseDbId) {
+        gif_url = `https://v2.exercisedb.io/image/${exerciseDbId}.gif`;
+      }
+    } else {
+      gif_url = ex.gif_url;
+    }
+  }
 
   return {
     id:               hashString(ex.title),
@@ -59,8 +63,7 @@ export function mapToExercise(ex: SupabaseExercise): Exercise {
     reps:             '12, 10, 8',
     time:             '10 min',
     difficulty:       capitalize(ex.difficulty),
-    gifUrl:           imageUrl ?? '',
-    imageUrl,
+    gif_url,
     instructions:     ex.instructions_list?.[0] ?? ex.description ?? '',
     // Enriched fields
     target:           ex.target_muscle ?? undefined,

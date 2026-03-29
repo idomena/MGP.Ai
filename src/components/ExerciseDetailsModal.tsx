@@ -11,11 +11,12 @@ interface Exercise {
   reps: string;
   time: string;
   difficulty: string;
-  gifUrl: string;
+  gif_url?: string;
   instructions?: string;
   // ExerciseDB enriched fields
   target?: string;
   bodyPart?: string;
+  equipment?: string;
   equipmentName?: string;
   secondaryMuscles?: string[];
   instructionsList?: string[];
@@ -79,13 +80,12 @@ export default function ExerciseDetailsModal({ exercise, isOpen, onClose }: Exer
 
         {/* ── GIF Hero ──────────────────────────────────────────────────────── */}
         <div className="relative w-full h-56 bg-gradient-to-br from-[#1e1e38] to-[#14142a] overflow-hidden">
-          {exercise.gifUrl ? (
+          {exercise.gif_url ? (
             <img
-              src={exercise.imageUrl || exercise.gifUrl}
-              alt={`${exercise.name} demonstration`}
+              src={`https://wsrv.nl/?url=${exercise.gif_url}&output=gif`}
+              alt={exercise.name}
               className="w-full h-full object-contain"
               loading="lazy"
-              onError={(e) => console.warn(`[gif] failed for exercise: ${exercise.name}`, e)}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">

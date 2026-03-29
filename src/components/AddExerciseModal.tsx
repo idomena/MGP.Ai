@@ -318,14 +318,13 @@ export default function AddExerciseModal({
                             data-testid={`preview-details-${exercise.id}`}
                           >
                             <div className="px-3 pb-3 space-y-3">
-                              {exercise.gifUrl && (
+                              {exercise.gif_url && (
                                 <div className="rounded-xl overflow-hidden bg-black/30 aspect-video" data-testid={`preview-gif-${exercise.id}`}>
                                   <img
-                                    src={exercise.imageUrl || exercise.gifUrl}
+                                    src={`https://wsrv.nl/?url=${exercise.gif_url}&output=gif`}
                                     alt={exercise.name}
                                     className="w-full h-full object-contain"
                                     loading="lazy"
-                                    onError={(e) => console.warn(`[gif] failed for exercise: ${exercise.name}`, e)}
                                   />
                                 </div>
                               )}

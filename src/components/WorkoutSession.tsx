@@ -12,7 +12,7 @@ interface Exercise {
   reps: string;
   time: string;
   difficulty: string;
-  gifUrl?: string;
+  gif_url?: string;
 }
 
 interface WorkoutSessionProps {
@@ -164,16 +164,13 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
             transition={{ duration: 0.3 }}
             className="w-full h-full"
           >
-            {currentExercise.gifUrl ? (
-              <div className="relative w-full h-full">
-                <img
-                  src={currentExercise.imageUrl || currentExercise.gifUrl}
-                  alt={`${currentExercise.name} demonstration`}
-                  className="w-full h-full object-contain"
-                  loading="lazy"
-                  onError={(e) => console.warn(`[gif] failed for exercise: ${currentExercise.name}`, e)}
-                />
-              </div>
+            {currentExercise.gif_url ? (
+              <img
+                src={`https://wsrv.nl/?url=${currentExercise.gif_url}&output=gif`}
+                alt={currentExercise.name}
+                className="w-full h-full object-contain"
+                loading="lazy"
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-zinc-800 to-zinc-900">
                 <div className="text-center">

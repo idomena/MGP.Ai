@@ -181,18 +181,16 @@ async function syncRow(row: DBRow, preMatch?: EDBExercise): Promise<SyncResult> 
 
   const client = await pool.connect();
   try {
-    // COALESCE($1, gif_url) — only overwrites when the API returns a non-null
-    // gifUrl (PRO plan).  A null/absent gifUrl leaves the existing value intact.
     await client.query(
       `UPDATE exercises_library
-          SET gif_url            = COALESCE($1, gif_url),
+          SET gif_url            = $1,
               target_muscle      = COALESCE($2, target_muscle),
               instructions_list  = COALESCE($3, instructions_list),
               secondary_muscles  = COALESCE($4::text[], secondary_muscles),
               description        = COALESCE($5, description)
         WHERE id = $6`,
       [
-        match.gifUrl,                                           // official API URL — never constructed
+        `https://v2.exercisedb.io/image/${match.id}.gif`,      // public CDN — always available
         match.target,
         match.instructions?.length ? match.instructions : null,
         match.secondaryMuscles?.length ? match.secondaryMuscles : null,

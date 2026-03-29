@@ -698,13 +698,12 @@ export default function WorkoutPage() {
                       >
                         <div className="flex items-center gap-3">
                           <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-[#1e1e38]" data-testid={`thumbnail-${exercise.id}`}>
-                            {(exercise.imageUrl || exercise.gifUrl) ? (
+                            {exercise.gif_url ? (
                               <img
-                                src={exercise.imageUrl || exercise.gifUrl}
+                                src={`https://wsrv.nl/?url=${exercise.gif_url}&output=gif`}
                                 alt={exercise.name}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
-                                onError={(e) => console.warn(`[gif] failed for exercise: ${exercise.name}`, e)}
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#252550] to-[#1a1a3a]">
@@ -882,7 +881,7 @@ export default function WorkoutPage() {
             reps: exerciseData.reps,
             time: exerciseData.time,
             difficulty: "Intermediate",
-            gifUrl: "",
+            gif_url: "",
             instructions: "",
           };
           handleAddExercise(newExercise);
