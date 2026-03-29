@@ -496,23 +496,79 @@ export function registerRoutes(app: Express): void {
     sendSuccess(res, { results });
   }));
 
+  /** GET /api/exercises/image/:id
+   *  Fetches an ExerciseDB GIF by numeric ID (e.g. "0001").
+   *  Tries the RapidAPI gateway first (live on PRO plan), then the v2 CDN.
+   *  Auth headers are forwarded on every redirect hop. */
+  app.get("/api/exercises/image/:id", asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id.replace(/[^a-zA-Z0-9_-]/g, "");
+    if (!id) return sendError(res, "Invalid exercise id", 400);
+
+    const apiKey = process.env.EXERCISE_API_KEY;
+    if (!apiKey) return sendError(res, "EXERCISE_API_KEY not configured", 500);
+
+    const rapidApiHeaders = {
+      "X-RapidAPI-Key":  apiKey,
+      "X-RapidAPI-Host": "exercisedb.p.rapidapi.com",
+    };
+
+    // Try RapidAPI gateway first (PRO), then v2 CDN fallback
+    const candidates = [
+      `https://exercisedb.p.rapidapi.com/image/${id}`,
+      `https://v2.exercisedb.io/image/${id}.gif`,
+    ];
+
+    for (const startUrl of candidates) {
+      let targetUrl = startUrl;
+      let served = false;
+
+      for (let hop = 0; hop < 5; hop++) {
+        const attempt = await fetch(targetUrl, { headers: rapidApiHeaders, redirect: "manual" });
+
+        if (attempt.status >= 300 && attempt.status < 400) {
+          const loc = attempt.headers.get("location");
+          if (!loc) break;
+          targetUrl = loc.startsWith("http") ? loc : new URL(loc, targetUrl).href;
+          continue;
+        }
+
+        if (attempt.ok) {
+          const contentType = attempt.headers.get("content-type") || "image/gif";
+          const buffer = Buffer.from(await attempt.arrayBuffer());
+          res.setHeader("Content-Type", contentType);
+          res.setHeader("Cache-Control", "public, max-age=86400, immutable");
+          res.setHeader("Content-Length", buffer.length);
+          res.send(buffer);
+          served = true;
+          break;
+        }
+        break;
+      }
+
+      if (served) return;
+    }
+
+    return sendError(res, "Exercise image not available", 404);
+  }));
+
   /** GET /api/proxy-image?url=...
    *  Proxies ExerciseDB GIF images through the backend so the browser never
    *  hits the CDN directly (avoids CORS / auth redirects).
    *
-   *  Allowed origins: exercisedb.io  and  v2.exercisedb.io
+   *  Allowed origins: exercisedb.io, v2.exercisedb.io, exercisedb.p.rapidapi.com
    *  Auth:  X-RapidAPI-Key forwarded on every hop (manual redirect loop).
    *  Cache: 24 h browser cache on successful responses. */
   app.get("/api/proxy-image", asyncHandler(async (req: Request, res: Response) => {
     const url = ((req.query.url as string) || "").trim();
     if (!url) return sendError(res, "url query param required", 400);
 
-    // Allowlist — only proxy known ExerciseDB CDN origins (free + PRO plan)
+    // Allowlist — all known ExerciseDB origins (free + PRO plan)
     const isAllowed =
       url.startsWith("https://exercisedb.io/") ||
       url.startsWith("https://v2.exercisedb.io/") ||
       url.startsWith("https://cdn.exercisedb.io/") ||
-      url.startsWith("https://media.exercisedb.io/");
+      url.startsWith("https://media.exercisedb.io/") ||
+      url.startsWith("https://exercisedb.p.rapidapi.com/");
     if (!isAllowed) return sendError(res, "URL not allowed", 403);
 
     // Guard: key must be present at runtime
