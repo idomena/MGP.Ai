@@ -1,14 +1,11 @@
-import MobileHeader from "@/components/MobileHeader";
 import NavigationBar from "@/components/NavigationBar";
-import Footer from "@/components/Footer";
-import JourneyPath from "@/components/JourneyPath";
+import JourneyPath, { workoutLabel } from "@/components/JourneyPath";
+import HomeHeader from "@/components/home/HomeHeader";
 import SchedulingAIAssistant from "@/components/SchedulingAIAssistant";
 import ChangeWorkoutTypeModal from "@/components/ChangeWorkoutTypeModal";
-import Logo from "@/components/Logo";
 import { useState, useEffect } from "react";
-import { BarChart3, CheckCircle, CheckCircle2, Flame, TrendingUp, BarChart, Calendar as CalendarIcon, Target, ChevronDown, Users, Clock, Play, X, Lock, Moon, MessageCircle, RefreshCw, Sparkles, Zap, Loader2 } from "lucide-react";
+import { CheckCircle, CheckCircle2, Flame, TrendingUp, Target, Play, X, Lock, Moon, RefreshCw, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -17,6 +14,12 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
 import { getJourneyWindow } from "@/lib/journeyWindow";
+import { cozy, cozyRaw } from "@/lib/cozyTheme";
+import "@/styles/cozy.css";
+
+// How much of the endless journey Home shows around today (rendering only).
+const HOME_WINDOW_BEFORE = 2;
+const HOME_WINDOW_AFTER = 12;
 
 export default function Home() {
   const { user: authUser } = useAuth();
@@ -28,7 +31,6 @@ export default function Home() {
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [showSchedulingAI, setShowSchedulingAI] = useState(false);
   const [showChangeType, setShowChangeType] = useState(false);
-  const [showStatsExpanded, setShowStatsExpanded] = useState(false);
   const [customSchedule, setCustomSchedule] = useState<Record<number, any>>({});
 
   const { isLoading: isLoadingOnboarding, needsOnboarding } = useOnboardingStatus();
@@ -45,6 +47,7 @@ export default function Home() {
     moveWorkout,
     changeWorkoutType,
     isTodayCompleted,
+    todayIsRestDay,
   } = useWorkoutProgress();
 
   useEffect(() => {
@@ -53,13 +56,29 @@ export default function Home() {
     }
   }, [isLoadingOnboarding, needsOnboarding, navigate]);
 
+  // Warm page chrome while Home is mounted (overscroll + browser UI colour).
+  useEffect(() => {
+    const prevBg = document.body.style.backgroundColor;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const prevTheme = meta?.getAttribute("content");
+    document.body.style.backgroundColor = cozyRaw.bg;
+    meta?.setAttribute("content", cozyRaw.bg);
+    return () => {
+      document.body.style.backgroundColor = prevBg;
+      if (meta && prevTheme) meta.setAttribute("content", prevTheme);
+    };
+  }, []);
+
   if (isLoadingOnboarding) {
     return (
-      <div className="h-screen bg-[#0a0e27] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-6">
-          <Logo size="xl" />
-          <Loader2 className="w-8 h-8 text-[#7c57ff] animate-spin" />
-        </div>
+      <div className="cozy-root flex h-screen flex-col items-center justify-center gap-5">
+        <p className="cozy-display text-[28px] font-semibold" style={{ color: cozy.ink }}>MGP.AI</p>
+        <motion.div
+          className="h-8 w-8 rounded-full"
+          style={{ border: `3px solid ${cozy.primarySoft}`, borderTopColor: cozy.primary }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        />
       </div>
     );
   }
@@ -115,203 +134,195 @@ export default function Home() {
       delete updated[fromDay];
       return updated;
     });
-    
+
     toast.success(`Workout moved from Day ${fromDay} to Day ${toDay}!`);
     setShowRescheduleModal(false);
     setShowWorkoutModal(false);
   };
 
+  // ─── Presentation data ──────────────────────────────────────────────────
+  const meta = authUser?.user_metadata ?? {};
+  const firstName =
+    (meta.full_name as string | undefined)?.trim().split(/\s+/)[0] ||
+    authUser?.email?.split("@")[0] ||
+    "friend";
+  const avatarUrl = (meta.avatar_url as string | undefined) || (meta.picture as string | undefined);
+
+  const todayWorkout = currentDay ? getWorkoutForDay(currentDay) : null;
+  const todayMeta = todayWorkout && todayWorkout.exercisesCount > 0
+    ? `${todayWorkout.duration} · ${todayWorkout.exercisesCount} exercises`
+    : undefined;
+
+  const subline = isTodayCompleted
+    ? "Today's session is done. Enjoy the glow."
+    : todayIsRestDay
+      ? "Rest day. Recharge — you're still progressing."
+      : currentDay
+        ? `Day ${currentDay} of your journey. One step at a time.`
+        : "Your journey starts with one step.";
+
+  const completionPct = userStats.totalWorkouts > 0
+    ? Math.round((userStats.workoutsCompleted / userStats.totalWorkouts) * 100)
+    : 0;
+  const now = new Date();
+  const quarterLabel = `Q${Math.floor(now.getMonth() / 3) + 1} ${now.getFullYear()}`;
+
+  const statusPill = (bg: string, color: string, text: string) => (
+    <div className="rounded-full px-3 py-1 text-[13px] font-semibold" style={{ background: bg, color }}>{text}</div>
+  );
+
   return (
-    <div className="min-h-screen bg-background flex flex-col" role="main" aria-label="Home page">
-      {/* Fixed Top Section */}
-      <div className="flex-shrink-0 px-4 sticky top-0 z-50 bg-background">
-        <MobileHeader />
+    <div className="cozy-root relative min-h-screen overflow-x-hidden" role="main" aria-label="Home page">
+      {/* Soft morning light */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[340px]"
+        style={{ background: `radial-gradient(120% 80% at 50% 0%, ${cozy.surface} 0%, transparent 70%)` }}
+      />
 
-        {/* Toggle Buttons */}
-        <nav className="mt-6" role="tablist" aria-label="Program view selector">
-        <div className="bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] rounded-full p-1">
-          <div className="flex">
-            <button
-              role="tab"
-              aria-selected={activeView === "weekly"}
-              aria-controls="weekly-panel"
-              className={`flex-1 ${activeView === "weekly" ? "bg-background" : "bg-transparent"} text-white py-3 px-6 rounded-full text-center font-semibold transition-all duration-300 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-white/50`}
-              onClick={() => handleViewChange("weekly")}
-              disabled={isTransitioning}
-              data-testid="tab-weekly"
-            >
-              Weekly Program
-            </button>
-            <button
-              role="tab"
-              aria-selected={activeView === "quarterly"}
-              aria-controls="quarterly-panel"
-              className={`flex-1 ${activeView === "quarterly" ? "bg-background" : "bg-transparent"} text-white py-3 px-6 rounded-full text-center font-semibold transition-all duration-300 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-white/50`}
-              onClick={() => handleViewChange("quarterly")}
-              disabled={isTransitioning}
-              data-testid="tab-quarterly"
-            >
-              Quarterly Plan
-            </button>
+      <div className="relative mx-auto max-w-md">
+        <HomeHeader name={firstName} avatarUrl={avatarUrl} streak={userStats.streak} subline={subline} />
+
+        {/* View switch + quiet XP */}
+        <motion.div
+          className="mt-4 flex items-center justify-between px-5"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+        >
+          <div className="flex items-center gap-5" role="tablist" aria-label="Program view selector">
+            {([
+              ["weekly", "Journey"],
+              ["quarterly", "Overview"],
+            ] as const).map(([view, label]) => {
+              const selected = activeView === view;
+              return (
+                <button
+                  key={view}
+                  role="tab"
+                  aria-selected={selected}
+                  aria-controls={`${view}-panel`}
+                  onClick={() => handleViewChange(view)}
+                  disabled={isTransitioning}
+                  className="relative py-2 text-[15px] transition-colors focus:outline-none focus-visible:underline"
+                  style={{ color: selected ? cozy.ink : cozy.inkFaint, fontWeight: selected ? 600 : 500, minWidth: 0 }}
+                  data-testid={`tab-${view}`}
+                >
+                  {label}
+                  {selected && (
+                    <motion.span
+                      layoutId="home-tab-dot"
+                      className="absolute -bottom-0.5 left-1/2 h-[5px] w-[5px] -translate-x-1/2 rounded-full"
+                      style={{ background: cozy.primary }}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
-        </div>
-      </nav>
+          <div className="flex items-center gap-1.5 text-[13.5px] font-medium" style={{ color: cozy.inkSoft }} data-testid="text-xp">
+            <Sparkles size={15} color={cozy.primary} aria-hidden />
+            <span className="tabular-nums" style={{ color: cozy.ink, fontWeight: 600 }}>{userStats.xp.toLocaleString()}</span> XP
+          </div>
+        </motion.div>
 
-        {/* Floating Stats Button - Always visible in weekly view */}
-        {activeView === "weekly" && (
-          <div className="mt-4 flex justify-center">
-            <motion.button
-              onClick={() => setShowStatsExpanded(!showStatsExpanded)}
-              initial={{ opacity: 0, y: 10 }}
+        <AnimatePresence mode="wait">
+          {activeView === "quarterly" ? (
+            <motion.section
+              key="overview"
+              id="quarterly-panel"
+              className="px-5 pb-36 pt-6"
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-[#2a2a3e] rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.5)] border border-white/10 flex items-center gap-3 px-4 py-2"
+              exit={{ opacity: 0, y: 12 }}
+              transition={{ duration: 0.35 }}
             >
-              <div className="flex items-center gap-1.5">
-                <Target className="w-4 h-4 text-[#7c57ff]" />
-                <span className="text-white font-bold text-sm">{userStats.workoutsCompleted}/{userStats.totalWorkouts}</span>
+              <div
+                className="flex flex-col items-center rounded-[26px] px-6 py-7"
+                style={{ background: cozy.surface, border: `1px solid ${cozy.line}`, boxShadow: `${cozy.shadowMd}, ${cozy.highlight}` }}
+              >
+                <p className="text-[13px] font-semibold uppercase tracking-[0.14em]" style={{ color: cozy.inkSoft }}>{quarterLabel}</p>
+                <div className="relative mt-4 h-40 w-40">
+                  <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100" aria-hidden>
+                    <circle cx="50" cy="50" r="42" fill="none" stroke={cozy.path} strokeWidth="9" />
+                    <circle
+                      cx="50" cy="50" r="42" fill="none" stroke={cozy.primary} strokeWidth="9" strokeLinecap="round"
+                      strokeDasharray={`${completionPct * 2.64} ${100 * 2.64}`}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="cozy-display text-[40px] font-semibold leading-none" style={{ color: cozy.ink }}>{completionPct}%</span>
+                    <span className="mt-1 text-[13px]" style={{ color: cozy.inkSoft }}>complete</span>
+                  </div>
+                </div>
+                <p className="mt-4 text-[15px]" style={{ color: cozy.inkSoft }}>
+                  Week <span style={{ color: cozy.ink, fontWeight: 600 }}>{Math.max(1, Math.ceil(currentDay / 7))}</span> of your journey
+                </p>
               </div>
-              <div className="flex items-center gap-1.5">
-                <Flame className="w-4 h-4 text-orange-500" />
-                <span className="text-white font-bold text-sm">{userStats.streak}</span>
+
+              <div className="mt-4 space-y-3">
+                {[
+                  { icon: CheckCircle, tint: cozy.primarySoft, color: cozy.primary, title: "Workouts", sub: "Completed so far", value: `${userStats.workoutsCompleted}/${userStats.totalWorkouts}` },
+                  { icon: Sparkles, tint: cozy.primarySoft, color: cozy.primary, title: "XP earned", sub: "All time", value: userStats.xp.toLocaleString() },
+                  { icon: Flame, tint: cozy.streakSoft, color: cozy.streak, title: "Current streak", sub: "Days in a row", value: `${userStats.streak}` },
+                  { icon: TrendingUp, tint: cozy.sageSoft, color: cozy.sageDeep, title: "Consistency", sub: "Workouts per day so far", value: `${currentDay > 0 ? Math.round((userStats.workoutsCompleted / currentDay) * 100) : 0}%` },
+                ].map(({ icon: Icon, tint, color, title, sub, value }) => (
+                  <div
+                    key={title}
+                    className="flex items-center gap-4 rounded-[20px] px-4 py-3.5"
+                    style={{ background: cozy.surface, border: `1px solid ${cozy.line}`, boxShadow: cozy.shadowSm }}
+                  >
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full" style={{ background: tint }}>
+                      <Icon size={21} color={color} aria-hidden />
+                    </span>
+                    <div className="flex-1 leading-tight">
+                      <p className="text-[15.5px] font-semibold" style={{ color: cozy.ink }}>{title}</p>
+                      <p className="text-[13px]" style={{ color: cozy.inkSoft }}>{sub}</p>
+                    </div>
+                    <p className="cozy-display text-[26px] font-semibold" style={{ color: cozy.ink }}>{value}</p>
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center gap-1.5">
-                <Zap className="w-4 h-4 text-yellow-500" />
-                <span className="text-white font-bold text-sm">{userStats.xp.toLocaleString()}</span>
-              </div>
-              <X className="w-3.5 h-3.5 text-white/40" />
-            </motion.button>
+            </motion.section>
+          ) : (
+            <motion.section
+              key="journey"
+              id="weekly-panel"
+              className="mt-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <JourneyPath
+                dayStatuses={getJourneyWindow(dayStatuses, currentDay, HOME_WINDOW_BEFORE, HOME_WINDOW_AFTER)}
+                onDayClick={handleDayClick}
+                isLoading={isLoadingProgress}
+                onStartToday={handleStartWorkout}
+                todayMeta={todayMeta}
+                todayCompleted={isTodayCompleted}
+              />
+            </motion.section>
+          )}
+        </AnimatePresence>
+
+        {/* Legal links (Home-styled footer) */}
+        <footer className="flex flex-col items-center gap-1.5 pb-32 pt-2 text-[12.5px]" style={{ color: cozy.inkFaint }} data-testid="footer">
+          <div className="flex items-center gap-3">
+            <Link to="/privacy-policy" className="hover:underline" data-testid="link-privacy-policy">Privacy Policy</Link>
+            <span aria-hidden>·</span>
+            <Link to="/terms" className="hover:underline" data-testid="link-terms">Terms of Service</Link>
           </div>
-        )}
-      </div>
-
-      {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto px-4 pb-24">
-      {activeView === "quarterly" ? (
-        <div className="mt-8 space-y-10">
-          {/* Quarter Header - Clean and Bold */}
-          <div className="text-center">
-            <h1 className="text-white text-4xl font-bold mb-2">Q1 2026</h1>
-            <p className="text-zinc-400 text-lg">Your Fitness Journey</p>
-          </div>
-
-          {/* Main Progress Ring */}
-          <div className="flex flex-col items-center">
-            <div className="relative w-48 h-48">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="42"
-                  fill="none"
-                  stroke="#27272a"
-                  strokeWidth="8"
-                />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="42"
-                  fill="none"
-                  stroke="url(#progressGradient)"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeDasharray={`${(userStats.workoutsCompleted / userStats.totalWorkouts * 100) * 2.64} ${100 * 2.64}`}
-                />
-                <defs>
-                  <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#7c57ff" />
-                    <stop offset="100%" stopColor="#60a5fa" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-white text-5xl font-bold">{Math.round(userStats.workoutsCompleted / userStats.totalWorkouts * 100)}%</span>
-                <span className="text-zinc-500 text-sm mt-1">Complete</span>
-              </div>
-            </div>
-            <p className="text-zinc-400 mt-6 text-center">
-              Week <span className="text-white font-semibold">{Math.ceil(currentDay / 7)}</span> of {Math.ceil(userStats.totalWorkouts / 7)}
-            </p>
-          </div>
-
-          {/* Key Stats - Simple Vertical List */}
-          <div className="space-y-4">
-            {/* Workouts */}
-            <div className="flex items-center justify-between py-4 border-b border-zinc-800">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#7c57ff]/20 flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-[#7c57ff]" />
-                </div>
-                <div>
-                  <p className="text-white text-lg font-medium">Workouts</p>
-                  <p className="text-zinc-500 text-sm">This quarter</p>
-                </div>
-              </div>
-              <p className="text-white text-3xl font-bold">{userStats.workoutsCompleted}<span className="text-zinc-500 text-xl">/{userStats.totalWorkouts}</span></p>
-            </div>
-
-            {/* XP */}
-            <div className="flex items-center justify-between py-4 border-b border-zinc-800">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center">
-                  <Flame className="w-6 h-6 text-orange-500" />
-                </div>
-                <div>
-                  <p className="text-white text-lg font-medium">XP Earned</p>
-                  <p className="text-zinc-500 text-sm">Total this quarter</p>
-                </div>
-              </div>
-              <p className="text-white text-3xl font-bold">{userStats.xp.toLocaleString()}</p>
-            </div>
-
-            {/* Streak */}
-            <div className="flex items-center justify-between py-4 border-b border-zinc-800">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#aaf163]/20 flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-[#aaf163]" />
-                </div>
-                <div>
-                  <p className="text-white text-lg font-medium">Current Streak</p>
-                  <p className="text-zinc-500 text-sm">Consecutive days</p>
-                </div>
-              </div>
-              <p className="text-white text-3xl font-bold">{userStats.streak}</p>
-            </div>
-
-            {/* Consistency */}
-            <div className="flex items-center justify-between py-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#60a5fa]/20 flex items-center justify-center">
-                  <Target className="w-6 h-6 text-[#60a5fa]" />
-                </div>
-                <div>
-                  <p className="text-white text-lg font-medium">Consistency</p>
-                  <p className="text-zinc-500 text-sm">Weekly average</p>
-                </div>
-              </div>
-              <p className="text-white text-3xl font-bold">{currentDay > 0 ? Math.round((userStats.workoutsCompleted / currentDay) * 100) : 0}<span className="text-zinc-500 text-xl">%</span></p>
-            </div>
-          </div>
-
-          {/* Bottom Spacer */}
-          <div className="h-8" />
-        </div>
-      ) : (
-        <>
-          {/* Weekly Program View - Only Journey Path scrolls */}
-          <div className="mt-4">
-            <JourneyPath
-              dayStatuses={getJourneyWindow(dayStatuses, currentDay)}
-              onDayClick={handleDayClick}
-              isLoading={isLoadingProgress}
-            />
-          </div>
-        </>
-      )}
+          <p data-testid="text-copyright">MGP.AI {now.getFullYear()}</p>
+        </footer>
       </div>
 
       {/* Workout Modal */}
       <Dialog open={showWorkoutModal} onOpenChange={setShowWorkoutModal}>
-        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-md mx-auto">
+        <DialogContent
+          className="cozy-root mx-auto w-[calc(100%-32px)] max-w-md rounded-[28px] border p-6 sm:rounded-[28px]"
+          style={{ background: cozy.surface, borderColor: cozy.line, color: cozy.ink, boxShadow: cozy.shadowLg }}
+        >
           <VisuallyHidden>
             <DialogTitle>Workout Details</DialogTitle>
           </VisuallyHidden>
@@ -321,50 +332,37 @@ export default function Home() {
             const isCompleted = dayStatus?.status === "completed";
             const isActive = dayStatus?.status === "active";
             const isLocked = dayStatus?.status === "locked";
-            
+            const tile = { background: cozy.surfaceSunk, border: `1px solid ${cozy.line}` };
+
             return (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between pr-8">
                 <div>
-                  <h3 className="text-xl font-bold">Day {selectedDay}</h3>
-                  <p className="text-white/60">{workout.title}</p>
+                  <p className="text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: cozy.inkSoft }}>Day {selectedDay}</p>
+                  <h3 className="cozy-display mt-0.5 text-[24px] font-semibold" style={{ color: cozy.ink }}>
+                    {dayStatus ? workoutLabel(dayStatus) : workout.title}
+                  </h3>
                 </div>
-                {isCompleted && (
-                  <div className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-medium">
-                    Completed
-                  </div>
-                )}
-                {isActive && (
-                  <div className="bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full text-sm font-medium animate-pulse">
-                    TODAY
-                  </div>
-                )}
-                {isLocked && (
-                  <div className="bg-zinc-500/20 text-zinc-400 px-3 py-1 rounded-full text-sm font-medium">
-                    Locked
-                  </div>
-                )}
-                {dayStatus?.status === "skipped" && (
-                  <div className="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm font-medium">
-                    Skipped
-                  </div>
-                )}
+                {isCompleted && statusPill(cozy.sageSoft, cozy.sageDeep, "Completed")}
+                {isActive && statusPill(cozy.primarySoft, cozy.primaryDeep, "Today")}
+                {isLocked && statusPill(cozy.surfaceSunk, cozy.inkSoft, "Upcoming")}
+                {dayStatus?.status === "skipped" && statusPill(cozy.streakSoft, cozy.streakDeep, "Missed")}
               </div>
-              
+
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white/5 rounded-xl p-3">
-                  <p className="text-white/60 text-xs mb-1">Duration</p>
-                  <p className="text-white font-semibold">{workout.duration}</p>
+                <div className="rounded-2xl p-3" style={tile}>
+                  <p className="mb-1 text-[12.5px]" style={{ color: cozy.inkSoft }}>Duration</p>
+                  <p className="font-semibold">{workout.duration}</p>
                 </div>
-                <div className="bg-white/5 rounded-xl p-3">
-                  <p className="text-white/60 text-xs mb-1">Exercises</p>
-                  <p className="text-white font-semibold">{workout.exercisesCount}</p>
+                <div className="rounded-2xl p-3" style={tile}>
+                  <p className="mb-1 text-[12.5px]" style={{ color: cozy.inkSoft }}>Exercises</p>
+                  <p className="font-semibold">{workout.exercisesCount}</p>
                 </div>
               </div>
 
-              <div className="bg-white/5 rounded-xl p-3">
-                <p className="text-white/60 text-xs mb-1">Workout Type</p>
-                <p className="text-white font-semibold">{workout.workoutType}</p>
+              <div className="rounded-2xl p-3" style={tile}>
+                <p className="mb-1 text-[12.5px]" style={{ color: cozy.inkSoft }}>Workout Type</p>
+                <p className="font-semibold capitalize">{workout.workoutType}</p>
               </div>
 
               {/* Action Buttons */}
@@ -374,10 +372,11 @@ export default function Home() {
                     setShowWorkoutModal(false);
                     setShowChangeType(true);
                   }}
-                  className="bg-[#1a1a2e]/60 backdrop-blur-sm py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2 border border-white/10"
+                  className="cozy-press flex items-center justify-center gap-2 rounded-2xl py-3 font-medium"
+                  style={{ background: cozy.surface, border: `1px solid ${cozy.line}`, boxShadow: cozy.shadowSm, color: cozy.ink }}
                   data-testid="button-change-type-modal"
                 >
-                  <RefreshCw className="w-4 h-4" />
+                  <RefreshCw className="h-4 w-4" style={{ color: cozy.inkSoft }} />
                   <span className="text-sm">Change</span>
                 </button>
                 <button
@@ -385,106 +384,74 @@ export default function Home() {
                     setShowWorkoutModal(false);
                     setTimeout(() => setShowSchedulingAI(true), 150);
                   }}
-                  className="bg-gradient-to-br from-[#7c57ff]/20 to-[#60a5fa]/20 backdrop-blur-sm py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2 border border-[#7c57ff]/30"
+                  className="cozy-press flex items-center justify-center gap-2 rounded-2xl py-3 font-medium"
+                  style={{ background: cozy.primarySoft, color: cozy.primaryDeep }}
                   data-testid="button-ai-schedule-modal"
                 >
-                  <Sparkles className="w-4 h-4 text-[#7c57ff]" />
+                  <Sparkles className="h-4 w-4" />
                   <span className="text-sm">AI Schedule</span>
                 </button>
               </div>
 
               {(() => {
                 const isRestDay = workout.workoutType === "rest";
-                
+                const banner = (bg: string, color: string, icon: React.ReactNode, text: string, note: string) => (
+                  <div className="space-y-2.5">
+                    <div className="flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-[16px] font-semibold" style={{ background: bg, color }}>
+                      {icon}
+                      {text}
+                    </div>
+                    <p className="text-center text-[13.5px]" style={{ color: cozy.inkSoft }}>{note}</p>
+                  </div>
+                );
+
                 // Completed workouts show completed state
                 if (isCompleted) {
-                  return (
-                    <div className="space-y-3">
-                      <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-green-500/20 text-green-400 border border-green-500/30">
-                        <CheckCircle2 className="w-5 h-5" />
-                        {isRestDay ? "Rest Day Complete" : "Workout Completed"}
-                      </div>
-                      <p className="text-white/40 text-center text-sm">
-                        {isRestDay ? "You earned this rest!" : "Great job on completing this workout!"}
-                      </p>
-                    </div>
-                  );
+                  return banner(cozy.sageSoft, cozy.sageDeep, <CheckCircle2 className="h-5 w-5" />,
+                    isRestDay ? "Rest Day Complete" : "Workout Completed",
+                    isRestDay ? "You earned this rest!" : "Great job on completing this workout!");
                 }
 
                 // Skipped workouts
                 if (dayStatus?.status === "skipped") {
-                  return (
-                    <div className="space-y-3">
-                      <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-orange-500/20 text-orange-400 border border-orange-500/30">
-                        <X className="w-5 h-5" />
-                        Workout Skipped
-                      </div>
-                      <p className="text-white/40 text-center text-sm">
-                        This workout was missed. Keep going with today's workout!
-                      </p>
-                    </div>
-                  );
+                  return banner(cozy.streakSoft, cozy.streakDeep, <X className="h-5 w-5" />,
+                    "Workout Missed", "No worries — keep going with today's workout!");
                 }
 
                 // Active + today completed
                 if (isActive && isTodayCompleted) {
-                  return (
-                    <div className="space-y-3">
-                      <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-green-500/20 text-green-400 border border-green-500/30">
-                        <CheckCircle2 className="w-5 h-5" />
-                        Today's Workout Completed
-                      </div>
-                      <p className="text-white/40 text-center text-sm">
-                        Great job! Come back tomorrow for your next workout.
-                      </p>
-                    </div>
-                  );
+                  return banner(cozy.sageSoft, cozy.sageDeep, <CheckCircle2 className="h-5 w-5" />,
+                    "Today's Workout Completed", "Great job! Come back tomorrow for your next workout.");
                 }
-                
+
                 // Active rest day - auto-complete message
                 if (isActive && isRestDay) {
-                  return (
-                    <div className="space-y-3">
-                      <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                        <Moon className="w-5 h-5" />
-                        Rest Day - Relax!
-                      </div>
-                      <p className="text-white/40 text-center text-sm">
-                        Take it easy today. Your body needs recovery to grow stronger!
-                      </p>
-                    </div>
-                  );
+                  return banner(cozy.restSoft, cozy.restDeep, <Moon className="h-5 w-5" />,
+                    "Rest Day — Recharge", "Take it easy today. Your body grows stronger while it recovers.");
                 }
-                
+
                 // Active day shows start button
                 if (isActive) {
                   return (
-                    <button
+                    <motion.button
+                      whileTap={{ scale: 0.97, y: 2 }}
                       onClick={() => {
                         setShowWorkoutModal(false);
                         handleStartWorkout(selectedDay);
                       }}
-                      className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white"
+                      className="flex w-full items-center justify-center gap-2 rounded-full py-4 text-[17px] font-semibold text-white"
+                      style={{ background: cozy.primary, boxShadow: `0 4px 0 ${cozy.primaryDeep}, 0 10px 22px ${cozy.primaryGlow}` }}
                       data-testid="button-start-modal"
                     >
-                      <Play className="w-5 h-5 fill-current" />
+                      <Play className="h-5 w-5 fill-current" />
                       Start Workout
-                    </button>
+                    </motion.button>
                   );
                 }
-                
+
                 // Locked days show locked state
-                return (
-                  <div className="space-y-3">
-                    <div className="w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 bg-white/10 text-white/40">
-                      <Lock className="w-5 h-5" />
-                      Locked
-                    </div>
-                    <p className="text-white/40 text-center text-sm">
-                      This workout will be available on its scheduled date
-                    </p>
-                  </div>
-                );
+                return banner(cozy.surfaceSunk, cozy.inkSoft, <Lock className="h-5 w-5" />,
+                  "Coming up", "This workout opens on its scheduled day.");
               })()}
             </div>
             );
@@ -538,7 +505,6 @@ export default function Home() {
         />
       )}
 
-      <Footer />
       <NavigationBar />
     </div>
   );

@@ -1,0 +1,94 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500..700;1,9..144,500..700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+
+/*
+ * MGP.AI — "Cozy Fitness Adventure" design tokens.
+ * Single source of truth for the Home experience + bottom navigation.
+ * Components reference these through src/lib/cozyTheme.ts — never raw hex.
+ */
+:root {
+  /* Foundation (~70% of the visual field) */
+  --cozy-bg: #f6efe3;            /* warm oatmeal */
+  --cozy-bg-deep: #efe4d2;       /* terrain / meadow patches */
+  --cozy-surface: #fffcf6;       /* soft ivory */
+  --cozy-surface-sunk: #f9f3e8;
+  --cozy-line: #e9dcc7;          /* hairline borders */
+
+  /* Text */
+  --cozy-ink: #3b2f27;           /* deep warm charcoal-brown */
+  --cozy-ink-soft: #867869;      /* muted warm gray */
+  --cozy-ink-faint: #b3a594;
+
+  /* Primary — warm sophisticated purple */
+  --cozy-primary: #7a5bd3;
+  --cozy-primary-deep: #5c41ad;
+  --cozy-primary-soft: #ece5fa;
+  --cozy-primary-glow: rgba(122, 91, 211, 0.22);
+
+  /* Completed — sage */
+  --cozy-sage: #93b58c;
+  --cozy-sage-deep: #6b9165;
+  --cozy-sage-soft: #e1ebd9;
+
+  /* Streak — warm orange */
+  --cozy-streak: #ec8a3f;
+  --cozy-streak-deep: #c96a22;
+  --cozy-streak-soft: #fce8d6;
+
+  /* Secondary — muted sky */
+  --cozy-sky: #8fb9d6;
+  --cozy-sky-soft: #e2eef5;
+
+  /* Rest — lavender / blue */
+  --cozy-rest: #a8a4dc;
+  --cozy-rest-deep: #807bc0;
+  --cozy-rest-soft: #eceaf8;
+
+  /* Locked — warm stone */
+  --cozy-stone: #ddd0bc;
+  --cozy-stone-deep: #c6b59c;
+
+  /* World */
+  --cozy-path: #ecdfc9;
+  --cozy-path-edge: #e0cfb3;
+  --cozy-path-done: #dde8d2;
+  --cozy-grass: #c8d8ae;
+  --cozy-grass-deep: #a3bd88;
+  --cozy-wood: #c9a57f;
+  --cozy-wood-deep: #a9825c;
+
+  /* Depth */
+  --cozy-shadow-sm: 0 1px 2px rgba(92, 66, 38, 0.08), 0 2px 6px rgba(92, 66, 38, 0.06);
+  --cozy-shadow-md: 0 2px 4px rgba(92, 66, 38, 0.06), 0 10px 24px rgba(92, 66, 38, 0.1);
+  --cozy-shadow-lg: 0 4px 10px rgba(92, 66, 38, 0.07), 0 18px 40px rgba(92, 66, 38, 0.13);
+  --cozy-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  /* Type */
+  --cozy-font-display: "Fraunces", Georgia, serif;
+  --cozy-font-body: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+
+  /* Radii */
+  --cozy-radius-sm: 12px;
+  --cozy-radius-md: 18px;
+  --cozy-radius-lg: 26px;
+}
+
+.cozy-root {
+  background-color: var(--cozy-bg);
+  color: var(--cozy-ink);
+  font-family: var(--cozy-font-body);
+  line-height: 1.45;
+}
+
+.cozy-display {
+  font-family: var(--cozy-font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em;
+}
+
+/* Tactile "pressable" surface: gentle rim underneath + top highlight */
+.cozy-press {
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+.cozy-press:active {
+  transform: translateY(2px) scale(0.98);
+}
