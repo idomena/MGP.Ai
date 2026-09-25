@@ -9,7 +9,8 @@ import { cozy } from "@/lib/cozyTheme";
 interface HomeHeaderProps {
   name: string;
   avatarUrl?: string;
-  streak: number;
+  /** Real streak from useWorkoutProgress; null while it's not loaded yet (chip hidden). */
+  streak: number | null;
   subline: string;
 }
 
@@ -64,15 +65,19 @@ export default function HomeHeader({ name, avatarUrl, streak, subline }: HomeHea
           <p className="truncate text-[17px] font-semibold" style={{ color: cozy.ink }}>{name}</p>
         </div>
 
-        <div
-          className="flex h-10 items-center gap-1.5 rounded-full pl-2.5 pr-3.5"
-          style={{ background: cozy.streakSoft, boxShadow: cozy.highlight }}
-          aria-label={`${streak} day streak`}
-          data-testid="streak-chip"
-        >
-          <Flame size={19} color={cozy.streak} fill={cozy.streak} fillOpacity={0.25} strokeWidth={2.2} aria-hidden />
-          <span className="text-[16px] font-bold tabular-nums" style={{ color: cozy.streakDeep }}>{streak}</span>
-        </div>
+        {streak !== null && (
+          <motion.div
+            className="flex h-10 items-center gap-1.5 rounded-full pl-2.5 pr-3.5"
+            style={{ background: cozy.streakSoft, boxShadow: cozy.highlight }}
+            aria-label={`${streak} workout streak`}
+            data-testid="streak-chip"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            <Flame size={19} color={cozy.streak} fill={cozy.streak} fillOpacity={0.25} strokeWidth={2.2} aria-hidden />
+            <span className="text-[16px] font-bold tabular-nums" style={{ color: cozy.streakDeep }}>{streak}</span>
+          </motion.div>
+        )}
 
         <button
           className="cozy-press relative flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--cozy-primary)]"

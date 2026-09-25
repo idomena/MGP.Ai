@@ -48,6 +48,7 @@ export default function Home() {
     changeWorkoutType,
     isTodayCompleted,
     todayIsRestDay,
+    refetch,
   } = useWorkoutProgress();
 
   useEffect(() => {
@@ -153,13 +154,19 @@ export default function Home() {
     ? `${todayWorkout.duration} · ${todayWorkout.exercisesCount} exercises`
     : undefined;
 
-  const subline = isTodayCompleted
-    ? "Today's session is done. Enjoy the glow."
-    : todayIsRestDay
-      ? "Rest day. Recharge — you're still progressing."
-      : currentDay
-        ? `Day ${currentDay} of your journey. One step at a time.`
-        : "Your journey starts with one step.";
+  // Everything below reads today's real status; isTodayCompleted is also true for skipped days.
+  const todayStatus = dayStatuses.find(d => d.day === currentDay)?.status;
+  // Streak/XP are real hook values, but they read 0 until the first load finishes — don't show them before that.
+  const hasProgress = dayStatuses.length > 0;
+  const subline = !dayStatuses.length
+    ? "Your journey starts with one step."
+    : todayStatus === "completed"
+      ? todayIsRestDay ? "Rest day done. You're still progressing." : "Today's session is done. Enjoy the glow."
+      : todayStatus === "skipped"
+        ? "Today slipped by. Tomorrow is a fresh step."
+        : todayIsRestDay
+          ? "Rest day. Recharge — you're still progressing."
+          : `Day ${currentDay} of your journey. One step at a time.`;
 
   const completionPct = userStats.totalWorkouts > 0
     ? Math.round((userStats.workoutsCompleted / userStats.totalWorkouts) * 100)
@@ -181,7 +188,7 @@ export default function Home() {
       />
 
       <div className="relative mx-auto max-w-md">
-        <HomeHeader name={firstName} avatarUrl={avatarUrl} streak={userStats.streak} subline={subline} />
+        <HomeHeader name={firstName} avatarUrl={avatarUrl} streak={hasProgress ? userStats.streak : null} subline={subline} />
 
         {/* View switch + quiet XP */}
         <motion.div
@@ -220,10 +227,12 @@ export default function Home() {
               );
             })}
           </div>
-          <div className="flex items-center gap-1.5 text-[13.5px] font-medium" style={{ color: cozy.inkSoft }} data-testid="text-xp">
-            <Sparkles size={15} color={cozy.primary} aria-hidden />
-            <span className="tabular-nums" style={{ color: cozy.ink, fontWeight: 600 }}>{userStats.xp.toLocaleString()}</span> XP
-          </div>
+          {hasProgress && (
+            <div className="flex items-center gap-1.5 text-[13.5px] font-medium" style={{ color: cozy.inkSoft }} data-testid="text-xp">
+              <Sparkles size={15} color={cozy.primary} aria-hidden />
+              <span className="tabular-nums" style={{ color: cozy.ink, fontWeight: 600 }}>{userStats.xp.toLocaleString()}</span> XP
+            </div>
+          )}
         </motion.div>
 
         <AnimatePresence mode="wait">
@@ -296,11 +305,13 @@ export default function Home() {
             >
               <JourneyPath
                 dayStatuses={getJourneyWindow(dayStatuses, currentDay, HOME_WINDOW_BEFORE, HOME_WINDOW_AFTER)}
+                currentDay={currentDay}
                 onDayClick={handleDayClick}
                 isLoading={isLoadingProgress}
+                error={progressError}
+                onRetry={refetch}
                 onStartToday={handleStartWorkout}
                 todayMeta={todayMeta}
-                todayCompleted={isTodayCompleted}
               />
             </motion.section>
           )}

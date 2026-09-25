@@ -14,13 +14,17 @@ interface DayStatus {
 
 interface JourneyPathProps {
   dayStatuses: DayStatus[];
+  /** The app's real current day (useWorkoutProgress().currentDay) — decides which checkpoint is Today. */
+  currentDay: number;
   onDayClick: (day: number) => void;
   isLoading?: boolean;
+  /** Existing progress error, if any. */
+  error?: string | null;
+  onRetry?: () => void;
   /** Starts today's workout directly from the hero checkpoint. */
   onStartToday?: (day: number) => void;
   /** e.g. "35 min · 5 exercises" */
   todayMeta?: string;
-  todayCompleted?: boolean;
 }
 
 // ─── Layout constants ──────────────────────────────────────────────────────
@@ -120,11 +124,13 @@ interface LaidOutNode {
 
 export default function JourneyPath({
   dayStatuses,
+  currentDay,
   onDayClick,
   isLoading,
+  error,
+  onRetry,
   onStartToday,
   todayMeta,
-  todayCompleted,
 }: JourneyPathProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const todayRef = useRef<HTMLDivElement>(null);
@@ -154,9 +160,16 @@ export default function JourneyPath({
   }, [dayStatuses]);
 
   const layout = useMemo(() => {
-    let todayIdx = dayStatuses.findIndex((d) => d.status === "active");
-    if (todayIdx === -1) todayIdx = dayStatuses.findIndex((d) => d.status === "locked");
-    if (todayIdx === -1) todayIdx = dayStatuses.length - 1;
+    // Today = the hook's currentDay. The status of that day (active / completed /
+    // skipped) only changes how the hero looks, never which day it is.
+    let todayIdx = dayStatuses.findIndex((d) => d.day === currentDay);
+    if (todayIdx === -1) todayIdx = dayStatuses.findIndex((d) => d.status === "active");
+    const hasToday = todayIdx !== -1;
+    // Layout-only anchor when today isn't in the window: split past/future at the first not-yet-done day.
+    if (!hasToday) {
+      todayIdx = dayStatuses.findIndex((d) => d.status === "locked");
+      if (todayIdx === -1) todayIdx = dayStatuses.length;
+    }
 
     let y = TOP;
     const nodes: LaidOutNode[] = dayStatuses.map((info, idx) => {
@@ -165,9 +178,9 @@ export default function JourneyPath({
         if (idx === todayIdx || idx === todayIdx + 1) y += TODAY_EXTRA_GAP;
       }
       let kind: Kind;
-      if (info.status === "completed") kind = "completed";
+      if (hasToday && idx === todayIdx) kind = "today";
+      else if (info.status === "completed") kind = "completed";
       else if (info.status === "skipped") kind = "skipped";
-      else if (idx === todayIdx) kind = "today";
       else if (idx - todayIdx <= UPCOMING_COUNT) kind = "upcoming";
       else kind = "distant";
 
@@ -176,7 +189,7 @@ export default function JourneyPath({
       // its neighbours lean the same way so the path doesn't run under the card.
       const todaySide = xFraction(dayStatuses[todayIdx]?.day ?? 0) < 0.5 ? "left" : "right";
       if (kind === "today") fx = todaySide === "left" ? 0.27 : 0.73;
-      else if (Math.abs(idx - todayIdx) === 1) fx = todaySide === "left" ? Math.min(fx, 0.4) : Math.max(fx, 0.6);
+      else if (hasToday && Math.abs(idx - todayIdx) === 1) fx = todaySide === "left" ? Math.min(fx, 0.4) : Math.max(fx, 0.6);
       const x = fx * width;
       const size = kind === "today" ? NODE_TODAY : kind === "distant" ? NODE_DISTANT : NODE;
       const fade = kind === "distant" ? Math.max(0.4, 1 - (idx - todayIdx - UPCOMING_COUNT) * 0.09) : 1;
@@ -202,9 +215,34 @@ export default function JourneyPath({
     const donePath = `${start} ${segs.slice(0, todayIdx + 1).join(" ")}`;
     const height = lastY + TAIL;
     return { nodes, todayIdx, fullPath, donePath, height };
-  }, [dayStatuses, width]);
+  }, [dayStatuses, width, currentDay]);
 
-  if (isLoading) {
+  if (error && !dayStatuses.length) {
+    return (
+      <div
+        role="alert"
+        className="mx-5 mt-6 flex flex-col items-center gap-3 rounded-[24px] px-6 py-8 text-center"
+        style={{ background: cozy.surface, border: `1px solid ${cozy.line}`, boxShadow: cozy.shadowMd }}
+      >
+        <p className="cozy-display text-[21px] font-semibold" style={{ color: cozy.ink }}>We couldn't load your path</p>
+        <p className="text-[14.5px]" style={{ color: cozy.inkSoft }}>{error}. Check your connection and try again.</p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="cozy-press mt-1 rounded-full px-6 text-[15px] font-semibold text-white"
+            style={{ background: cozy.primary, boxShadow: `0 3px 0 ${cozy.primaryDeep}` }}
+            data-testid="button-retry-progress"
+          >
+            Try again
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // Only take over the screen on the first load; background refetches keep the world in place.
+  if (isLoading && !dayStatuses.length) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-24" aria-busy="true">
         <motion.div
@@ -346,7 +384,6 @@ export default function JourneyPath({
             width={width}
             anchorRef={todayRef}
             meta={todayMeta}
-            completed={!!todayCompleted}
             reduceMotion={!!reduceMotion}
             onOpen={() => onDayClick(n.info.day)}
             onStart={onStartToday ? () => onStartToday(n.info.day) : undefined}
@@ -483,18 +520,21 @@ function celebrateOnce(dateKey: string) {
   }
 }
 
-function TodayCheckpoint({ node, width, anchorRef, meta, completed, reduceMotion, onOpen, onStart }: {
+function TodayCheckpoint({ node, width, anchorRef, meta, reduceMotion, onOpen, onStart }: {
   node: LaidOutNode;
   width: number;
   anchorRef: React.RefObject<HTMLDivElement>;
   meta?: string;
-  completed: boolean;
   reduceMotion: boolean;
   onOpen: () => void;
   onStart?: () => void;
 }) {
   const { info, x, y, size, isRest } = node;
   const label = workoutLabel(info);
+  // Same rules as the Home modal: only an active, non-rest day can be started.
+  const completed = info.status === "completed";
+  const missed = info.status === "skipped";
+  const canStart = info.status === "active" && !isRest && !!onStart;
   const cardOnRight = x < width / 2;
   const gutter = 16;
   const gap = 14;
@@ -505,6 +545,8 @@ function TodayCheckpoint({ node, width, anchorRef, meta, completed, reduceMotion
 
   const tone = completed
     ? { face: cozy.sage, rim: cozy.sageDeep, glow: cozy.sageSoft, accent: cozy.sageDeep }
+    : missed
+      ? { face: cozy.stone, rim: cozy.stoneDeep, glow: cozy.streakSoft, accent: cozy.streakDeep }
     : isRest
       ? { face: cozy.rest, rim: cozy.restDeep, glow: cozy.restSoft, accent: cozy.restDeep }
       : { face: cozy.primary, rim: cozy.primaryDeep, glow: cozy.primaryGlow, accent: cozy.primary };
@@ -533,17 +575,19 @@ function TodayCheckpoint({ node, width, anchorRef, meta, completed, reduceMotion
         />
         <motion.button
           type="button"
-          onClick={completed || isRest || !onStart ? onOpen : onStart}
+          onClick={canStart ? onStart : onOpen}
           className="relative rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--cozy-primary)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--cozy-bg)]"
           animate={float}
           transition={floatTransition}
           whileTap={{ scale: 0.93 }}
-          aria-label={`Today, day ${info.day}: ${label}${completed ? " (completed)" : ""}`}
+          aria-label={`Today, day ${info.day}: ${label}${completed ? " (completed)" : missed ? " (missed)" : ""}`}
           data-testid={`journey-node-${info.day}`}
         >
           <Disc size={size} face={tone.face} rim={tone.rim} rimDepth={7}>
             {completed ? (
               <Check size={40} color="#fff" strokeWidth={3.2} aria-hidden />
+            ) : missed ? (
+              <X size={34} color="#fff" strokeWidth={3} aria-hidden />
             ) : isRest ? (
               <Moon size={36} color="#fff" strokeWidth={2.2} aria-hidden />
             ) : (
@@ -598,13 +642,15 @@ function TodayCheckpoint({ node, width, anchorRef, meta, completed, reduceMotion
         </h3>
         <p className="mt-1 text-[13.5px] leading-snug" style={{ color: cozy.inkSoft }}>
           {completed
-            ? "Done for today. Lovely work."
-            : isRest
-              ? "Recovery is part of the path. You're still progressing."
-              : meta}
+            ? isRest ? "Rest done. You're still progressing." : "Done for today. Lovely work."
+            : missed
+              ? "Missed today. Tomorrow is a fresh step."
+              : isRest
+                ? "Recovery is part of the path. You're still progressing."
+                : meta}
         </p>
 
-        {!completed && !isRest && onStart && (
+        {canStart && (
           <motion.button
             type="button"
             onClick={(e) => {
