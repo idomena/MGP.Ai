@@ -9,7 +9,7 @@ const features = [
   },
   {
     icon: Dumbbell,
-    title: "Personalized 21-Day Plans",
+    title: "Personalized Fitness Plans",
     description: "Your plan is built around your goals, equipment, and schedule. No generic templates — just workouts that fit your life.",
   },
   {
@@ -25,7 +25,7 @@ const features = [
 ];
 
 const pricingFeatures = [
-  "Personalized 21-day workout programs",
+  "Personalized workout programs",
   "AI coaching during every session",
   "Nutrition tracking & meal suggestions",
   "Progress calendar & streak tracking",
@@ -76,7 +76,7 @@ export default function Landing() {
             </span>
           </h1>
           <p className="text-xl text-white/60 mb-10 max-w-xl mx-auto">
-            MGP.AI builds a personalized 21-day fitness plan, coaches you through every workout, and tracks your nutrition — all powered by AI.
+            MGP.AI builds a personalized fitness plan that grows with you, coaches you through every workout, and tracks your nutrition — all powered by AI.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link

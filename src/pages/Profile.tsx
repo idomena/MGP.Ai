@@ -181,7 +181,7 @@ export default function ProfilePage() {
     { id: 1, name: "First Workout", icon: Star, unlocked: workoutCount >= 1, requirement: "Complete 1 workout" },
     { id: 2, name: "7 Day Streak", icon: Flame, unlocked: streak >= 7, requirement: "7 days in a row" },
     { id: 3, name: "10 Workouts", icon: Target, unlocked: workoutCount >= 10, requirement: "Complete 10 workouts" },
-    { id: 4, name: "21 Day Hero", icon: Award, unlocked: workoutCount >= 21, requirement: "Complete full program" },
+    { id: 4, name: "21 Workouts", icon: Award, unlocked: workoutCount >= 21, requirement: "Complete 21 workouts" },
   ];
 
   const menuItems = [
@@ -233,7 +233,7 @@ export default function ProfilePage() {
           {userProgram && (
             <div className="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/10">
               <Calendar className="w-4 h-4 text-[#7c57ff]" />
-              <span className="text-white/80 text-sm">Day {completedWorkouts.length + 1} of {userProgram.total_days}</span>
+              <span className="text-white/80 text-sm">Day {completedWorkouts.length + 1} of your journey</span>
             </div>
           )}
         </header>

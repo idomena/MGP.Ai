@@ -77,7 +77,7 @@ export default function SchedulingAIAssistant({
         role: "assistant",
         content: isSelectedDifferent 
           ? `I can help you reschedule **Day ${sourceDay}** (${sourceDayInfo?.title || "Workout"}).\n\nTell me where you'd like to move it:\n• "Move to Sunday"\n• "Move to day 15"\n• "Move to tomorrow"`
-          : `Hi! I'm your scheduling assistant. I can help you move workouts around your 21-day plan.\n\nToday is **Day ${currentDay}** (${sourceDayInfo?.title || "Workout"}).\n\nJust tell me what you'd like to do, like:\n• "Move today's workout to Sunday"\n• "I can't workout today, reschedule to day 15"\n• "Push my workout to tomorrow"`,
+          : `Hi! I'm your scheduling assistant. I can help you move workouts around your journey.\n\nToday is **Day ${currentDay}** (${sourceDayInfo?.title || "Workout"}).\n\nJust tell me what you'd like to do, like:\n• "Move today's workout to Sunday"\n• "I can't workout today, reschedule it"\n• "Push my workout to tomorrow"`,
       },
     ]);
     setPendingAction(null);
@@ -89,21 +89,17 @@ export default function SchedulingAIAssistant({
     const dayMatch = lowerText.match(/day\s*(\d+)/);
     if (dayMatch) {
       const targetDay = parseInt(dayMatch[1], 10);
-      if (targetDay >= 1 && targetDay <= 21 && targetDay !== currentDay) {
+      if (targetDay >= 1 && targetDay !== currentDay) {
         return targetDay;
       }
     }
-    
+
     if (lowerText.includes("tomorrow")) {
-      const targetDay = currentDay + 1;
-      if (targetDay <= 21) return targetDay;
-      return 21;
+      return currentDay + 1;
     }
-    
+
     if (lowerText.includes("day after tomorrow")) {
-      const targetDay = currentDay + 2;
-      if (targetDay <= 21) return targetDay;
-      return 21;
+      return currentDay + 2;
     }
     
     const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
@@ -133,7 +129,7 @@ export default function SchedulingAIAssistant({
     if (nextWeekMatch) {
       const dayName = nextWeekMatch[1];
       if (dayName === "week") {
-        return Math.min(currentDay + 7, 21);
+        return currentDay + 7;
       }
       const dayIndex = dayNames.indexOf(dayName);
       if (dayIndex !== -1) {
@@ -323,7 +319,7 @@ export default function SchedulingAIAssistant({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: `You are a workout scheduling assistant. The user's current 21-day workout schedule is:
+          message: `You are a workout scheduling assistant. The user's ongoing fitness journey schedule is:
 ${scheduleContext}
 
 Today is Day ${currentDay}.

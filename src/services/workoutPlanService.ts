@@ -1,6 +1,14 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const TOTAL_PROGRAM_DAYS = 21;
+// Internal batch sizes — not product concepts, not exposed to users.
+// The journey is unlimited; these are just how many rows we generate at a time.
+const INITIAL_BATCH_SIZE = 30;
+const EXTENSION_BATCH_SIZE = 30;
+// Trigger extension when this many days remain in the generated buffer.
+const EXTENSION_LOOKAHEAD = 7;
+
+// Module-level lock: prevents concurrent extension calls for the same user.
+const _extendingUsers = new Set<string>();
 
 function toLocalDateStr(date: Date): string {
   const year = date.getFullYear();
@@ -46,22 +54,19 @@ interface OnboardingData {
   muscleFocus?: string[];
   experience: string;
   trainingDays: string[];
-
   selectedWorkouts: string[];
   hasInjuries: boolean;
   additionalInfo?: string;
 }
 
-// Parse user's additional info to extract muscle focus preferences
 function parseMuscleFocus(additionalInfo: string, defaultWorkouts: string[]): string[] {
   if (!additionalInfo || additionalInfo.trim() === '') {
     return defaultWorkouts.length > 0 ? defaultWorkouts : ['full'];
   }
-  
+
   const text = additionalInfo.toLowerCase();
   const detectedMuscles: string[] = [];
-  
-  // Check for muscle group keywords
+
   const muscleKeywords: Record<string, string[]> = {
     chest: ['chest', 'pecs', 'pectoral', 'bench'],
     back: ['back', 'lats', 'latissimus', 'pull-up', 'pullup', 'row'],
@@ -73,16 +78,14 @@ function parseMuscleFocus(additionalInfo: string, defaultWorkouts: string[]): st
     core: ['core', 'abs', 'abdominal', 'stomach', 'plank', 'crunch'],
     full: ['full body', 'everything', 'all muscles', 'total body', 'whole body'],
   };
-  
+
   for (const [muscle, keywords] of Object.entries(muscleKeywords)) {
     if (keywords.some(keyword => text.includes(keyword))) {
       detectedMuscles.push(muscle);
     }
   }
-  
-  // If user mentioned specific muscles, use those
+
   if (detectedMuscles.length > 0) {
-    // Remove duplicates (e.g., if biceps and arms both detected, keep arms)
     if (detectedMuscles.includes('biceps') || detectedMuscles.includes('triceps')) {
       const filtered = detectedMuscles.filter(m => m !== 'arms');
       if (!filtered.includes('biceps') && !filtered.includes('triceps')) {
@@ -92,9 +95,55 @@ function parseMuscleFocus(additionalInfo: string, defaultWorkouts: string[]): st
     }
     return [...new Set(detectedMuscles)];
   }
-  
-  // Fall back to default or full body
+
   return defaultWorkouts.length > 0 ? defaultWorkouts : ['full'];
+}
+
+/**
+ * Core batch generator — the only place workout rows are created.
+ *
+ * @param startDayNum   First day number in this batch (1 for initial, N+1 for extensions)
+ * @param count         How many days to generate
+ * @param programStartDate  Calendar date of Day 1 (used to derive day-of-week for each day)
+ * @param trainingDays  Which weekdays are workout days (["Mon","Wed","Fri"] etc.)
+ * @param selectedWorkouts  Ordered list of workout types to rotate through
+ * @param startWorkoutIndex  Position in the rotation to resume from (critical for continuity)
+ *
+ * Rest days do NOT advance startWorkoutIndex — only actual workout days do.
+ */
+export function generateDaysBatch(
+  startDayNum: number,
+  count: number,
+  programStartDate: Date,
+  trainingDays: string[],
+  selectedWorkouts: string[],
+  startWorkoutIndex: number
+): Array<{ dayNumber: number; title: string; workoutType: string; date: string }> {
+  const dayOrder = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const plan: Array<{ dayNumber: number; title: string; workoutType: string; date: string }> = [];
+  const workouts = selectedWorkouts.length > 0 ? selectedWorkouts : ['full'];
+
+  let workoutIndex = startWorkoutIndex;
+
+  for (let offset = 0; offset < count; offset++) {
+    const dayNum = startDayNum + offset;
+    const currentDate = new Date(programStartDate);
+    currentDate.setDate(programStartDate.getDate() + dayNum - 1);
+    const dayOfWeek = dayOrder[currentDate.getDay()];
+    const dateStr = toLocalDateStr(currentDate);
+
+    if (trainingDays.includes(dayOfWeek)) {
+      const workoutType = workouts[workoutIndex % workouts.length];
+      const info = WORKOUT_INFO[workoutType] || { name: workoutType };
+      plan.push({ dayNumber: dayNum, title: info.name, workoutType, date: dateStr });
+      workoutIndex++; // only advances on actual workout days
+    } else {
+      plan.push({ dayNumber: dayNum, title: "Rest Day", workoutType: "rest", date: dateStr });
+      // workoutIndex NOT incremented — rest days don't affect rotation
+    }
+  }
+
+  return plan;
 }
 
 export async function saveOnboardingAndGeneratePlan(
@@ -102,11 +151,10 @@ export async function saveOnboardingAndGeneratePlan(
   data: OnboardingData
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Use explicit muscle focus from onboarding if available, otherwise parse from additionalInfo
     const focusWorkouts = (data.muscleFocus && data.muscleFocus.length > 0)
       ? data.muscleFocus
       : parseMuscleFocus(data.additionalInfo || '', data.selectedWorkouts);
-    
+
     const { error: prefsError } = await supabase
       .from("user_preferences")
       .upsert(
@@ -136,14 +184,14 @@ export async function saveOnboardingAndGeneratePlan(
     startDate.setHours(0, 0, 0, 0);
     const startDateStr = toLocalDateStr(startDate);
 
-    // Store start date in localStorage as fallback (Supabase column may not exist)
     try {
       localStorage.setItem(`mgp_start_date_${userId}`, startDateStr);
     } catch (e) {
       // localStorage not available
     }
 
-    const plan = generate21DayPlan(startDate, data.trainingDays, focusWorkouts);
+    // Generate the initial buffer. INITIAL_BATCH_SIZE is an internal detail only.
+    const plan = generateDaysBatch(1, INITIAL_BATCH_SIZE, startDate, data.trainingDays, focusWorkouts, 0);
 
     const completionRows = plan.map((day) => ({
       user_id: userId,
@@ -153,7 +201,7 @@ export async function saveOnboardingAndGeneratePlan(
       completed: false,
     }));
 
-    // Always delete existing workout data and create fresh plan
+    // Delete existing plan and create fresh
     const { error: deleteError } = await supabase
       .from("workout_completions")
       .delete()
@@ -164,10 +212,8 @@ export async function saveOnboardingAndGeneratePlan(
       return { success: false, error: deleteError.message };
     }
 
-    // Wait a moment for delete to complete
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Insert new 21-day plan
     const { error: completionsError } = await supabase
       .from("workout_completions")
       .insert(completionRows);
@@ -175,17 +221,6 @@ export async function saveOnboardingAndGeneratePlan(
     if (completionsError) {
       console.error("Error inserting workout completions:", completionsError);
       return { success: false, error: completionsError.message };
-    }
-
-    // Verify the plan was created successfully
-    const { count, error: countError } = await supabase
-      .from("workout_completions")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId);
-
-    if (countError || count !== TOTAL_PROGRAM_DAYS) {
-      console.error("Workout plan incomplete:", { count, expected: TOTAL_PROGRAM_DAYS });
-      return { success: false, error: `Expected ${TOTAL_PROGRAM_DAYS} workouts but found ${count}` };
     }
 
     const { error: finalUpdateError } = await supabase
@@ -205,43 +240,122 @@ export async function saveOnboardingAndGeneratePlan(
   }
 }
 
-function generate21DayPlan(
-  startDate: Date,
-  trainingDays: string[],
-  selectedWorkouts: string[]
-): Array<{ dayNumber: number; title: string; workoutType: string; date: string }> {
-  const dayOrder = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const plan: Array<{ dayNumber: number; title: string; workoutType: string; date: string }> = [];
+/**
+ * Extend the journey for a user when they're approaching the end of their
+ * generated buffer. Safe to call repeatedly — idempotent by design:
+ *
+ * 1. Module-level lock prevents concurrent calls for the same user.
+ * 2. DB check: only inserts days that don't already exist.
+ * 3. Verifies actual max day from DB before deciding to extend.
+ */
+export async function extendJourneyIfNeeded(
+  userId: string,
+  currentDay: number
+): Promise<boolean> {
+  // Concurrent call guard
+  if (_extendingUsers.has(userId)) return false;
 
-  let workoutIndex = 0;
+  try {
+    // Get the highest day number currently generated for this user
+    const { data: maxRow, error: maxErr } = await supabase
+      .from("workout_completions")
+      .select("day_number")
+      .eq("user_id", userId)
+      .order("day_number", { ascending: false })
+      .limit(1)
+      .single();
 
-  for (let dayNum = 1; dayNum <= TOTAL_PROGRAM_DAYS; dayNum++) {
-    const currentDate = new Date(startDate);
-    currentDate.setDate(startDate.getDate() + dayNum - 1);
-    const dayOfWeek = dayOrder[currentDate.getDay()];
-    const dateStr = toLocalDateStr(currentDate);
+    if (maxErr || !maxRow) return false;
 
-    if (trainingDays.includes(dayOfWeek)) {
-      const workoutType = selectedWorkouts[workoutIndex % selectedWorkouts.length];
-      const info = WORKOUT_INFO[workoutType] || { name: workoutType };
-      plan.push({
-        dayNumber: dayNum,
-        title: info.name,
-        workoutType,
-        date: dateStr,
-      });
-      workoutIndex++;
-    } else {
-      plan.push({
-        dayNumber: dayNum,
-        title: "Rest Day",
-        workoutType: "rest",
-        date: dateStr,
-      });
+    const maxGeneratedDay = maxRow.day_number;
+
+    // Only extend when the buffer is running low
+    if (currentDay < maxGeneratedDay - EXTENSION_LOOKAHEAD) return false;
+
+    _extendingUsers.add(userId);
+
+    // Get user preferences for workout rotation
+    const prefs = await getUserPreferences(userId);
+    if (!prefs || prefs.trainingDays.length === 0) {
+      return false;
     }
-  }
 
-  return plan;
+    // Get program start date from Day 1's creation timestamp
+    const { data: day1Row } = await supabase
+      .from("workout_completions")
+      .select("created_at")
+      .eq("user_id", userId)
+      .eq("day_number", 1)
+      .single();
+
+    let programStartDate: Date;
+    if (day1Row?.created_at) {
+      programStartDate = new Date(day1Row.created_at);
+    } else {
+      // Fallback to localStorage
+      let stored: string | null = null;
+      try { stored = localStorage.getItem(`mgp_start_date_${userId}`); } catch (e) { /* */ }
+      programStartDate = stored ? parseLocalDate(stored) : new Date();
+    }
+    programStartDate.setHours(0, 0, 0, 0);
+
+    // Derive workout rotation index: count all non-rest days already generated.
+    // This ensures rotation continues seamlessly regardless of how many extensions
+    // have already occurred.
+    const { data: workoutRows } = await supabase
+      .from("workout_completions")
+      .select("day_number")
+      .eq("user_id", userId)
+      .neq("workout_type", "rest")
+      .order("day_number");
+
+    const startWorkoutIndex = workoutRows?.length ?? 0;
+
+    // Generate next batch starting immediately after the current last day
+    const newDays = generateDaysBatch(
+      maxGeneratedDay + 1,
+      EXTENSION_BATCH_SIZE,
+      programStartDate,
+      prefs.trainingDays,
+      prefs.selectedWorkouts,
+      startWorkoutIndex
+    );
+
+    // Idempotency check: only insert days that don't already exist in the DB
+    const newDayNumbers = newDays.map(d => d.dayNumber);
+    const { data: existingRows } = await supabase
+      .from("workout_completions")
+      .select("day_number")
+      .eq("user_id", userId)
+      .in("day_number", newDayNumbers);
+
+    const existingDayNums = new Set((existingRows ?? []).map(r => r.day_number));
+    const toInsert = newDays
+      .filter(d => !existingDayNums.has(d.dayNumber))
+      .map(d => ({
+        user_id: userId,
+        day_number: d.dayNumber,
+        title: d.title,
+        workout_type: d.workoutType,
+        completed: false,
+      }));
+
+    if (toInsert.length === 0) return false; // already extended
+
+    const { error: insertError } = await supabase
+      .from("workout_completions")
+      .insert(toInsert);
+
+    if (insertError) {
+      console.error("Error extending journey:", insertError);
+      return false;
+    }
+
+    console.log(`[Journey] Extended user ${userId}: Days ${maxGeneratedDay + 1}–${maxGeneratedDay + toInsert.length}`);
+    return true;
+  } finally {
+    _extendingUsers.delete(userId);
+  }
 }
 
 export async function checkUserHasWorkoutPlan(userId: string): Promise<boolean> {
@@ -324,7 +438,7 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
 
     const day1 = data.find(d => d.day_number === 1);
     let startDate: Date;
-    
+
     if (day1?.created_at) {
       const createdDate = new Date(day1.created_at);
       startDate = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate(), 0, 0, 0, 0);
@@ -352,7 +466,7 @@ export async function getWorkoutPlan(userId: string): Promise<Array<{
       } else {
         status = "skipped";
       }
-      
+
       return {
         dayNumber: row.day_number,
         title: row.title || "Workout",
@@ -414,7 +528,6 @@ export async function autoSkipPastWorkouts(
     }
 
     const startDate = new Date(programStartDate.getFullYear(), programStartDate.getMonth(), programStartDate.getDate(), 0, 0, 0, 0);
-
     const todayStr = toLocalDateStr(today);
 
     const daysToSkip: number[] = [];

@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { getWorkoutPlan, markWorkoutComplete, autoSkipPastWorkouts } from "@/services/workoutPlanService";
+import { getWorkoutPlan, markWorkoutComplete, autoSkipPastWorkouts, extendJourneyIfNeeded } from "@/services/workoutPlanService";
 
 function toLocalDateStr(date: Date): string {
   const year = date.getFullYear();
@@ -57,7 +57,6 @@ interface WorkoutProgressData {
   todayIsRestDay: boolean;
 }
 
-const TOTAL_PROGRAM_DAYS = 21;
 const XP_PER_WORKOUT = 50;
 
 const WORKOUT_INFO: Record<string, { name: string; duration: string; exercises: number }> = {
@@ -79,7 +78,7 @@ export function useWorkoutProgress(): WorkoutProgressData {
   const [todayIsRestDay, setTodayIsRestDay] = useState(false);
   const [userStats, setUserStats] = useState<UserStats>({
     workoutsCompleted: 0,
-    totalWorkouts: TOTAL_PROGRAM_DAYS,
+    totalWorkouts: 0,
     streak: 0,
     xp: 0,
     currentDay: 1,
@@ -246,6 +245,13 @@ export function useWorkoutProgress(): WorkoutProgressData {
         xp: trulyCompleted * XP_PER_WORKOUT,
         currentDay: activeDay,
       });
+
+      // Silently extend the journey buffer when the user approaches the end.
+      // Fire-and-forget: the Supabase Realtime subscription will trigger a
+      // refetch automatically once new rows are inserted.
+      if (user?.id) {
+        extendJourneyIfNeeded(user.id, activeDay).catch(console.error);
+      }
 
     } catch (err) {
       console.error("Error fetching workout progress:", err);

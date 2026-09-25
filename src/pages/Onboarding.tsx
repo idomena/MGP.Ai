@@ -267,10 +267,10 @@ export default function Onboarding() {
           training_days: selections.trainingDays?.length,
           experience: selections.experience,
         });
-        addBotMessage(`Awesome, ${selections.name}! I'm ${selections.coachName}, and your personalized 21-day workout plan is ready. Let's crush it together!`);
-        
+        addBotMessage(`Awesome, ${selections.name}! I'm ${selections.coachName}, and your personalized fitness journey is ready. Let's crush it together!`);
+
         safeSetTimeout(() => {
-          toast.success("Your 21-day workout plan is ready!");
+          toast.success("Your fitness journey is ready!");
           navigate("/");
         }, 2000);
       } else {

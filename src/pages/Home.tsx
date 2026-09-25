@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useWorkoutProgress } from "@/hooks/useWorkoutProgress";
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
+import { getJourneyWindow } from "@/lib/journeyWindow";
 
 export default function Home() {
   const { user: authUser } = useAuth();
@@ -190,7 +191,7 @@ export default function Home() {
           {/* Quarter Header - Clean and Bold */}
           <div className="text-center">
             <h1 className="text-white text-4xl font-bold mb-2">Q1 2026</h1>
-            <p className="text-zinc-400 text-lg">90-Day Transformation</p>
+            <p className="text-zinc-400 text-lg">Your Fitness Journey</p>
           </div>
 
           {/* Main Progress Ring */}
@@ -299,7 +300,7 @@ export default function Home() {
           {/* Weekly Program View - Only Journey Path scrolls */}
           <div className="mt-4">
             <JourneyPath
-              dayStatuses={dayStatuses}
+              dayStatuses={getJourneyWindow(dayStatuses, currentDay)}
               onDayClick={handleDayClick}
               isLoading={isLoadingProgress}
             />

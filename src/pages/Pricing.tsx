@@ -2,7 +2,7 @@ import { Check, Zap } from "lucide-react";
 import NavigationBar from "@/components/NavigationBar";
 
 const features = [
-  "Personalized 21-day workout programs",
+  "Personalized workout programs",
   "AI coaching during every session",
   "Nutrition tracking & meal suggestions",
   "Progress calendar & streak tracking",

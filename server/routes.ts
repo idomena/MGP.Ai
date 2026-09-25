@@ -19,7 +19,9 @@ import { sendSuccess, sendError, sendValidationError, sendForbidden } from "./ut
 import { asyncHandler } from "./middleware/errorHandler";
 import { aiLimiter, strictAiLimiter } from "./middleware/rateLimiter";
 
-const TOTAL_PROGRAM_DAYS = 21;
+// Legacy constant — used only in the unused /api/progress legacy routes below.
+// The frontend does not call these routes; day calculation is done client-side.
+const LEGACY_MAX_DISPLAY_DAYS = 30;
 const DEBUG_DAY_OFFSET = parseInt(process.env.DEBUG_DAY_OFFSET || "0", 10);
 
 function calculateDayStatus(dayNumber: number, currentDay: number): "locked" | "active" | "preview" | "past" {
@@ -37,7 +39,8 @@ function calculateCurrentDay(programStartDate: Date, serverNow: Date): number {
   const now = startOfDay(serverNow);
   const diffTime = now.getTime() - start.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  return Math.max(1, Math.min(diffDays + 1 + DEBUG_DAY_OFFSET, TOTAL_PROGRAM_DAYS));
+  // No upper cap — journey is unlimited
+  return Math.max(1, diffDays + 1 + DEBUG_DAY_OFFSET);
 }
 
 export function registerRoutes(app: Express): void {
@@ -205,19 +208,19 @@ export function registerRoutes(app: Express): void {
       .limit(1);
 
     let programStartDate: Date;
-    let totalDays = TOTAL_PROGRAM_DAYS;
+    let totalDays = LEGACY_MAX_DISPLAY_DAYS;
 
     if (existingProgram.length === 0) {
       const todayStr = serverNow.toISOString().split('T')[0];
       await db.insert(userPrograms).values({
         userId,
         startDate: todayStr,
-        totalDays: TOTAL_PROGRAM_DAYS,
+        totalDays: LEGACY_MAX_DISPLAY_DAYS,
       }).onConflictDoNothing();
       programStartDate = serverNow;
     } else {
       programStartDate = new Date(existingProgram[0].startDate);
-      totalDays = existingProgram[0].totalDays || TOTAL_PROGRAM_DAYS;
+      totalDays = existingProgram[0].totalDays || LEGACY_MAX_DISPLAY_DAYS;
     }
 
     const currentDay = calculateCurrentDay(programStartDate, serverNow);
@@ -329,7 +332,7 @@ export function registerRoutes(app: Express): void {
         html: `
           <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#0f0f1a;color:#fff;padding:32px;border-radius:16px;">
             <h1 style="color:#a88bff;margin-bottom:8px;">Welcome to MGP.AI${name ? `, ${name}` : ''}!</h1>
-            <p style="color:#aaa;line-height:1.6;">Your AI fitness coach is ready. Complete your onboarding to get your personalized 21-day workout plan.</p>
+            <p style="color:#aaa;line-height:1.6;">Your AI fitness coach is ready. Complete your onboarding to start your personalized fitness journey.</p>
             <a href="${frontendUrl}/onboarding"
                style="display:inline-block;margin-top:24px;padding:14px 28px;background:linear-gradient(135deg,#7c57ff,#60a5fa);color:#fff;border-radius:999px;text-decoration:none;font-weight:600;">
               Get Started →
@@ -426,7 +429,7 @@ export function registerRoutes(app: Express): void {
       await db.insert(userPrograms).values({
         userId,
         startDate: todayStr,
-        totalDays: TOTAL_PROGRAM_DAYS,
+        totalDays: LEGACY_MAX_DISPLAY_DAYS,
       }).onConflictDoNothing();
       
       existingProgram = await db.select()
