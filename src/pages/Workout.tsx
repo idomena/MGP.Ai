@@ -2,29 +2,29 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import posthog from "posthog-js";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  Play,
   ArrowLeft,
-  Lock,
   Clock,
   Dumbbell,
   Target,
   Sparkles,
-  CheckCircle2,
-  ChevronRight,
   ChevronDown,
-  ChevronUp,
   RefreshCw,
   ArrowRightLeft,
-  Moon,
   Calendar,
-  X,
   Plus,
   Trash2,
-  MoreHorizontal,
+  SlidersHorizontal,
+  ListOrdered,
+  Info,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import NavigationBar from "@/components/NavigationBar";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { BrandMark } from "@/components/brand/Brand";
+import WorkoutHeroArt, { emblemForType } from "@/components/workout/WorkoutHeroArt";
+import { ActionSheet, FinishStep, PlanStep, StartWorkoutButton, WorkoutStatusBanner } from "@/components/workout/WorkoutParts";
+import { cozy } from "@/lib/cozyTheme";
 import { toast } from "sonner";
 import WorkoutSession from "@/components/WorkoutSession";
 import WorkoutAIAssistant from "@/components/WorkoutAIAssistant";
@@ -146,6 +146,12 @@ export default function WorkoutPage() {
   const touchStartY = useRef<number | null>(null);
   const touchDragIndex = useRef<number | null>(null);
   const [touchDragActive, setTouchDragActive] = useState(false);
+  // Presentation-only state for the redesigned entry page
+  const [editMode, setEditMode] = useState(false);
+  const [isAdjustOpen, setIsAdjustOpen] = useState(false);
+  const [menuExercise, setMenuExercise] = useState<{ exercise: Exercise; index: number } | null>(null);
+  const [showStickyStart, setShowStickyStart] = useState(false);
+  const heroCtaRef = useRef<HTMLDivElement>(null);
 
   const currentDay = programCurrentDay || 1;
   const dayNumber = id ? parseInt(id, 10) : currentDay;
@@ -438,6 +444,21 @@ export default function WorkoutPage() {
     toast.success(`Swapped to ${newExercise.name}`);
   };
 
+  // Sticky START: appears only once the hero's Start button has scrolled out of view (upwards).
+  useEffect(() => {
+    const el = heroCtaRef.current;
+    if (!el || !canStartWorkout || isWorkoutActive) {
+      setShowStickyStart(false);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => setShowStickyStart(!entry.isIntersecting && entry.boundingClientRect.top < 0),
+      { threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [canStartWorkout, isWorkoutActive, isLoading, isRestDay]);
+
   if (isWorkoutActive) {
     return (
       <WorkoutSession
@@ -453,419 +474,377 @@ export default function WorkoutPage() {
 
   if (isLoading && !id) {
     return (
-      <div className="min-h-screen bg-cozy-bg flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-cozy-primary border-t-transparent rounded-full animate-spin" />
-          <span className="text-cozy-ink-faint text-sm">Loading workout...</span>
-        </div>
+      <div className="cozy-root flex min-h-screen flex-col items-center justify-center gap-4" role="status" aria-label="Loading workout">
+        <motion.span
+          animate={{ scale: [1, 1.06, 1], opacity: [0.9, 0.6, 0.9] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <BrandMark size={52} color={cozy.primary} />
+        </motion.span>
+        <span className="text-[15px]" style={{ color: cozy.inkSoft }}>Preparing your workout…</span>
       </div>
     );
   }
 
-  const getStatusColor = () => {
-    switch (workoutStatus) {
-      case "completed": return "text-cozy-sage-deep";
-      case "active": return "text-cozy-primary";
-      case "missed": return "text-cozy-streak-deep";
-      case "skipped": return "text-cozy-streak-deep";
-      default: return "text-cozy-ink-faint";
-    }
-  };
-
-  const getStatusText = () => {
-    switch (workoutStatus) {
-      case "completed": return "Completed";
-      case "active": return "Today";
-      case "missed": return "Missed";
-      case "skipped": return "Skipped";
-      default: return "Locked";
-    }
-  };
-
-  const workoutColor = getWorkoutTypeColor(workoutTemplate.workoutType);
   const isAddedExercise = (exercise: Exercise) => addedExercises.some(ex => ex.id === exercise.id);
 
+  // ─── Presentation data (all derived from existing real data) ────────────
+  const focusGroups = Array.from(
+    new Set(exercises.map(ex => getMuscleGroupLabel(ex.muscles || "")).filter(l => l !== "Other")),
+  ).slice(0, 3);
+  const unlockLabel = dayStatusEntry?.date
+    ? (() => {
+        const [y, m, d] = dayStatusEntry.date.split("-").map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+      })()
+    : undefined;
+  const eyebrow = isRestDay
+    ? (isToday ? "Today · Rest day" : `Day ${dayNumber} · Rest day`)
+    : isToday
+      ? "Today's workout"
+      : `Day ${dayNumber} · ${workoutStatus === "locked" ? "Coming up" : workoutStatus === "completed" ? "Completed" : workoutStatus === "skipped" ? "Skipped" : "Missed"}`;
+  const heroCopy = isRestDay
+    ? "Recovery is part of the path. Rest well — you're still progressing."
+    : workoutStatus === "active"
+      ? "Everything's ready. Warm up, breathe, and take it one set at a time."
+      : workoutStatus === "completed"
+        ? "You cleared this checkpoint. Enjoy the recovery."
+        : workoutStatus === "locked"
+          ? "A preview of what's waiting further along your path."
+          : "This one's behind you — today's checkpoint is waiting on Home.";
+  const titleSize = workoutName.length > 22 ? "clamp(28px, 8vw, 34px)" : "clamp(34px, 10.5vw, 42px)";
+
+  const menuActions = menuExercise
+    ? [
+        { key: "details", icon: <Info className="h-5 w-5" />, label: "Exercise details", sub: "Form, muscles and instructions", onSelect: () => handleViewDetails(menuExercise.exercise) },
+        { key: "swap", icon: <ArrowRightLeft className="h-5 w-5" />, label: "Swap exercise", sub: "Pick an alternative for the same muscles", tone: "primary" as const, onSelect: () => handleOpenSwapExercise(menuExercise.exercise), testid: `button-swap-${menuExercise.exercise.id}` },
+        { key: "up", icon: <ArrowUp className="h-5 w-5" />, label: "Move earlier", onSelect: () => handleMoveExercise(menuExercise.index, "up"), disabled: menuExercise.index === 0 },
+        { key: "down", icon: <ArrowDown className="h-5 w-5" />, label: "Move later", onSelect: () => handleMoveExercise(menuExercise.index, "down"), disabled: menuExercise.index === exercises.length - 1 },
+        { key: "remove", icon: <Trash2 className="h-5 w-5" />, label: "Remove from workout", tone: "danger" as const, onSelect: () => handleRemoveExercise(menuExercise.exercise), testid: `button-remove-${menuExercise.exercise.id}` },
+      ]
+    : [];
+
+  const adjustActions = [
+    { key: "coach", icon: <Sparkles className="h-5 w-5" />, label: "Ask your coach", sub: "Tweak today's session with AI", tone: "primary" as const, onSelect: () => setIsAIOpen(true), testid: "button-ai-help-sheet" },
+    ...(!isRestDay ? [
+      { key: "edit", icon: <ListOrdered className="h-5 w-5" />, label: "Edit exercises", sub: "Reorder or remove", onSelect: () => setEditMode(true), testid: "button-edit-mode" },
+      { key: "add", icon: <Plus className="h-5 w-5" />, label: "Add an exercise", onSelect: () => setIsAddExerciseOpen(true), testid: "button-add-exercise" },
+    ] : []),
+    { key: "type", icon: <RefreshCw className="h-5 w-5" />, label: isRestDay ? "Change to a workout" : "Change workout type", onSelect: () => setIsChangeTypeOpen(true), testid: "button-change-type" },
+    { key: "schedule", icon: <Calendar className="h-5 w-5" />, label: "Reschedule", sub: "Move this workout to another day", onSelect: () => setIsSchedulingAIOpen(true), testid: "button-schedule" },
+  ];
+
   return (
-    <div className="min-h-screen bg-cozy-bg flex flex-col">
-      <header className="sticky top-0 z-40 px-4 py-4 bg-cozy-surface ">
-        <div className="flex items-center justify-between">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={handleGoBack}
-            className="rounded-full"
-            data-testid="button-back"
+    <div className="cozy-root relative min-h-screen overflow-x-hidden">
+      <div className="relative mx-auto max-w-md">
+        {/* ── HERO SCENE ───────────────────────────────────────────── */}
+        <section className="relative" aria-labelledby="workout-title">
+          <motion.div
+            className="relative h-[250px] overflow-hidden"
+            style={{
+              background: `linear-gradient(180deg, ${cozy.surface} 0%, ${cozy.bg} 100%)`,
+              // the world softly dissolves into the page instead of ending on a seam
+              WebkitMaskImage: "linear-gradient(180deg, #000 78%, transparent 100%)",
+              maskImage: "linear-gradient(180deg, #000 78%, transparent 100%)",
+            }}
+            initial={{ opacity: 0, scale: 1.04 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <ArrowLeft className="w-5 h-5 text-cozy-ink-soft" />
-          </Button>
-          
-          <div className="text-center">
-            <span className="text-cozy-ink-faint text-xs font-medium" data-testid="text-day-number">DAY {dayNumber}</span>
-            <div className="flex items-center justify-center gap-2">
-              <h1 className="text-cozy-ink font-bold text-lg" data-testid="text-workout-name">{workoutName}</h1>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                workoutStatus === 'completed' ? 'bg-cozy-sage-soft text-cozy-sage-deep' :
-                workoutStatus === 'active' ? 'bg-cozy-primary-soft text-cozy-primary' :
-                workoutStatus === 'missed' || workoutStatus === 'skipped' ? 'bg-cozy-streak-soft text-cozy-streak-deep' :
-                'bg-cozy-sunk text-cozy-ink-faint'
-              }`} data-testid="text-status">{getStatusText()}</span>
+            <div className="absolute inset-x-0 bottom-0 h-[236px]">
+              <WorkoutHeroArt kind={emblemForType(workoutTemplate.workoutType)} />
             </div>
+          </motion.div>
+
+          {/* top bar floats over the scene */}
+          <div
+            className="absolute inset-x-0 top-0 flex items-center justify-between px-4"
+            style={{ paddingTop: "calc(var(--safe-area-inset-top, 0px) + 14px)" }}
+          >
+            <button
+              type="button"
+              onClick={handleGoBack}
+              className="cozy-press flex h-11 w-11 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-cozy-primary"
+              style={{ background: cozy.surface, boxShadow: cozy.shadowSm }}
+              aria-label="Back to your journey"
+              data-testid="button-back"
+            >
+              <ArrowLeft className="h-5 w-5" style={{ color: cozy.ink }} />
+            </button>
+
+            <div
+              className="flex items-center gap-2 rounded-full py-1.5 pl-2 pr-3.5"
+              style={{ background: cozy.surface, boxShadow: cozy.shadowSm }}
+            >
+              <BrandMark size={20} color={cozy.primary} title="MGP.AI" />
+              <span className="text-[13px] font-bold uppercase tracking-[0.12em]" style={{ color: cozy.ink }} data-testid="text-day-number">
+                Day {dayNumber}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsAIOpen(true)}
+              className="cozy-press flex h-11 items-center gap-1.5 rounded-full pl-3 pr-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-cozy-primary"
+              style={{ background: cozy.primarySoft, color: cozy.primaryDeep, boxShadow: cozy.shadowSm }}
+              aria-label="Ask your AI coach"
+              data-testid="button-ai-help"
+            >
+              <Sparkles className="h-[18px] w-[18px]" />
+              <span className="text-[14px] font-semibold">Coach</span>
+            </button>
           </div>
 
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => setIsAIOpen(true)}
-            className="rounded-full"
-            data-testid="button-ai-help"
-          >
-            <Sparkles className="w-5 h-5 text-cozy-primary" />
-          </Button>
-        </div>
-      </header>
+          {/* mission briefing */}
+          <div className="relative -mt-1 px-5">
+            <motion.p
+              className="flex items-center gap-2 text-[12.5px] font-bold uppercase tracking-[0.16em]"
+              style={{ color: isRestDay ? cozy.restDeep : workoutStatus === "active" ? cozy.primary : cozy.inkSoft }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.45 }}
+              data-testid="text-status"
+            >
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: "currentColor" }} />
+              {eyebrow}
+            </motion.p>
+            <motion.h1
+              id="workout-title"
+              className="cozy-display mt-2 font-semibold leading-[1.02]"
+              style={{ color: cozy.ink, fontSize: titleSize }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              data-testid="text-workout-name"
+            >
+              {workoutName}
+            </motion.h1>
+            <motion.p
+              className="mt-3 max-w-[34ch] text-[15.5px] leading-relaxed"
+              style={{ color: cozy.inkSoft }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.26, duration: 0.45 }}
+            >
+              {heroCopy}
+            </motion.p>
 
-      <div className="flex-1 overflow-y-auto pb-32">
-        {!isRestDay && (
-          <div className="px-4 py-4" data-testid="stats-bar">
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-cozy-surface rounded-2xl p-4 text-center">
-                <Dumbbell className="w-5 h-5 text-cozy-primary mx-auto mb-1" />
-                <span className="text-cozy-ink font-bold text-xl block" data-testid="text-exercise-count">{exercises.length}</span>
-                <span className="text-cozy-ink-faint text-xs">Exercises</span>
-              </div>
-              <div className="bg-cozy-surface rounded-2xl p-4 text-center">
-                <Clock className="w-5 h-5 text-cozy-sky-deep mx-auto mb-1" />
-                <span className="text-cozy-ink font-bold text-xl block" data-testid="text-duration">{totalDuration}</span>
-                <span className="text-cozy-ink-faint text-xs">Minutes</span>
-              </div>
-              <div className="bg-cozy-surface rounded-2xl p-4 text-center" style={{ borderTop: `3px solid ${workoutColor}` }}>
-                <Target className="w-5 h-5 mx-auto mb-1" style={{ color: workoutColor }} />
-                <span className="text-cozy-ink font-bold text-sm block capitalize" data-testid="text-workout-type">{workoutTemplate.workoutType.replace('_', ' ')}</span>
-                <span className="text-cozy-ink-faint text-xs">Focus</span>
-              </div>
-            </div>
-            
-            <div className="flex gap-2 mt-4">
-              <Button
-                variant="ghost"
-                onClick={() => setIsSchedulingAIOpen(true)}
-                className="flex-1 bg-cozy-sunk rounded-xl py-3"
-                data-testid="button-schedule"
+            {!isRestDay && (
+              <motion.ul
+                className="mt-5 flex flex-wrap items-center gap-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.32, duration: 0.4 }}
+                data-testid="stats-bar"
               >
-                <Calendar className="w-4 h-4 text-cozy-ink-soft mr-2" />
-                <span className="text-cozy-ink-soft text-sm">Reschedule</span>
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setIsChangeTypeOpen(true)}
-                className="flex-1 bg-cozy-sunk rounded-xl py-3"
-                data-testid="button-change-type"
-              >
-                <RefreshCw className="w-4 h-4 text-cozy-ink-soft mr-2" />
-                <span className="text-cozy-ink-soft text-sm">Change Type</span>
-              </Button>
-            </div>
-
-            <div className="mt-4 bg-cozy-surface rounded-2xl overflow-hidden">
-              <button
-                onClick={() => setIsMusclesExpanded(!isMusclesExpanded)}
-                className="w-full flex items-center justify-between p-4"
-                data-testid="button-toggle-muscles"
-              >
-                <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-cozy-primary" />
-                  <span className="text-cozy-ink font-medium">Targeted Muscles</span>
-                </div>
-                {isMusclesExpanded ? (
-                  <ChevronUp className="w-5 h-5 text-cozy-ink-faint" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-cozy-ink-faint" />
+                {totalDuration > 0 && (
+                  <li className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[14px] font-semibold" style={{ background: cozy.surface, color: cozy.ink, boxShadow: cozy.shadowSm }}>
+                    <Clock className="h-4 w-4" style={{ color: cozy.skyDeep }} />
+                    <span data-testid="text-duration">{totalDuration}</span>
+                    <span className="font-medium" style={{ color: cozy.inkSoft }}>min</span>
+                  </li>
                 )}
+                <li className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[14px] font-semibold" style={{ background: cozy.surface, color: cozy.ink, boxShadow: cozy.shadowSm }}>
+                  <Dumbbell className="h-4 w-4" style={{ color: cozy.primary }} />
+                  <span data-testid="text-exercise-count">{exercises.length}</span>
+                  <span className="font-medium" style={{ color: cozy.inkSoft }}>{exercises.length === 1 ? "exercise" : "exercises"}</span>
+                </li>
+                {focusGroups.length > 0 && (
+                  <li className="px-1 text-[14px] font-medium" style={{ color: cozy.inkSoft }} data-testid="text-workout-type">
+                    {focusGroups.join(" · ")}
+                  </li>
+                )}
+              </motion.ul>
+            )}
+
+            {/* the moment */}
+            <motion.div
+              ref={heroCtaRef}
+              className="mt-6"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.38, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {isRestDay ? (
+                <button
+                  type="button"
+                  onClick={() => setIsChangeTypeOpen(true)}
+                  className="cozy-press flex h-14 w-full items-center justify-center gap-2 rounded-full text-[16px] font-semibold"
+                  style={{ background: cozy.restSoft, color: cozy.restDeep }}
+                  data-testid="button-change-to-workout"
+                >
+                  <RefreshCw className="h-[18px] w-[18px]" />
+                  Change to a workout
+                </button>
+              ) : canStartWorkout ? (
+                <StartWorkoutButton onClick={handleStartWorkout} />
+              ) : (
+                <WorkoutStatusBanner
+                  status={workoutStatus === "active" ? "locked" : workoutStatus}
+                  isToday={isToday}
+                  unlockLabel={unlockLabel}
+                />
+              )}
+            </motion.div>
+
+            {/* quiet secondary actions */}
+            <div className="mt-4 flex items-center justify-center gap-2">
+              {!isRestDay && (
+                <button
+                  type="button"
+                  onClick={() => setIsMusclesExpanded(!isMusclesExpanded)}
+                  className="flex h-11 items-center gap-1.5 rounded-full px-4 text-[14px] font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cozy-primary"
+                  style={{ color: isMusclesExpanded ? cozy.primaryDeep : cozy.inkSoft, background: isMusclesExpanded ? cozy.primarySoft : "transparent" }}
+                  aria-expanded={isMusclesExpanded}
+                  data-testid="button-toggle-muscles"
+                >
+                  <Target className="h-4 w-4" />
+                  Muscle map
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isMusclesExpanded ? "rotate-180" : ""}`} />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsAdjustOpen(true)}
+                className="flex h-11 items-center gap-1.5 rounded-full px-4 text-[14px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-cozy-primary"
+                style={{ color: cozy.inkSoft }}
+                data-testid="button-adjust"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Adjust workout
               </button>
-              
-              {isMusclesExpanded && (
+            </div>
+
+            <AnimatePresence initial={false}>
+              {isMusclesExpanded && !isRestDay && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="px-4 pb-4"
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
                 >
-                  <MuscleAnatomyDiagram targetedMuscles={targetedMuscles} />
+                  <div className="mt-2 rounded-[26px] p-4" style={{ background: cozy.surface, boxShadow: cozy.shadowSm }}>
+                    <MuscleAnatomyDiagram targetedMuscles={targetedMuscles} />
+                  </div>
                 </motion.div>
               )}
-            </div>
+            </AnimatePresence>
           </div>
-        )}
+        </section>
 
-        {isRestDay ? (
-          <div className="px-4 py-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center"
-            >
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-cozy-primary-soft flex items-center justify-center">
-                <Moon className="w-10 h-10 text-cozy-primary" />
+        {/* ── TODAY'S PLAN ─────────────────────────────────────────── */}
+        {!isRestDay && (
+          <section className="mt-9 px-5" style={{ paddingBottom: "calc(var(--safe-area-inset-bottom, 0px) + 190px)" }} aria-labelledby="plan-title">
+            <div className="mb-4 flex items-end justify-between gap-3">
+              <div>
+                <h2 id="plan-title" className="cozy-display text-[25px] font-semibold leading-tight" style={{ color: cozy.ink }}>
+                  {isToday ? "Today's plan" : "The plan"}
+                </h2>
+                <p className="mt-0.5 text-[14px]" style={{ color: cozy.inkSoft }}>
+                  {editMode ? "Reorder, drag or remove — saved for this day." : `${exercises.length} ${exercises.length === 1 ? "step" : "steps"} to the finish line`}
+                </p>
               </div>
-              <h2 className="text-cozy-ink text-xl font-bold mb-2" data-testid="text-rest-day-title">Rest Day</h2>
-              <p className="text-cozy-ink-faint text-sm mb-6">Take a break and recover. Your muscles need it!</p>
-              
-              <Button
-                variant="ghost"
-                onClick={() => setIsChangeTypeOpen(true)}
-                className="mx-auto bg-cozy-sunk px-6 rounded-xl"
-                data-testid="button-change-to-workout"
+              <button
+                type="button"
+                onClick={() => setEditMode(!editMode)}
+                className="flex h-10 shrink-0 items-center rounded-full px-4 text-[14px] font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cozy-primary"
+                style={editMode
+                  ? { background: cozy.primary, color: "#fff", boxShadow: `0 3px 0 ${cozy.primaryDeep}` }
+                  : { background: cozy.surface, color: cozy.ink, boxShadow: cozy.shadowSm }}
+                data-testid="button-toggle-edit"
               >
-                <RefreshCw className="w-4 h-4 text-cozy-ink-soft mr-2" />
-                <span className="text-cozy-ink text-sm font-medium">Change to Workout</span>
-              </Button>
-            </motion.div>
-          </div>
-        ) : (
-          <div className="px-4 pb-40">
-            <div className="flex items-center justify-between mb-4 mt-2">
-              <div className="flex items-center gap-2">
-                <span
-                  className="px-2 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider"
-                  style={{
-                    backgroundColor: `${workoutColor}15`,
-                    color: workoutColor,
-                    border: `1px solid ${workoutColor}30`,
-                  }}
-                  data-testid="badge-workout-focus"
+                {editMode ? "Done" : "Edit"}
+              </button>
+            </div>
+
+            <ol className="relative" aria-label="Exercises in order">
+              {exercises.map((exercise, index) => (
+                <PlanStep
+                  key={exercise.id}
+                  exercise={exercise}
+                  index={index}
+                  count={exercises.length}
+                  done={isCompleted}
+                  editMode={editMode}
+                  muscleLabel={getMuscleGroupLabel(exercise.muscles || "")}
+                  muscleColor={getMuscleGroupColor(exercise.muscles || "")}
+                  onOpen={() => handleViewDetails(exercise)}
+                  onMenu={() => setMenuExercise({ exercise, index })}
+                  onMoveUp={() => handleMoveExercise(index, "up")}
+                  onMoveDown={() => handleMoveExercise(index, "down")}
+                  onRemove={() => handleRemoveExercise(exercise)}
+                  isDragSource={dragFromIndex === index}
+                  isDragOver={dragOverIndex === index && dragFromIndex !== index}
+                  dragProps={editMode ? {
+                    draggable: true,
+                    onDragStart: () => handleDragStart(index),
+                    onDragOver: (e: React.DragEvent) => handleDragOver(e, index),
+                    onDrop: (e: React.DragEvent) => handleDrop(e, index),
+                    onDragEnd: handleDragEnd,
+                  } : {}}
+                />
+              ))}
+              <FinishStep done={isCompleted} />
+            </ol>
+
+            <AnimatePresence>
+              {editMode && (
+                <motion.button
+                  type="button"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  onClick={() => setIsAddExerciseOpen(true)}
+                  className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-[22px] text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-cozy-primary"
+                  style={{ color: cozy.primaryDeep, background: cozy.primarySoft, border: `1.5px dashed ${cozy.primaryLine}` }}
+                  data-testid="button-add-exercise-inline"
                 >
-                  {workoutTemplate.workoutType.replace('_', ' ')}
-                </span>
-                <span className="text-cozy-ink-soft text-sm font-medium">Exercises</span>
-              </div>
-              <span className="text-cozy-ink-faint text-xs">{exercises.length} total</span>
-            </div>
-            <div className="space-y-2.5">
-              {exercises.map((exercise, index) => {
-                const muscleColor = getMuscleGroupColor(exercise.muscles);
-                const muscleLabel = getMuscleGroupLabel(exercise.muscles);
-                const diffColor = getDifficultyColor(exercise.difficulty);
-                const actionsOpen = openActionsId === exercise.id;
-                const isAdded = isAddedExercise(exercise);
-
-                return (
-                  <motion.div
-                    key={exercise.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.04 }}
-                    draggable
-                    onDragStart={() => handleDragStart(index)}
-                    onDragOver={(e) => handleDragOver(e, index)}
-                    onDrop={(e) => handleDrop(e, index)}
-                    onDragEnd={handleDragEnd}
-                    className={`bg-cozy-surface rounded-2xl overflow-hidden transition-all duration-150 ${
-                      dragFromIndex === index ? 'opacity-40 scale-[0.97]' : ''
-                    } ${
-                      dragOverIndex === index && dragFromIndex !== index ? 'ring-2 ring-cozy-primary ring-offset-1 ring-offset-cozy-bg' : ''
-                    }`}
-                    data-testid={`card-exercise-${exercise.id}`}
-                  >
-                    <div className="flex items-stretch">
-                      <div
-                        className="flex flex-col items-center justify-center w-8 shrink-0 gap-0.5 py-2"
-                        data-testid={`drag-handle-${exercise.id}`}
-                      >
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleMoveExercise(index, 'up'); }}
-                          disabled={index === 0}
-                          className={`w-5 h-5 rounded flex items-center justify-center ${index === 0 ? 'opacity-15' : 'opacity-30 active:opacity-80 active:bg-cozy-sunk'}`}
-                          data-testid={`button-move-up-${exercise.id}`}
-                          aria-label={`Move ${exercise.name} up`}
-                        >
-                          <ChevronUp className="w-3 h-3 text-cozy-ink" />
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleMoveExercise(index, 'down'); }}
-                          disabled={index === exercises.length - 1}
-                          className={`w-5 h-5 rounded flex items-center justify-center ${index === exercises.length - 1 ? 'opacity-15' : 'opacity-30 active:opacity-80 active:bg-cozy-sunk'}`}
-                          data-testid={`button-move-down-${exercise.id}`}
-                          aria-label={`Move ${exercise.name} down`}
-                        >
-                          <ChevronDown className="w-3 h-3 text-cozy-ink" />
-                        </button>
-                      </div>
-
-                      <button
-                        onClick={() => handleViewDetails(exercise)}
-                        className="flex-1 py-3 pr-2 text-left"
-                        data-testid={`button-details-${exercise.id}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-cozy-surface" data-testid={`thumbnail-${exercise.id}`}>
-                            {exercise.gif_url ? (
-                              <img
-                                src={`https://wsrv.nl/?url=${exercise.gif_url}&output=gif`}
-                                alt={exercise.name}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-cozy-surface ">
-                                <Dumbbell className="w-6 h-6 text-cozy-ink-faint" />
-                              </div>
-                            )}
-                            <div
-                              className="absolute bottom-0 left-0 w-5 h-5 flex items-center justify-center text-[10px] font-bold text-cozy-ink rounded-tr-lg"
-                              style={{ backgroundColor: isCompleted ? '#93b58c' : '#7a5bd3' }}
-                              data-testid={`badge-exercise-number-${exercise.id}`}
-                            >
-                              {isCompleted ? <CheckCircle2 className="w-3 h-3" /> : index + 1}
-                            </div>
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                              <h4 className="text-cozy-ink font-semibold text-sm leading-tight" data-testid={`text-exercise-name-${exercise.id}`}>{exercise.name}</h4>
-                              <span
-                                className="px-1.5 py-px rounded text-[10px] font-semibold shrink-0"
-                                style={{
-                                  backgroundColor: `${muscleColor}18`,
-                                  color: muscleColor,
-                                }}
-                                data-testid={`badge-muscle-group-${exercise.id}`}
-                              >
-                                {muscleLabel}
-                              </span>
-                            </div>
-                            <p className="text-cozy-ink-faint text-xs mb-1.5" data-testid={`text-exercise-muscles-${exercise.id}`}>{exercise.muscles}</p>
-                            
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-cozy-ink-faint text-xs" data-testid={`text-exercise-sets-${exercise.id}`}>
-                                {exercise.sets}s × {exercise.reps}
-                              </span>
-                              <span className="text-cozy-ink-faint">·</span>
-                              <span className="text-cozy-ink-faint text-xs" data-testid={`text-exercise-time-${exercise.id}`}>
-                                {exercise.time}
-                              </span>
-                              <span className="text-cozy-ink-faint">·</span>
-                              <span className="flex items-center gap-1 text-xs" data-testid={`badge-difficulty-${exercise.id}`}>
-                                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: diffColor }} />
-                                <span style={{ color: diffColor, opacity: 0.8 }}>{exercise.difficulty}</span>
-                              </span>
-                              {exercise.equipmentName && (
-                                <>
-                                  <span className="text-cozy-ink-faint">·</span>
-                                  <span className="text-cozy-ink-faint text-xs capitalize">{exercise.equipmentName}</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-
-                          <ChevronRight className="w-4 h-4 text-cozy-ink-faint shrink-0" />
-                        </div>
-                      </button>
-
-                      <div className="flex items-center pr-2 shrink-0">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenActionsId(actionsOpen ? null : exercise.id);
-                          }}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center opacity-40 active:opacity-100 active:bg-cozy-sunk"
-                          data-testid={`button-actions-${exercise.id}`}
-                          aria-label={`Actions for ${exercise.name}`}
-                        >
-                          <MoreHorizontal className="w-4 h-4 text-cozy-ink" />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    {actionsOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        className="px-3 pb-2.5 flex gap-2"
-                      >
-                        <button
-                          onClick={() => handleOpenSwapExercise(exercise)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-cozy-primary-soft rounded-lg text-xs text-cozy-primary font-medium"
-                          data-testid={`button-swap-${exercise.id}`}
-                        >
-                          <ArrowRightLeft className="w-3.5 h-3.5" />
-                          Swap
-                        </button>
-                        <button
-                          onClick={() => handleRemoveExercise(exercise)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-cozy-danger-soft rounded-lg text-xs text-cozy-danger font-medium"
-                          data-testid={`button-remove-${exercise.id}`}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          Remove
-                        </button>
-                        <button
-                          onClick={() => setOpenActionsId(null)}
-                          className="ml-auto flex items-center px-2 py-1.5 rounded-lg text-xs text-cozy-ink-faint"
-                          data-testid={`button-close-actions-${exercise.id}`}
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </motion.div>
-                    )}
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            <Button
-              variant="ghost"
-              onClick={() => setIsAddExerciseOpen(true)}
-              className="w-full mt-4 bg-cozy-primary-soft border border-dashed border-cozy-primary-line rounded-2xl py-4"
-              data-testid="button-add-exercise"
-            >
-              <Plus className="w-5 h-5 text-cozy-primary mr-2" />
-              <span className="text-cozy-primary font-medium">Add Exercise</span>
-            </Button>
-          </div>
+                  <Plus className="h-5 w-5" />
+                  Add an exercise
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </section>
         )}
+        {isRestDay && <div style={{ height: "calc(var(--safe-area-inset-bottom, 0px) + 140px)" }} />}
       </div>
 
-      {!isRestDay && (
-        <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-cozy-bg via-cozy-bg to-transparent pt-8">
-          {canStartWorkout ? (
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-            >
-              <Button
-                onClick={handleStartWorkout}
-                className="w-full bg-cozy-primary text-white py-6 rounded-2xl font-bold text-base shadow-cozy-md "
-                data-testid="button-start-workout"
-              >
-                <Play className="w-5 h-5 fill-current mr-2" />
-                Start Workout
-              </Button>
-            </motion.div>
-          ) : workoutStatus === "skipped" ? (
-            <div className="w-full bg-cozy-streak-soft text-cozy-streak-deep py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border border-cozy-streak" data-testid="status-skipped">
-              <X className="w-5 h-5" />
-              Workout Skipped
+      {/* ── STICKY START (after the hero CTA scrolls away) ─────────── */}
+      <AnimatePresence>
+        {showStickyStart && canStartWorkout && !editMode && (
+          <motion.div
+            className="fixed inset-x-0 z-40 px-4"
+            style={{ bottom: "calc(var(--safe-area-inset-bottom, 0px) + 86px)" }}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="mx-auto max-w-md">
+              <StartWorkoutButton compact onClick={handleStartWorkout} label={`Start ${workoutName}`} />
             </div>
-          ) : isCompleted ? (
-            <div>
-              <div className="w-full bg-cozy-sage-soft text-cozy-sage-deep py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border border-cozy-sage" data-testid="status-completed">
-                <CheckCircle2 className="w-5 h-5" />
-                Workout Completed
-              </div>
-              {isToday && (
-                <p className="text-center text-cozy-ink-faint text-sm mt-2">Come back tomorrow for your next workout</p>
-              )}
-            </div>
-          ) : (
-            <div className="w-full bg-cozy-sunk text-cozy-ink-faint py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2" data-testid="status-locked">
-              <Lock className="w-5 h-5" />
-              {isPast ? "Workout Missed" : "Workout Locked"}
-            </div>
-          )}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <NavigationBar />
+
+      {/* ── Sheets ───────────────────────────────────────────────── */}
+      <ActionSheet
+        open={!!menuExercise}
+        onOpenChange={(o) => { if (!o) setMenuExercise(null); }}
+        title={menuExercise?.exercise.name ?? ""}
+        description={menuExercise ? `Step ${menuExercise.index + 1} · ${menuExercise.exercise.sets} sets × ${menuExercise.exercise.reps}${isAddedExercise(menuExercise.exercise) ? " · added by you" : ""}` : undefined}
+        actions={menuActions}
+      />
+      <ActionSheet
+        open={isAdjustOpen}
+        onOpenChange={setIsAdjustOpen}
+        title="Adjust workout"
+        description="Everything's ready as it is — tweak only if you want to."
+        actions={adjustActions}
+      />
 
       <WorkoutAIAssistant
         workoutName={workoutName}
@@ -943,47 +922,55 @@ export default function WorkoutPage() {
         onChangeWorkoutType={changeWorkoutType}
       />
 
-      {deleteConfirmExercise && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(59,47,39,0.36)] px-6"
-          onClick={() => setDeleteConfirmExercise(null)}
-          data-testid="modal-delete-confirm"
-        >
-          <div
-            className="w-full max-w-sm bg-cozy-surface rounded-2xl p-6 border border-cozy-line"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {deleteConfirmExercise && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(59,47,39,0.36)] px-4 sm:items-center"
+            style={{ paddingBottom: "calc(var(--safe-area-inset-bottom, 0px) + 16px)" }}
+            onClick={() => setDeleteConfirmExercise(null)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            data-testid="modal-delete-confirm"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-cozy-danger-soft flex items-center justify-center shrink-0">
-                <Trash2 className="w-5 h-5 text-cozy-danger" />
+            <motion.div
+              className="w-full max-w-sm rounded-[28px] p-6"
+              style={{ background: cozy.surface, boxShadow: cozy.shadowLg }}
+              onClick={(e) => e.stopPropagation()}
+              initial={{ y: 30 }}
+              animate={{ y: 0 }}
+              exit={{ y: 30 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-full" style={{ background: cozy.dangerSoft }}>
+                <Trash2 className="h-5 w-5" style={{ color: cozy.danger }} />
+              </span>
+              <h3 className="cozy-display mt-4 text-[22px] font-semibold" style={{ color: cozy.ink }} data-testid="text-delete-title">Remove exercise?</h3>
+              <p className="mt-1.5 text-[15px] leading-relaxed" style={{ color: cozy.inkSoft }} data-testid="text-delete-message">
+                <span className="font-semibold" style={{ color: cozy.ink }}>{deleteConfirmExercise.name}</span> will be removed from this day's workout.
+              </p>
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={() => setDeleteConfirmExercise(null)}
+                  className="h-12 flex-1 rounded-full text-[15px] font-semibold"
+                  style={{ background: cozy.surfaceSunk, color: cozy.ink }}
+                  data-testid="button-cancel-delete"
+                >
+                  Keep it
+                </button>
+                <button
+                  onClick={confirmDeleteExercise}
+                  className="h-12 flex-1 rounded-full text-[15px] font-semibold text-white"
+                  style={{ background: cozy.danger, boxShadow: `0 3px 0 color-mix(in srgb, ${cozy.danger} 70%, black)` }}
+                  data-testid="button-confirm-delete"
+                >
+                  Remove
+                </button>
               </div>
-              <div>
-                <h3 className="text-cozy-ink font-semibold text-base" data-testid="text-delete-title">Remove Exercise</h3>
-                <p className="text-cozy-ink-faint text-sm">This cannot be undone</p>
-              </div>
-            </div>
-            <p className="text-cozy-ink-soft text-sm mb-6" data-testid="text-delete-message">
-              Are you sure you want to remove <span className="text-cozy-ink font-medium">{deleteConfirmExercise.name}</span> from this workout?
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteConfirmExercise(null)}
-                className="flex-1 py-3 rounded-xl bg-cozy-sunk text-cozy-ink font-medium text-sm"
-                data-testid="button-cancel-delete"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDeleteExercise}
-                className="flex-1 py-3 rounded-xl bg-cozy-danger-soft text-cozy-danger font-medium text-sm border border-cozy-danger"
-                data-testid="button-confirm-delete"
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
