@@ -23,9 +23,9 @@ const BRAND = {
 };
 
 const DIFFICULTY_COLOR: Record<Difficulty, string> = {
-  beginner:     "bg-emerald-100 text-emerald-700",
-  intermediate: "bg-amber-100   text-amber-700",
-  advanced:     "bg-rose-100    text-rose-700",
+  beginner: "bg-cozy-sage-soft text-cozy-sage-deep",
+  intermediate: "bg-cozy-streak-soft text-cozy-streak-deep",
+  advanced: "bg-cozy-danger-soft text-cozy-danger",
 };
 
 // ── Easing ────────────────────────────────────────────────────────────────────
@@ -555,13 +555,13 @@ export default function ExerciseDemonstrator({
   const dash = circ * progress;
 
   return (
-    <div className="relative w-full h-full min-h-[480px] rounded-2xl overflow-hidden select-none bg-[#f5f5f0]">
+    <div className="relative w-full h-full min-h-[480px] rounded-2xl overflow-hidden select-none bg-cozy-stone">
       {/* Three.js mount */}
       <div ref={mountRef} className="w-full h-full" />
 
       {/* Bottom-left: name + badge */}
       <div className="absolute bottom-4 left-4 flex flex-col gap-1.5 pointer-events-none">
-        <span className="text-[15px] font-semibold text-gray-800 drop-shadow-sm">
+        <span className="text-[15px] font-semibold text-cozy-ink-faint drop-shadow-sm">
           {exerciseName}
         </span>
         <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full w-fit capitalize ${DIFFICULTY_COLOR[difficulty]}`}>
@@ -573,8 +573,8 @@ export default function ExerciseDemonstrator({
       <div className="absolute bottom-4 right-4 flex items-center gap-2">
         <button
           onClick={togglePlay}
-          className="w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm shadow flex items-center justify-center
-                     hover:bg-white transition-colors border border-white/60 text-indigo-600"
+          className="w-9 h-9 rounded-full bg-white/80 shadow flex items-center justify-center
+                     hover:bg-cozy-surface transition-colors border border-cozy-line text-cozy-primary"
           aria-label={playing ? "Pause" : "Play"}
         >
           {playing ? (
@@ -593,11 +593,11 @@ export default function ExerciseDemonstrator({
           <circle cx="22" cy="22" r={r} fill="white" fillOpacity={0.75} />
           <circle
             cx="22" cy="22" r={r}
-            fill="none" stroke="#e0e0e8" strokeWidth="3"
+            fill="none" stroke="#867869" strokeWidth="3"
           />
           <circle
             cx="22" cy="22" r={r}
-            fill="none" stroke="#6366f1" strokeWidth="3"
+            fill="none" stroke="#7a5bd3" strokeWidth="3"
             strokeDasharray={`${dash} ${circ}`}
             strokeLinecap="round"
             transform="rotate(-90 22 22)"

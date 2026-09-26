@@ -60,8 +60,8 @@ export function TrainingDaysSelector({ onSelect }: TrainingDaysSelectorProps) {
                 w-11 h-11 rounded-full flex items-center justify-center
                 font-semibold text-sm transition-all duration-200
                 ${isSelected
-                  ? 'bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-[#7c57ff]/40'
-                  : 'bg-white/10 text-white/60 hover:bg-white/20 border border-white/20'
+                  ? ' bg-cozy-primary text-white shadow-cozy-md '
+                  : 'bg-cozy-sunk text-cozy-ink-soft hover:bg-cozy-line border border-cozy-line'
                 }
               `}
               data-testid={`button-day-${day.id}`}
@@ -77,7 +77,7 @@ export function TrainingDaysSelector({ onSelect }: TrainingDaysSelectorProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="text-center text-white/60 text-sm"
+        className="text-center text-cozy-ink-soft text-sm"
       >
         {getSelectedCount()}
       </motion.p>
@@ -91,7 +91,7 @@ export function TrainingDaysSelector({ onSelect }: TrainingDaysSelectorProps) {
           {days.filter(d => selectedDays.includes(d.id)).map(day => (
             <span
               key={day.id}
-              className="px-3 py-1 rounded-full bg-[#7c57ff]/20 text-[#a78bfa] text-xs font-medium"
+              className="px-3 py-1 rounded-full bg-cozy-primary-soft text-cozy-primary text-xs font-medium"
             >
               {day.fullName}
             </span>
@@ -110,15 +110,15 @@ export function TrainingDaysSelector({ onSelect }: TrainingDaysSelectorProps) {
           flex items-center justify-center gap-3
           transition-all duration-200
           ${selectedDays.length > 0
-            ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-[#7c57ff]/30'
-            : 'bg-white/10 text-white/50 cursor-not-allowed'
+            ? ' bg-cozy-primary text-white shadow-cozy-md '
+            : 'bg-cozy-sunk text-cozy-ink-faint cursor-not-allowed'
           }
         `}
         data-testid="button-continue-days"
       >
         <span>Continue</span>
         {selectedDays.length > 0 && (
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-cozy-line flex items-center justify-center">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>

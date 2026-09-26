@@ -19,6 +19,7 @@ export const cozy = {
   primaryDeep: v("primary-deep"),
   primarySoft: v("primary-soft"),
   primaryGlow: v("primary-glow"),
+  primaryLine: v("primary-line"),
 
   sage: v("sage"),
   sageDeep: v("sage-deep"),
@@ -30,6 +31,9 @@ export const cozy = {
 
   sky: v("sky"),
   skySoft: v("sky-soft"),
+  skyDeep: v("sky-deep"),
+  danger: v("danger"),
+  dangerSoft: v("danger-soft"),
 
   rest: v("rest"),
   restDeep: v("rest-deep"),

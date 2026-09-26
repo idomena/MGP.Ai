@@ -50,8 +50,8 @@ export function GenderSelector({ onSelect }: GenderSelectorProps) {
               w-full flex items-center justify-between p-4 rounded-2xl
               transition-all duration-200 border-2
               ${isSelected 
-                ? 'bg-[#7c57ff]/10 border-[#7c57ff]' 
-                : 'bg-white/5 border-transparent hover:bg-white/10'
+                ? 'bg-cozy-primary-soft border-cozy-primary' 
+                : 'bg-cozy-sunk border-transparent hover:bg-cozy-sunk'
               }
             `}
             data-testid={`button-gender-${option.id}`}
@@ -59,22 +59,22 @@ export function GenderSelector({ onSelect }: GenderSelectorProps) {
             <div className="flex items-center gap-4">
               <div className={`
                 w-12 h-12 rounded-full flex items-center justify-center text-2xl
-                ${isSelected ? 'bg-[#7c57ff]/20' : 'bg-white/10'}
+                ${isSelected ? 'bg-cozy-primary-soft' : 'bg-cozy-sunk'}
               `}>
                 {option.emoji}
               </div>
-              <span className="text-lg font-medium text-white">{option.label}</span>
+              <span className="text-lg font-medium text-cozy-ink">{option.label}</span>
             </div>
             
             <div className={`
               w-6 h-6 rounded-full border-2 flex items-center justify-center
               transition-all duration-200
               ${isSelected 
-                ? 'bg-[#7c57ff] border-[#7c57ff]' 
-                : 'border-white/30'
+                ? 'bg-cozy-primary border-cozy-primary' 
+                : 'border-cozy-line'
               }
             `}>
-              {isSelected && <Check className="w-4 h-4 text-white" />}
+              {isSelected && <Check className="w-4 h-4 text-cozy-ink" />}
             </div>
           </motion.button>
         );
@@ -91,8 +91,8 @@ export function GenderSelector({ onSelect }: GenderSelectorProps) {
           flex items-center justify-center gap-2
           transition-all duration-200
           ${selected
-            ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-[#7c57ff]/30'
-            : 'bg-white/10 text-white/50 cursor-not-allowed'
+            ? ' bg-cozy-primary text-white shadow-cozy-md '
+            : 'bg-cozy-sunk text-cozy-ink-faint cursor-not-allowed'
           }
         `}
         data-testid="button-continue-gender"

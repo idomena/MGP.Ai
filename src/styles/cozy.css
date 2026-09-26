@@ -23,6 +23,7 @@
   --cozy-primary-deep: #5c41ad;
   --cozy-primary-soft: #ece5fa;
   --cozy-primary-glow: rgba(122, 91, 211, 0.22);
+  --cozy-primary-line: #d6c9f3;
 
   /* Completed — sage */
   --cozy-sage: #93b58c;
@@ -37,6 +38,11 @@
   /* Secondary — muted sky */
   --cozy-sky: #8fb9d6;
   --cozy-sky-soft: #e2eef5;
+  --cozy-sky-deep: #4f82a8;
+
+  /* Errors — warm, readable, never neon */
+  --cozy-danger: #c4553d;
+  --cozy-danger-soft: #f8e1d9;
 
   /* Rest — lavender / blue */
   --cozy-rest: #a8a4dc;

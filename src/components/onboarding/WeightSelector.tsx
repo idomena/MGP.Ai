@@ -40,8 +40,8 @@ export default function WeightSelector({ onSelect }: WeightSelectorProps) {
           className={`
             px-8 py-3 rounded-full font-semibold text-base transition-all duration-200
             ${unit === 'kg'
-              ? 'bg-white text-[#0f0f1a] shadow-lg'
-              : 'bg-white/10 text-white/70 hover:bg-white/20'
+              ? 'bg-cozy-surface text-cozy-ink shadow-cozy-md'
+              : 'bg-cozy-sunk text-cozy-ink-soft hover:bg-cozy-line'
             }
           `}
           data-testid="button-unit-kg"
@@ -53,8 +53,8 @@ export default function WeightSelector({ onSelect }: WeightSelectorProps) {
           className={`
             px-8 py-3 rounded-full font-semibold text-base transition-all duration-200
             ${unit === 'lbs'
-              ? 'bg-white text-[#0f0f1a] shadow-lg'
-              : 'bg-white/10 text-white/70 hover:bg-white/20'
+              ? 'bg-cozy-surface text-cozy-ink shadow-cozy-md'
+              : 'bg-cozy-sunk text-cozy-ink-soft hover:bg-cozy-line'
             }
           `}
           data-testid="button-unit-lbs"
@@ -71,8 +71,8 @@ export default function WeightSelector({ onSelect }: WeightSelectorProps) {
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           className="inline-flex items-baseline"
         >
-          <span className="text-7xl font-bold text-white">{weight}</span>
-          <span className="text-2xl font-medium text-white/50 ml-2">{unit}</span>
+          <span className="text-7xl font-bold text-cozy-ink">{weight}</span>
+          <span className="text-2xl font-medium text-cozy-ink-faint ml-2">{unit}</span>
         </motion.div>
       </div>
 
@@ -86,7 +86,7 @@ export default function WeightSelector({ onSelect }: WeightSelectorProps) {
             onChange={(e) => setWeight(Number(e.target.value))}
             className="w-full h-2 rounded-full appearance-none cursor-pointer"
             style={{
-              background: `linear-gradient(to right, #7c57ff 0%, #60a5fa ${percentage}%, rgba(255,255,255,0.1) ${percentage}%, rgba(255,255,255,0.1) 100%)`
+              background: `linear-gradient(to right, #7a5bd3 0%, #7a5bd3 ${percentage}%, #e9dcc7 ${percentage}%, #e9dcc7 100%)`
             }}
             data-testid="slider-weight"
           />
@@ -98,24 +98,24 @@ export default function WeightSelector({ onSelect }: WeightSelectorProps) {
               width: 28px;
               height: 28px;
               border-radius: 50%;
-              background: linear-gradient(135deg, #7c57ff, #60a5fa);
+              background: #7a5bd3;
               cursor: pointer;
-              box-shadow: 0 4px 12px rgba(124, 87, 255, 0.4);
+              box-shadow: 0 4px 12px rgba(122, 91, 211, 0.4);
               border: 3px solid white;
             }
             input[type="range"]::-moz-range-thumb {
               width: 28px;
               height: 28px;
               border-radius: 50%;
-              background: linear-gradient(135deg, #7c57ff, #60a5fa);
+              background: #7a5bd3;
               cursor: pointer;
-              box-shadow: 0 4px 12px rgba(124, 87, 255, 0.4);
+              box-shadow: 0 4px 12px rgba(122, 91, 211, 0.4);
               border: 3px solid white;
             }
           `}</style>
         </div>
 
-        <div className="flex justify-between text-sm text-white/40 font-medium">
+        <div className="flex justify-between text-sm text-cozy-ink-faint font-medium">
           <span>{minWeight} {unit}</span>
           <span>{maxWeight} {unit}</span>
         </div>
@@ -126,11 +126,11 @@ export default function WeightSelector({ onSelect }: WeightSelectorProps) {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
         onClick={handleContinue}
-        className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white font-semibold text-lg shadow-lg shadow-[#7c57ff]/30 hover:shadow-[#7c57ff]/50 transition-all flex items-center justify-center gap-3"
+        className="w-full py-4 rounded-2xl bg-cozy-primary text-white font-semibold text-lg shadow-cozy-md transition-all flex items-center justify-center gap-3"
         data-testid="button-continue-weight"
       >
         <span>Continue</span>
-        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full bg-cozy-line flex items-center justify-center">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>

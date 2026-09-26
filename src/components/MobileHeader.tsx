@@ -26,9 +26,9 @@ export default function MobileHeader() {
         to="/profile" 
         aria-label="Go to profile" 
         data-testid="button-profile"
-        className="focus:outline-none focus:ring-2 focus:ring-[#7c57ff] rounded-full"
+        className="focus:outline-none focus:ring-2 focus:ring-cozy-primary rounded-full"
       >
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00c6ff] to-[#7c57ff] flex items-center justify-center text-white font-bold shadow-lg">
+        <div className="w-12 h-12 rounded-full bg-cozy-primary-soft flex items-center justify-center text-cozy-primary-deep font-bold shadow-cozy-sm ring-[3px] ring-cozy-surface">
           <User className="w-6 h-6" aria-hidden="true" />
         </div>
       </Link>
@@ -36,7 +36,7 @@ export default function MobileHeader() {
       <Logo />
       
       <button 
-        className="relative w-12 h-12 rounded-full bg-muted flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#7c57ff]"
+        className="relative w-12 h-12 rounded-full bg-muted flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-cozy-primary"
         aria-label="Notifications"
         data-testid="button-notifications"
         onClick={() => setShowNotifications((prev) => !prev)}
@@ -44,7 +44,7 @@ export default function MobileHeader() {
         <Bell className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
         {unreadCount > 0 && (
           <span
-            className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold px-1 border-2 border-[#0f0f1a]"
+            className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-cozy-danger text-white text-[10px] font-bold px-1 border-2 border-cozy-bg"
             data-testid="badge-notification-count"
           >
             {unreadCount > 9 ? "9+" : unreadCount}

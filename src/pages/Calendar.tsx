@@ -92,52 +92,52 @@ export default function CalendarPage() {
   const scheduledThisMonth = monthWorkouts.filter(w => w.workoutType !== "rest").length;
 
   return (
-    <div className="min-h-screen bg-[#0f0f1a] pb-24 px-4 overflow-y-auto" role="main" aria-label="Calendar page">
+    <div className="min-h-screen bg-cozy-bg pb-24 px-4 overflow-y-auto" role="main" aria-label="Calendar page">
       <MobileHeader />
 
       {/* Month navigation */}
       <div className="mt-6 flex items-center justify-between">
         <button
           onClick={handlePrevMonth}
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#7c57ff]"
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-cozy-sunk hover:bg-cozy-sunk transition-colors focus:outline-none focus:ring-2 focus:ring-cozy-primary"
           aria-label="Previous month"
           data-testid="button-prev-month"
         >
-          <ChevronLeft className="w-5 h-5 text-white" />
+          <ChevronLeft className="w-5 h-5 text-cozy-ink" />
         </button>
 
         <div className="text-center">
-          <h1 className="text-white text-xl font-bold" data-testid="text-current-month">
+          <h1 className="text-cozy-ink text-xl font-bold" data-testid="text-current-month">
             {MONTH_NAMES[viewMonth]} {viewYear}
           </h1>
         </div>
 
         <button
           onClick={handleNextMonth}
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#7c57ff]"
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-cozy-sunk hover:bg-cozy-sunk transition-colors focus:outline-none focus:ring-2 focus:ring-cozy-primary"
           aria-label="Next month"
           data-testid="button-next-month"
         >
-          <ChevronRight className="w-5 h-5 text-white" />
+          <ChevronRight className="w-5 h-5 text-cozy-ink" />
         </button>
       </div>
 
       {/* Month stats */}
       {!isLoading && scheduledThisMonth > 0 && (
         <div className="mt-4 flex gap-3">
-          <div className="flex-1 bg-[#1a1a2e]/80 rounded-xl p-3 text-center border border-white/5">
-            <p className="text-[#7c57ff] text-2xl font-bold">{completedThisMonth}</p>
-            <p className="text-white/40 text-xs mt-0.5">Completed</p>
+          <div className="flex-1 bg-cozy-surface rounded-xl p-3 text-center border border-cozy-line">
+            <p className="text-cozy-primary text-2xl font-bold">{completedThisMonth}</p>
+            <p className="text-cozy-ink-faint text-xs mt-0.5">Completed</p>
           </div>
-          <div className="flex-1 bg-[#1a1a2e]/80 rounded-xl p-3 text-center border border-white/5">
-            <p className="text-white text-2xl font-bold">{scheduledThisMonth}</p>
-            <p className="text-white/40 text-xs mt-0.5">Scheduled</p>
+          <div className="flex-1 bg-cozy-surface rounded-xl p-3 text-center border border-cozy-line">
+            <p className="text-cozy-ink text-2xl font-bold">{scheduledThisMonth}</p>
+            <p className="text-cozy-ink-faint text-xs mt-0.5">Scheduled</p>
           </div>
-          <div className="flex-1 bg-[#1a1a2e]/80 rounded-xl p-3 text-center border border-white/5">
-            <p className="text-[#aaf163] text-2xl font-bold">
+          <div className="flex-1 bg-cozy-surface rounded-xl p-3 text-center border border-cozy-line">
+            <p className="text-cozy-sage-deep text-2xl font-bold">
               {scheduledThisMonth > 0 ? Math.round((completedThisMonth / scheduledThisMonth) * 100) : 0}%
             </p>
-            <p className="text-white/40 text-xs mt-0.5">Hit rate</p>
+            <p className="text-cozy-ink-faint text-xs mt-0.5">Hit rate</p>
           </div>
         </div>
       )}
@@ -147,7 +147,7 @@ export default function CalendarPage() {
         {/* Day-of-week headers */}
         <div className="grid grid-cols-7 mb-2">
           {DAY_LABELS.map(d => (
-            <div key={d} className="text-center text-white/30 text-xs font-medium py-1">
+            <div key={d} className="text-center text-cozy-ink-faint text-xs font-medium py-1">
               {d}
             </div>
           ))}
@@ -155,7 +155,7 @@ export default function CalendarPage() {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-8 h-8 text-[#7c57ff] animate-spin" />
+            <Loader2 className="w-8 h-8 text-cozy-primary animate-spin" />
           </div>
         ) : (
           <div className="grid grid-cols-7 gap-1">
@@ -171,36 +171,36 @@ export default function CalendarPage() {
               const isScheduled = workout && !isCompleted && !isSkipped;
               const canStart = isToday && workout && !isCompleted && !isRest;
 
-              let cellBg = "bg-white/5";
-              let textColor = "text-white/40";
+              let cellBg = "bg-cozy-sunk";
+              let textColor = "text-cozy-ink-faint";
               let dotColor = "";
 
               if (isToday && !workout) {
-                cellBg = "bg-white/10 ring-1 ring-white/20";
-                textColor = "text-white font-bold";
+                cellBg = "bg-cozy-sunk ring-1 ring-cozy-line";
+                textColor = "text-cozy-ink font-bold";
               } else if (isCompleted && !isRest) {
-                cellBg = "bg-[#22c55e]/15";
-                textColor = "text-[#22c55e] font-semibold";
-                dotColor = "bg-[#22c55e]";
+                cellBg = "bg-cozy-sage-soft";
+                textColor = "text-cozy-sage-deep font-semibold";
+                dotColor = "bg-cozy-sage";
               } else if (isCompleted && isRest) {
-                cellBg = "bg-[#3b82f6]/10";
-                textColor = "text-[#3b82f6]/70";
+                cellBg = "bg-cozy-sky-soft";
+                textColor = "text-cozy-sky-deep";
               } else if (isSkipped) {
-                cellBg = "bg-orange-500/10";
-                textColor = "text-orange-400/70";
+                cellBg = "bg-cozy-streak-soft";
+                textColor = "text-cozy-streak-deep";
               } else if (isToday && isRest) {
-                cellBg = "bg-[#3b82f6]/20 ring-1 ring-[#3b82f6]/40";
-                textColor = "text-[#3b82f6] font-bold";
+                cellBg = "bg-cozy-sky-soft ring-1 ring-cozy-sky";
+                textColor = "text-cozy-sky-deep font-bold";
               } else if (isToday) {
-                cellBg = "bg-[#7c57ff] ring-2 ring-[#7c57ff]/50 shadow-lg";
+                cellBg = "bg-cozy-primary ring-2 ring-cozy-primary-line shadow-cozy-md";
                 textColor = "text-white font-bold";
               } else if (isRest && isScheduled) {
-                cellBg = "bg-white/5";
-                textColor = "text-white/30";
+                cellBg = "bg-cozy-sunk";
+                textColor = "text-cozy-ink-faint";
               } else if (isScheduled) {
-                cellBg = "bg-[#7c57ff]/15";
-                textColor = "text-[#a888ff]";
-                dotColor = "bg-[#7c57ff]/50";
+                cellBg = "bg-cozy-primary-soft";
+                textColor = "text-cozy-primary";
+                dotColor = "bg-cozy-primary-soft";
               }
 
               const handleClick = () => {
@@ -217,23 +217,23 @@ export default function CalendarPage() {
                   className={`
                     relative flex flex-col items-center justify-center aspect-square rounded-xl
                     transition-all duration-150 focus:outline-none
-                    ${cellBg} ${canStart ? "active:scale-95 hover:ring-1 hover:ring-[#7c57ff]/50" : ""}
+                    ${cellBg} ${canStart ? "active:scale-95 hover:ring-1 hover:ring-cozy-primary-line" : ""}
                   `}
                   aria-label={`${day}${workout ? ` - ${workout.title}` : ""}${isToday ? " (today)" : ""}`}
                   data-testid={`button-day-${day}`}
                 >
                   <span className={`text-sm leading-none ${textColor}`}>{day}</span>
                   {isCompleted && !isRest && (
-                    <CheckCircle2 className="w-2.5 h-2.5 text-[#22c55e] mt-0.5" />
+                    <CheckCircle2 className="w-2.5 h-2.5 text-cozy-sage-deep mt-0.5" />
                   )}
                   {isRest && workout && (
-                    <Moon className="w-2 h-2 text-[#3b82f6]/50 mt-0.5" />
+                    <Moon className="w-2 h-2 text-cozy-sky-deep mt-0.5" />
                   )}
                   {isScheduled && !isRest && !isToday && (
-                    <div className="w-1 h-1 rounded-full bg-[#7c57ff]/60 mt-0.5" />
+                    <div className="w-1 h-1 rounded-full bg-cozy-primary-soft mt-0.5" />
                   )}
                   {isSkipped && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-orange-400/60 mt-0.5" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-cozy-streak-soft mt-0.5" />
                   )}
                 </button>
               );
@@ -245,15 +245,15 @@ export default function CalendarPage() {
       {/* Legend */}
       <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2">
         {[
-          { color: "bg-[#7c57ff]", label: "Today's workout" },
-          { color: "bg-[#22c55e]/50", label: "Completed" },
-          { color: "bg-[#7c57ff]/30", label: "Scheduled" },
-          { color: "bg-orange-400/30", label: "Skipped" },
-          { color: "bg-[#3b82f6]/20", label: "Rest day" },
+          { color: "bg-cozy-primary", label: "Today's workout" },
+          { color: "bg-cozy-sage-soft", label: "Completed" },
+          { color: "bg-cozy-primary-soft", label: "Scheduled" },
+          { color: "bg-cozy-streak-soft", label: "Skipped" },
+          { color: "bg-cozy-sky-soft", label: "Rest day" },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
             <div className={`w-3 h-3 rounded-sm ${color}`} />
-            <span className="text-white/40 text-xs">{label}</span>
+            <span className="text-cozy-ink-faint text-xs">{label}</span>
           </div>
         ))}
       </div>
@@ -266,7 +266,7 @@ export default function CalendarPage() {
         if (upcoming.length === 0) return null;
         return (
           <div className="mt-8">
-            <h2 className="text-white font-semibold text-base mb-3">Upcoming Workouts</h2>
+            <h2 className="text-cozy-ink font-semibold text-base mb-3">Upcoming Workouts</h2>
             <div className="space-y-2">
               {upcoming.map(w => {
                 const d = new Date(w.date + "T00:00:00");
@@ -276,21 +276,21 @@ export default function CalendarPage() {
                 return (
                   <div
                     key={w.dayNumber}
-                    className="flex items-center justify-between bg-[#1a1a2e]/80 border border-white/5 rounded-xl px-4 py-3"
+                    className="flex items-center justify-between bg-cozy-surface border border-cozy-line rounded-xl px-4 py-3"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-[#7c57ff]/20 flex items-center justify-center">
-                        <Dumbbell className="w-4 h-4 text-[#7c57ff]" />
+                      <div className="w-9 h-9 rounded-full bg-cozy-primary-soft flex items-center justify-center">
+                        <Dumbbell className="w-4 h-4 text-cozy-primary" />
                       </div>
                       <div>
-                        <p className="text-white text-sm font-medium">{w.title}</p>
-                        <p className="text-white/40 text-xs">{label} · Day {w.dayNumber}</p>
+                        <p className="text-cozy-ink text-sm font-medium">{w.title}</p>
+                        <p className="text-cozy-ink-faint text-xs">{label} · Day {w.dayNumber}</p>
                       </div>
                     </div>
                     {w.date === todayStr && (
                       <button
                         onClick={() => navigate(`/workout/${w.dayNumber}`)}
-                        className="text-xs bg-[#7c57ff] text-white px-3 py-1.5 rounded-full font-medium"
+                        className="text-xs bg-cozy-primary text-white px-3 py-1.5 rounded-full font-medium"
                       >
                         Start
                       </button>

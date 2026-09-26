@@ -51,7 +51,7 @@ export default function SwapExerciseModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(59,47,39,0.36)] "
         onClick={onClose}
       >
         <motion.div
@@ -59,27 +59,27 @@ export default function SwapExerciseModal({
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="w-full max-w-md bg-[#1a1a2e] rounded-t-3xl max-h-[85vh] overflow-hidden flex flex-col"
+          className="w-full max-w-md bg-cozy-surface rounded-t-3xl max-h-[85vh] overflow-hidden flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <div className="flex items-center justify-between p-4 border-b border-cozy-line">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-cozy-primary flex items-center justify-center">
                 <ArrowRightLeft className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-white font-semibold text-lg">
+                <h2 className="text-cozy-ink font-semibold text-lg">
                   Swap Exercise
                 </h2>
-                <p className="text-white/50 text-sm">{currentExercise.muscles}</p>
+                <p className="text-cozy-ink-faint text-sm">{currentExercise.muscles}</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+              className="w-8 h-8 rounded-full bg-cozy-sunk flex items-center justify-center"
               data-testid="button-close-swap"
             >
-              <X className="w-4 h-4 text-white" />
+              <X className="w-4 h-4 text-cozy-ink" />
             </button>
           </div>
 
@@ -89,39 +89,39 @@ export default function SwapExerciseModal({
               animate={{ opacity: 1, scale: 1 }}
               className="p-8 flex flex-col items-center justify-center"
             >
-              <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-cozy-sage flex items-center justify-center mb-4">
                 <Check className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-white font-semibold text-lg mb-2">
+              <h3 className="text-cozy-ink font-semibold text-lg mb-2">
                 Exercise Swapped!
               </h3>
-              <p className="text-white/60 text-center">
+              <p className="text-cozy-ink-soft text-center">
                 Replaced with {selectedExercise?.name}
               </p>
             </motion.div>
           ) : (
             <>
-              <div className="p-4 bg-[#252540] border-b border-white/10">
-                <p className="text-white/50 text-xs mb-2">Current Exercise</p>
+              <div className="p-4 bg-cozy-surface border-b border-cozy-line">
+                <p className="text-cozy-ink-faint text-xs mb-2">Current Exercise</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#3a3a5c] to-[#2a2a4c] flex items-center justify-center">
-                    <Dumbbell className="w-6 h-6 text-white/40" />
+                  <div className="w-12 h-12 rounded-xl bg-cozy-line flex items-center justify-center">
+                    <Dumbbell className="w-6 h-6 text-cozy-ink-faint" />
                   </div>
                   <div>
-                    <p className="text-white font-medium">{currentExercise.name}</p>
-                    <p className="text-[#60a5fa] text-sm">{currentExercise.muscles}</p>
+                    <p className="text-cozy-ink font-medium">{currentExercise.name}</p>
+                    <p className="text-cozy-sky-deep text-sm">{currentExercise.muscles}</p>
                   </div>
                 </div>
               </div>
 
               <div className="flex-1 p-4 overflow-y-auto">
-                <p className="text-white/60 text-sm mb-3">
+                <p className="text-cozy-ink-soft text-sm mb-3">
                   Select an alternative ({filteredAlternatives.length} available):
                 </p>
                 
                 {filteredAlternatives.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-white/40">No alternatives available for this muscle group</p>
+                    <p className="text-cozy-ink-faint">No alternatives available for this muscle group</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -136,8 +136,8 @@ export default function SwapExerciseModal({
                             rounded-2xl border transition-all overflow-hidden
                             ${
                               isSelected
-                                ? "bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] border-transparent"
-                                : "bg-white/5 border-white/10"
+                                ? "bg-gradient-to-br from-cozy-primary to-cozy-sky border-transparent"
+                                : "bg-cozy-sunk border-cozy-line"
                             }
                           `}
                           data-testid={`card-swap-exercise-${exercise.id}`}
@@ -151,31 +151,31 @@ export default function SwapExerciseModal({
                               <div
                                 className={`
                                 w-12 h-12 rounded-xl flex items-center justify-center shrink-0
-                                ${isSelected ? "bg-white/20" : "bg-gradient-to-br from-[#3a3a5c] to-[#2a2a4c]"}
+                                ${isSelected ? "bg-cozy-line" : " bg-cozy-line "}
                               `}
                               >
-                                <Dumbbell className="w-6 h-6 text-white/60" />
+                                <Dumbbell className="w-6 h-6 text-cozy-ink-soft" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p
-                                  className={`font-medium ${isSelected ? "text-white" : "text-white/90"}`}
+                                  className={`font-medium ${isSelected ? "text-cozy-ink" : "text-cozy-ink-soft"}`}
                                 >
                                   {exercise.name}
                                 </p>
                                 <div className="flex items-center gap-2">
                                   <span
-                                    className={`text-xs ${isSelected ? "text-white/80" : "text-white/50"}`}
+                                    className={`text-xs ${isSelected ? "text-cozy-ink-soft" : "text-cozy-ink-faint"}`}
                                   >
                                     {exercise.sets} sets x {exercise.reps}
                                   </span>
-                                  <span className="text-white/30">|</span>
+                                  <span className="text-cozy-ink-faint">|</span>
                                   <span
                                     className={`text-xs ${
                                       exercise.difficulty === "Beginner"
-                                        ? "text-green-400"
+                                        ? "text-cozy-sage-deep"
                                         : exercise.difficulty === "Intermediate"
-                                          ? "text-yellow-400"
-                                          : "text-red-400"
+                                          ? "text-cozy-streak-deep"
+                                          : "text-cozy-danger"
                                     }`}
                                   >
                                     {exercise.difficulty}
@@ -183,22 +183,22 @@ export default function SwapExerciseModal({
                                 </div>
                               </div>
                               {isSelected && (
-                                <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shrink-0">
-                                  <Check className="w-4 h-4 text-[#7c57ff]" />
+                                <div className="w-6 h-6 rounded-full bg-cozy-surface flex items-center justify-center shrink-0">
+                                  <Check className="w-4 h-4 text-cozy-primary" />
                                 </div>
                               )}
                             </button>
                             <button
                               onClick={() => togglePreview(exercise.id)}
                               className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                                isSelected ? "bg-white/20" : "bg-white/10"
+                                isSelected ? "bg-cozy-line" : "bg-cozy-sunk"
                               }`}
                               data-testid={`button-preview-swap-${exercise.id}`}
                             >
                               {isPreviewOpen ? (
-                                <ChevronUp className="w-4 h-4 text-white/70" />
+                                <ChevronUp className="w-4 h-4 text-cozy-ink-soft" />
                               ) : (
-                                <ChevronDown className="w-4 h-4 text-white/70" />
+                                <ChevronDown className="w-4 h-4 text-cozy-ink-soft" />
                               )}
                             </button>
                           </div>
@@ -212,9 +212,9 @@ export default function SwapExerciseModal({
                                 transition={{ duration: 0.2 }}
                                 data-testid={`preview-details-swap-${exercise.id}`}
                               >
-                                <div className={`px-4 pb-4 space-y-3 ${isSelected ? "" : "border-t border-white/10 pt-3 mx-4 mb-0 px-0 pb-4"}`}>
+                                <div className={`px-4 pb-4 space-y-3 ${isSelected ? "" : "border-t border-cozy-line pt-3 mx-4 mb-0 px-0 pb-4"}`}>
                                   {exercise.gif_url && (
-                                    <div className="rounded-xl overflow-hidden bg-black/30 aspect-video" data-testid={`preview-gif-swap-${exercise.id}`}>
+                                    <div className="rounded-xl overflow-hidden bg-cozy-sunk aspect-video" data-testid={`preview-gif-swap-${exercise.id}`}>
                                       <img
                                         src={`https://wsrv.nl/?url=${exercise.gif_url}&output=gif`}
                                         alt={exercise.name}
@@ -225,18 +225,18 @@ export default function SwapExerciseModal({
                                   )}
 
                                   <div className="flex items-center gap-2" data-testid={`preview-difficulty-swap-${exercise.id}`}>
-                                    <Zap className="w-3.5 h-3.5 text-[#7c57ff]" />
-                                    <span className={`text-xs ${isSelected ? "text-white/80" : "text-white/60"}`}>
+                                    <Zap className="w-3.5 h-3.5 text-cozy-primary" />
+                                    <span className={`text-xs ${isSelected ? "text-cozy-ink-soft" : "text-cozy-ink-soft"}`}>
                                       {exercise.difficulty}
                                     </span>
-                                    <span className="text-white/30">|</span>
-                                    <span className={`text-xs ${isSelected ? "text-white/80" : "text-white/60"}`}>
+                                    <span className="text-cozy-ink-faint">|</span>
+                                    <span className={`text-xs ${isSelected ? "text-cozy-ink-soft" : "text-cozy-ink-soft"}`}>
                                       {exercise.time}
                                     </span>
                                   </div>
 
                                   {exercise.instructions && (
-                                    <p className={`text-xs leading-relaxed ${isSelected ? "text-white/70" : "text-white/50"}`} data-testid={`preview-instructions-swap-${exercise.id}`}>
+                                    <p className={`text-xs leading-relaxed ${isSelected ? "text-cozy-ink-soft" : "text-cozy-ink-faint"}`} data-testid={`preview-instructions-swap-${exercise.id}`}>
                                       {exercise.instructions}
                                     </p>
                                   )}
@@ -251,10 +251,10 @@ export default function SwapExerciseModal({
                 )}
               </div>
 
-              <div className="p-4 border-t border-white/10 flex gap-3">
+              <div className="p-4 border-t border-cozy-line flex gap-3">
                 <button
                   onClick={onClose}
-                  className="flex-1 py-3.5 rounded-2xl bg-white/10 text-white font-medium"
+                  className="flex-1 py-3.5 rounded-2xl bg-cozy-sunk text-cozy-ink font-medium"
                   data-testid="button-cancel-swap"
                 >
                   Cancel
@@ -266,8 +266,8 @@ export default function SwapExerciseModal({
                     flex-1 py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2
                     ${
                       selectedExercise !== null
-                        ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white"
-                        : "bg-white/10 text-white/40 cursor-not-allowed"
+                        ? " bg-cozy-primary text-white"
+                        : "bg-cozy-sunk text-cozy-ink-faint cursor-not-allowed"
                     }
                   `}
                   data-testid="button-confirm-swap"

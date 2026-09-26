@@ -22,11 +22,11 @@ export function WorkoutCircle({
   const getStyles = () => {
     switch (status) {
       case "completed":
-        return "bg-gradient-to-br from-green-500 to-green-600 cursor-pointer shadow-lg shadow-green-500/20";
+        return " bg-cozy-sage cursor-pointer shadow-cozy-md ";
       case "current":
-        return "bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] cursor-pointer shadow-lg shadow-purple-500/30";
+        return " bg-cozy-primary cursor-pointer shadow-cozy-md ";
       case "locked":
-        return "bg-zinc-700/50 cursor-not-allowed opacity-60";
+        return "bg-cozy-line cursor-not-allowed opacity-60";
     }
   };
 
@@ -40,7 +40,7 @@ export function WorkoutCircle({
         flex items-center justify-center 
         transition-all duration-200 
         border-2 border-transparent
-        focus:outline-none focus:ring-2 focus:ring-[#7c57ff] focus:ring-offset-2 focus:ring-offset-[#0a0e27]
+        focus:outline-none focus:ring-2 focus:ring-cozy-primary focus:ring-offset-2 focus:ring-offset-cozy-bg
         ${getStyles()}
       `}
       onClick={isClickable ? onClick : undefined}
@@ -51,25 +51,25 @@ export function WorkoutCircle({
       data-testid={`workout-circle-${dayNumber}`}
     >
       {status === "completed" && (
-        <Check className="w-6 h-6 sm:w-7 sm:h-7 text-white" strokeWidth={3} />
+        <Check className="w-6 h-6 sm:w-7 sm:h-7 text-cozy-ink" strokeWidth={3} />
       )}
 
       {status === "current" && (
         <>
-          <span className="text-white font-bold text-lg sm:text-xl">
+          <span className="text-cozy-ink font-bold text-lg sm:text-xl">
             {dayNumber}
           </span>
-          <span className="absolute -top-1 -right-1 bg-white text-[#7c57ff] text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md">
+          <span className="absolute -top-1 -right-1 bg-cozy-surface text-cozy-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md">
             TODAY
           </span>
-          <span className="absolute inset-0 rounded-full animate-ping bg-[#7c57ff]/30" />
+          <span className="absolute inset-0 rounded-full animate-ping bg-cozy-primary-soft" />
         </>
       )}
 
       {status === "locked" && (
         <div className="flex flex-col items-center">
-          <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-white/60" />
-          <span className="text-white/40 text-xs font-medium mt-0.5">
+          <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-cozy-ink-soft" />
+          <span className="text-cozy-ink-faint text-xs font-medium mt-0.5">
             {dayNumber}
           </span>
         </div>
@@ -82,13 +82,13 @@ export function WorkoutCircle({
       <TooltipTrigger asChild>{circleContent}</TooltipTrigger>
       <TooltipContent
         side="top"
-        className="bg-zinc-800 text-white border-zinc-700 px-3 py-2"
+        className="bg-cozy-surface text-cozy-ink border-cozy-line px-3 py-2"
       >
         <div className="text-center">
           <p className="font-semibold">Day {dayNumber}</p>
-          <p className="text-xs text-zinc-400">{title}</p>
+          <p className="text-xs text-cozy-ink-soft">{title}</p>
           {status === "locked" && (
-            <p className="text-xs text-orange-400 mt-1">
+            <p className="text-xs text-cozy-streak-deep mt-1">
               Complete previous days first
             </p>
           )}

@@ -130,7 +130,7 @@ Provide a helpful, concise answer (2-4 sentences) focused on this specific exerc
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+            className="fixed inset-0 bg-[rgba(59,47,39,0.36)] z-[60]"
             onClick={onClose}
           />
 
@@ -140,26 +140,26 @@ Provide a helpful, concise answer (2-4 sentences) focused on this specific exerc
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[70] bg-zinc-900 rounded-t-3xl max-h-[75vh] flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-[70] bg-cozy-surface rounded-t-3xl max-h-[75vh] flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-cozy-line">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-cozy-primary flex items-center justify-center">
                   <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-white font-semibold">AI Exercise Coach</h3>
-                  <p className="text-zinc-500 text-sm">{exerciseName}</p>
+                  <h3 className="text-cozy-ink font-semibold">AI Exercise Coach</h3>
+                  <p className="text-cozy-ink-soft text-sm">{exerciseName}</p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center hover:bg-zinc-700 transition-colors"
+                className="w-10 h-10 rounded-full bg-cozy-surface flex items-center justify-center hover:bg-cozy-line transition-colors"
                 aria-label="Close AI assistant"
                 data-testid="button-close-ai-chat"
               >
-                <X className="w-5 h-5 text-white" />
+                <X className="w-5 h-5 text-cozy-ink" />
               </button>
             </div>
 
@@ -173,8 +173,8 @@ Provide a helpful, concise answer (2-4 sentences) focused on this specific exerc
                   <div
                     className={`max-w-[85%] px-4 py-3 rounded-2xl ${
                       msg.role === "user"
-                        ? "bg-[#7c57ff] text-white rounded-br-md"
-                        : "bg-zinc-800 text-zinc-100 rounded-bl-md"
+                        ? "bg-cozy-primary text-white rounded-br-md"
+                        : "bg-cozy-surface text-cozy-ink rounded-bl-md"
                     }`}
                   >
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
@@ -184,8 +184,8 @@ Provide a helpful, concise answer (2-4 sentences) focused on this specific exerc
               
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-zinc-800 px-4 py-3 rounded-2xl rounded-bl-md">
-                    <Loader2 className="w-5 h-5 text-[#7c57ff] animate-spin" />
+                  <div className="bg-cozy-surface px-4 py-3 rounded-2xl rounded-bl-md">
+                    <Loader2 className="w-5 h-5 text-cozy-primary animate-spin" />
                   </div>
                 </div>
               )}
@@ -195,7 +195,7 @@ Provide a helpful, concise answer (2-4 sentences) focused on this specific exerc
             {/* Quick Questions */}
             {messages.length <= 1 && (
               <div className="px-4 pb-2">
-                <p className="text-zinc-500 text-xs mb-2">Quick questions:</p>
+                <p className="text-cozy-ink-soft text-xs mb-2">Quick questions:</p>
                 <div className="flex flex-wrap gap-2">
                   {quickQuestions.map((q) => (
                     <button
@@ -204,7 +204,7 @@ Provide a helpful, concise answer (2-4 sentences) focused on this specific exerc
                         setInput(q);
                         setTimeout(() => sendMessage(), 0);
                       }}
-                      className="px-3 py-1.5 bg-zinc-800 text-zinc-300 text-sm rounded-full hover:bg-zinc-700 transition-colors"
+                      className="px-3 py-1.5 bg-cozy-surface text-cozy-ink text-sm rounded-full hover:bg-cozy-line transition-colors"
                       data-testid={`button-quick-question-${q.slice(0, 10)}`}
                     >
                       {q}
@@ -215,7 +215,7 @@ Provide a helpful, concise answer (2-4 sentences) focused on this specific exerc
             )}
 
             {/* Input Area */}
-            <div className="p-4 border-t border-zinc-800">
+            <div className="p-4 border-t border-cozy-line">
               <div className="flex items-center gap-3">
                 <input
                   ref={inputRef}
@@ -224,7 +224,7 @@ Provide a helpful, concise answer (2-4 sentences) focused on this specific exerc
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask about this exercise..."
-                  className="flex-1 bg-zinc-800 text-white px-4 py-3 rounded-xl placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#7c57ff]"
+                  className="flex-1 bg-cozy-surface text-cozy-ink px-4 py-3 rounded-xl placeholder-cozy-ink-soft focus:outline-none focus:ring-2 focus:ring-cozy-primary"
                   disabled={isLoading}
                   data-testid="input-ai-message"
                   aria-label="Type your question"
@@ -232,11 +232,11 @@ Provide a helpful, concise answer (2-4 sentences) focused on this specific exerc
                 <button
                   onClick={sendMessage}
                   disabled={!input.trim() || isLoading}
-                  className="w-12 h-12 rounded-xl bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] flex items-center justify-center disabled:opacity-50 transition-opacity"
+                  className="w-12 h-12 rounded-xl bg-cozy-primary flex items-center justify-center disabled:opacity-50 transition-opacity"
                   aria-label="Send message"
                   data-testid="button-send-message"
                 >
-                  <Send className="w-5 h-5 text-white" />
+                  <Send className="w-5 h-5 text-cozy-ink" />
                 </button>
               </div>
             </div>

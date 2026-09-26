@@ -66,8 +66,8 @@ export default function OptionSelector({ options, multiSelect, onSelect }: Optio
               w-full flex items-center justify-between p-4 rounded-2xl
               transition-all duration-200 border-2
               ${isSelected
-                ? 'bg-[#7c57ff]/10 border-[#7c57ff]'
-                : 'bg-white/5 border-transparent hover:bg-white/10'
+                ? 'bg-cozy-primary-soft border-cozy-primary'
+                : 'bg-cozy-sunk border-transparent hover:bg-cozy-sunk'
               }
             `}
             data-testid={`option-card-${option.id}`}
@@ -76,17 +76,17 @@ export default function OptionSelector({ options, multiSelect, onSelect }: Optio
               {IconComponent && (
                 <div className={`
                   w-12 h-12 rounded-xl flex items-center justify-center
-                  ${isSelected ? 'bg-[#7c57ff]/20' : 'bg-white/10'}
+                  ${isSelected ? 'bg-cozy-primary-soft' : 'bg-cozy-sunk'}
                 `}>
-                  <IconComponent className={`w-6 h-6 ${isSelected ? 'text-[#7c57ff]' : 'text-white/60'}`} />
+                  <IconComponent className={`w-6 h-6 ${isSelected ? 'text-cozy-primary' : 'text-cozy-ink-soft'}`} />
                 </div>
               )}
               <div className="text-left">
-                <p className={`font-semibold text-base ${isSelected ? 'text-white' : 'text-white/90'}`}>
+                <p className={`font-semibold text-base ${isSelected ? 'text-cozy-ink' : 'text-cozy-ink-soft'}`}>
                   {option.label}
                 </p>
                 {option.description && (
-                  <p className="text-sm text-white/50 mt-0.5">{option.description}</p>
+                  <p className="text-sm text-cozy-ink-faint mt-0.5">{option.description}</p>
                 )}
               </div>
             </div>
@@ -95,11 +95,11 @@ export default function OptionSelector({ options, multiSelect, onSelect }: Optio
               w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0
               transition-all duration-200
               ${isSelected
-                ? 'bg-[#7c57ff] border-[#7c57ff]'
-                : 'border-white/30'
+                ? 'bg-cozy-primary border-cozy-primary'
+                : 'border-cozy-line'
               }
             `}>
-              {isSelected && <Check className="w-4 h-4 text-white" />}
+              {isSelected && <Check className="w-4 h-4 text-cozy-ink" />}
             </div>
           </motion.button>
         );
@@ -116,15 +116,15 @@ export default function OptionSelector({ options, multiSelect, onSelect }: Optio
           flex items-center justify-center gap-3
           transition-all duration-200
           ${selected.length > 0
-            ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-[#7c57ff]/30'
-            : 'bg-white/10 text-white/50 cursor-not-allowed'
+            ? ' bg-cozy-primary text-white shadow-cozy-md '
+            : 'bg-cozy-sunk text-cozy-ink-faint cursor-not-allowed'
           }
         `}
         data-testid="button-confirm-selection"
       >
         <span>Continue</span>
         {selected.length > 0 && (
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-cozy-line flex items-center justify-center">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>

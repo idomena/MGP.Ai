@@ -62,7 +62,7 @@ export default function MuscleFocusSelector({ onSelect }: MuscleFocusSelectorPro
     const sel = isSelected(id);
     return [
       'cursor-pointer transition-all duration-200',
-      sel ? 'stroke-white stroke-[1.5]' : 'stroke-white/30 stroke-[1] hover:stroke-white/60',
+      sel ? 'stroke-cozy-ink stroke-[1.5]' : 'stroke-cozy-ink-faint stroke-[1] hover:stroke-cozy-ink-soft',
     ].join(' ');
   };
 
@@ -83,8 +83,8 @@ export default function MuscleFocusSelector({ onSelect }: MuscleFocusSelectorPro
           mx-auto flex items-center gap-2 px-5 py-2.5 rounded-full
           font-semibold text-sm transition-all duration-200 border-2
           ${isAllSelected
-            ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] border-transparent text-white shadow-lg shadow-[#7c57ff]/30'
-            : 'bg-transparent border-[#7c57ff]/50 text-white/80 hover:border-[#7c57ff]'
+            ? 'bg-gradient-to-r from-cozy-primary to-cozy-sky border-transparent text-cozy-ink shadow-cozy-md '
+            : 'bg-transparent border-cozy-primary-line text-cozy-ink-soft hover:border-cozy-primary'
           }
         `}
         data-testid="button-full-body"
@@ -108,13 +108,13 @@ export default function MuscleFocusSelector({ onSelect }: MuscleFocusSelectorPro
         >
           <defs>
             <linearGradient id="muscleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#7c57ff" />
-              <stop offset="100%" stopColor="#60a5fa" />
+              <stop offset="0%" stopColor="#7a5bd3" />
+              <stop offset="100%" stopColor="#6f9fc4" />
             </linearGradient>
           </defs>
 
-          <ellipse cx="100" cy="30" rx="18" ry="22" fill="none" stroke="white" strokeOpacity="0.25" strokeWidth="1" />
-          <line x1="100" y1="52" x2="100" y2="65" stroke="white" strokeOpacity="0.25" strokeWidth="1" />
+          <ellipse cx="100" cy="30" rx="18" ry="22" fill="none" stroke="#3b2f27" strokeOpacity="0.25" strokeWidth="1" />
+          <line x1="100" y1="52" x2="100" y2="65" stroke="#3b2f27" strokeOpacity="0.25" strokeWidth="1" />
 
           <path
             d="M72,90 Q72,72 100,70 Q128,72 128,90 L128,120 Q100,125 72,120 Z"
@@ -196,10 +196,10 @@ export default function MuscleFocusSelector({ onSelect }: MuscleFocusSelectorPro
             aria-label="Quads and Hamstrings"
           />
 
-          <line x1="65" y1="310" x2="60" y2="340" stroke="white" strokeOpacity="0.25" strokeWidth="1" />
-          <line x1="135" y1="310" x2="140" y2="340" stroke="white" strokeOpacity="0.25" strokeWidth="1" />
-          <ellipse cx="58" cy="345" rx="10" ry="5" fill="none" stroke="white" strokeOpacity="0.2" strokeWidth="1" />
-          <ellipse cx="142" cy="345" rx="10" ry="5" fill="none" stroke="white" strokeOpacity="0.2" strokeWidth="1" />
+          <line x1="65" y1="310" x2="60" y2="340" stroke="#3b2f27" strokeOpacity="0.25" strokeWidth="1" />
+          <line x1="135" y1="310" x2="140" y2="340" stroke="#3b2f27" strokeOpacity="0.25" strokeWidth="1" />
+          <ellipse cx="58" cy="345" rx="10" ry="5" fill="none" stroke="#3b2f27" strokeOpacity="0.2" strokeWidth="1" />
+          <ellipse cx="142" cy="345" rx="10" ry="5" fill="none" stroke="#3b2f27" strokeOpacity="0.2" strokeWidth="1" />
         </svg>
 
         <motion.button
@@ -213,8 +213,8 @@ export default function MuscleFocusSelector({ onSelect }: MuscleFocusSelectorPro
             mt-16 flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl
             transition-all duration-200 border min-w-[52px]
             ${isSelected('back')
-              ? 'bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] border-white/40 text-white shadow-lg shadow-[#7c57ff]/30'
-              : 'bg-white/5 border-white/20 text-white/50 hover:border-white/40 hover:text-white/70'
+              ? ' bg-cozy-primary border-white/40 text-white shadow-cozy-md '
+              : 'bg-cozy-sunk border-cozy-line text-cozy-ink-faint hover:border-cozy-line hover:text-cozy-ink-soft'
             }
           `}
           data-testid="muscle-zone-back"
@@ -231,7 +231,7 @@ export default function MuscleFocusSelector({ onSelect }: MuscleFocusSelectorPro
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="text-center text-white/60 text-sm"
+        className="text-center text-cozy-ink-soft text-sm"
       >
         {getFeedback()}
       </motion.p>
@@ -251,7 +251,7 @@ export default function MuscleFocusSelector({ onSelect }: MuscleFocusSelectorPro
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 onClick={() => removeMuscle(muscle.id)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#7c57ff]/20 text-[#a78bfa] text-xs font-medium transition-all hover:bg-[#7c57ff]/30"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cozy-primary-soft text-cozy-primary text-xs font-medium transition-all hover:bg-cozy-primary-soft"
                 data-testid={`pill-muscle-${muscle.id}`}
               >
                 {muscle.label}
@@ -274,15 +274,15 @@ export default function MuscleFocusSelector({ onSelect }: MuscleFocusSelectorPro
           flex items-center justify-center gap-3
           transition-all duration-200
           ${selected.length > 0
-            ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-[#7c57ff]/30'
-            : 'bg-white/10 text-white/50 cursor-not-allowed'
+            ? ' bg-cozy-primary text-white shadow-cozy-md '
+            : 'bg-cozy-sunk text-cozy-ink-faint cursor-not-allowed'
           }
         `}
         data-testid="button-continue-muscles"
       >
         <span>Continue</span>
         {selected.length > 0 && (
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-cozy-line flex items-center justify-center">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>

@@ -3,8 +3,8 @@
   "short_name": "MGP.AI",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f0f1a",
-  "theme_color": "#0f0f1a",
+  "background_color": "#f6efe3",
+  "theme_color": "#f6efe3",
   "icons": [
     {
       "src": "/icon-200.png",

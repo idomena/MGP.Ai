@@ -76,7 +76,7 @@ export default function RescheduleModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(59,47,39,0.36)] "
         onClick={onClose}
       >
         <motion.div
@@ -84,26 +84,26 @@ export default function RescheduleModal({
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="w-full max-w-md bg-[#1a1a2e] rounded-t-3xl max-h-[80vh] overflow-hidden"
+          className="w-full max-w-md bg-cozy-surface rounded-t-3xl max-h-[80vh] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <div className="flex items-center justify-between p-4 border-b border-cozy-line">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-cozy-primary flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-white font-semibold text-lg">Reschedule Workout</h2>
-                <p className="text-white/50 text-sm">Day {currentDay.day} - {getWorkoutTypeLabel(currentDay.workoutType)}</p>
+                <h2 className="text-cozy-ink font-semibold text-lg">Reschedule Workout</h2>
+                <p className="text-cozy-ink-faint text-sm">Day {currentDay.day} - {getWorkoutTypeLabel(currentDay.workoutType)}</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+              className="w-8 h-8 rounded-full bg-cozy-sunk flex items-center justify-center"
               data-testid="button-close-reschedule"
             >
-              <X className="w-4 h-4 text-white" />
+              <X className="w-4 h-4 text-cozy-ink" />
             </button>
           </div>
 
@@ -114,11 +114,11 @@ export default function RescheduleModal({
               animate={{ opacity: 1, scale: 1 }}
               className="p-8 flex flex-col items-center justify-center"
             >
-              <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-cozy-sage flex items-center justify-center mb-4">
                 <Check className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-white font-semibold text-lg mb-2">Workout Rescheduled!</h3>
-              <p className="text-white/60 text-center">
+              <h3 className="text-cozy-ink font-semibold text-lg mb-2">Workout Rescheduled!</h3>
+              <p className="text-cozy-ink-soft text-center">
                 Day {currentDay.day} and Day {selectedDay} have been swapped.
               </p>
             </motion.div>
@@ -126,20 +126,20 @@ export default function RescheduleModal({
             <>
               {/* Swap Preview */}
               {selectedDay !== null && targetDayInfo && (
-                <div className="p-4 bg-[#252540] border-b border-white/10">
+                <div className="p-4 bg-cozy-surface border-b border-cozy-line">
                   <div className="flex items-center justify-between">
                     <div className="flex-1 text-center">
-                      <p className="text-white/50 text-xs mb-1">From</p>
-                      <p className="text-white font-medium">Day {currentDay.day}</p>
-                      <p className="text-[#60a5fa] text-sm">{getWorkoutTypeLabel(currentDay.workoutType)}</p>
+                      <p className="text-cozy-ink-faint text-xs mb-1">From</p>
+                      <p className="text-cozy-ink font-medium">Day {currentDay.day}</p>
+                      <p className="text-cozy-sky-deep text-sm">{getWorkoutTypeLabel(currentDay.workoutType)}</p>
                     </div>
                     <div className="px-4">
-                      <ArrowRightLeft className="w-5 h-5 text-[#7c57ff]" />
+                      <ArrowRightLeft className="w-5 h-5 text-cozy-primary" />
                     </div>
                     <div className="flex-1 text-center">
-                      <p className="text-white/50 text-xs mb-1">To</p>
-                      <p className="text-white font-medium">Day {selectedDay}</p>
-                      <p className="text-[#60a5fa] text-sm">{getWorkoutTypeLabel(targetDayInfo.workoutType)}</p>
+                      <p className="text-cozy-ink-faint text-xs mb-1">To</p>
+                      <p className="text-cozy-ink font-medium">Day {selectedDay}</p>
+                      <p className="text-cozy-sky-deep text-sm">{getWorkoutTypeLabel(targetDayInfo.workoutType)}</p>
                     </div>
                   </div>
                 </div>
@@ -147,7 +147,7 @@ export default function RescheduleModal({
 
               {/* Day Selection Grid */}
               <div className="p-4 overflow-y-auto max-h-[40vh]">
-                <p className="text-white/60 text-sm mb-3">Select a day to swap with:</p>
+                <p className="text-cozy-ink-soft text-sm mb-3">Select a day to swap with:</p>
                 <div className="grid grid-cols-3 gap-2">
                   {allDays.map((day) => {
                     const isCurrentDay = day.day === currentDay.day;
@@ -161,22 +161,22 @@ export default function RescheduleModal({
                         className={`
                           p-3 rounded-xl border transition-all
                           ${isCurrentDay 
-                            ? "bg-white/5 border-white/10 opacity-40 cursor-not-allowed" 
+                            ? "bg-cozy-sunk border-cozy-line opacity-40 cursor-not-allowed" 
                             : isSelected
-                              ? "bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] border-transparent"
-                              : "bg-white/5 border-white/10 hover:border-[#7c57ff]/50"
+                              ? "bg-gradient-to-br from-cozy-primary to-cozy-sky border-transparent"
+                              : "bg-cozy-sunk border-cozy-line hover:border-cozy-primary-line"
                           }
                         `}
                         data-testid={`reschedule-day-${day.day}`}
                       >
-                        <p className={`font-semibold ${isSelected ? "text-white" : "text-white/80"}`}>
+                        <p className={`font-semibold ${isSelected ? "text-cozy-ink" : "text-cozy-ink-soft"}`}>
                           Day {day.day}
                         </p>
-                        <p className={`text-xs ${isSelected ? "text-white/80" : "text-white/50"}`}>
+                        <p className={`text-xs ${isSelected ? "text-cozy-ink-soft" : "text-cozy-ink-faint"}`}>
                           {getWorkoutTypeLabel(day.workoutType).split(" ")[0]}
                         </p>
                         {day.date && (
-                          <p className={`text-xs mt-1 ${isSelected ? "text-white/70" : "text-white/40"}`}>
+                          <p className={`text-xs mt-1 ${isSelected ? "text-cozy-ink-soft" : "text-cozy-ink-faint"}`}>
                             {formatDate(day.date).split(",")[0]}
                           </p>
                         )}
@@ -187,10 +187,10 @@ export default function RescheduleModal({
               </div>
 
               {/* Action Buttons */}
-              <div className="p-4 border-t border-white/10 flex gap-3">
+              <div className="p-4 border-t border-cozy-line flex gap-3">
                 <button
                   onClick={onClose}
-                  className="flex-1 py-3.5 rounded-2xl bg-white/10 text-white font-medium"
+                  className="flex-1 py-3.5 rounded-2xl bg-cozy-sunk text-cozy-ink font-medium"
                   data-testid="button-cancel-reschedule"
                 >
                   Cancel
@@ -201,8 +201,8 @@ export default function RescheduleModal({
                   className={`
                     flex-1 py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2
                     ${selectedDay !== null
-                      ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white"
-                      : "bg-white/10 text-white/40 cursor-not-allowed"
+                      ? " bg-cozy-primary text-white"
+                      : "bg-cozy-sunk text-cozy-ink-faint cursor-not-allowed"
                     }
                   `}
                   data-testid="button-confirm-reschedule"

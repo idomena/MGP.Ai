@@ -172,9 +172,9 @@ export default function ProfilePage() {
   const totalMinutes = calculateTotalMinutes();
 
   const stats = [
-    { label: "Workouts", value: workoutCount.toString(), icon: Dumbbell, color: "#7c57ff" },
-    { label: "Streak", value: streak.toString(), icon: Flame, color: "#f97316" },
-    { label: "XP", value: xp.toLocaleString(), icon: Zap, color: "#eab308" },
+    { label: "Workouts", value: workoutCount.toString(), icon: Dumbbell, color: "#7a5bd3" },
+    { label: "Streak", value: streak.toString(), icon: Flame, color: "#ec8a3f" },
+    { label: "XP", value: xp.toLocaleString(), icon: Zap, color: "#ec8a3f" },
   ];
 
   const achievements = [
@@ -192,9 +192,9 @@ export default function ProfilePage() {
   const unlockedCount = achievements.filter(a => a.unlocked).length;
 
   return (
-    <div className="min-h-screen bg-[#0a0e27] pb-24 overflow-y-auto" role="main" aria-label="Profile page">
+    <div className="min-h-screen bg-cozy-bg pb-24 overflow-y-auto" role="main" aria-label="Profile page">
       <div className="relative">
-        <div className="h-44 bg-gradient-to-br from-[#7c57ff] via-[#9b6dff] to-[#60a5fa]" aria-hidden="true">
+        <div className="h-44 bg-cozy-primary-soft" aria-hidden="true">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
         </div>
         
@@ -203,10 +203,10 @@ export default function ProfilePage() {
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="w-32 h-32 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#00c6ff] p-1 shadow-xl shadow-[#7c57ff]/30"
+              className="w-32 h-32 rounded-full bg-cozy-primary p-1 shadow-cozy-lg "
             >
-              <div className="w-full h-full rounded-full bg-[#1a1f3e] flex items-center justify-center">
-                <User className="w-14 h-14 text-white" />
+              <div className="w-full h-full rounded-full bg-cozy-surface flex items-center justify-center">
+                <User className="w-14 h-14 text-cozy-primary" />
               </div>
             </motion.div>
             {streak > 0 && (
@@ -214,7 +214,7 @@ export default function ProfilePage() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2 }}
-                className="absolute -bottom-1 -right-1 w-11 h-11 rounded-full bg-gradient-to-br from-[#f97316] to-[#fbbf24] flex items-center justify-center shadow-lg"
+                className="absolute -bottom-1 -right-1 w-11 h-11 rounded-full bg-cozy-streak flex items-center justify-center shadow-cozy-md"
               >
                 <Flame className="w-5 h-5 text-white" />
               </motion.div>
@@ -225,15 +225,15 @@ export default function ProfilePage() {
 
       <div className="px-4 mt-20">
         <header className="text-center mb-6">
-          <h1 className="text-white text-2xl font-bold" data-testid="text-username">
+          <h1 className="text-cozy-ink text-2xl font-bold" data-testid="text-username">
             {user?.email?.split("@")[0] || "Fitness Pro"}
           </h1>
-          <p className="text-white/60 text-sm mt-1">Member since {getMemberSince()}</p>
+          <p className="text-cozy-ink-soft text-sm mt-1">Member since {getMemberSince()}</p>
           
           {userProgram && (
-            <div className="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/10">
-              <Calendar className="w-4 h-4 text-[#7c57ff]" />
-              <span className="text-white/80 text-sm">Day {completedWorkouts.length + 1} of your journey</span>
+            <div className="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cozy-sunk border border-cozy-line">
+              <Calendar className="w-4 h-4 text-cozy-primary" />
+              <span className="text-cozy-ink-soft text-sm">Day {completedWorkouts.length + 1} of your journey</span>
             </div>
           )}
         </header>
@@ -249,7 +249,7 @@ export default function ProfilePage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 text-center"
+                  className="bg-cozy-sunk rounded-2xl p-4 border border-cozy-line text-center"
                 >
                   <div 
                     className="w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center"
@@ -257,10 +257,10 @@ export default function ProfilePage() {
                   >
                     <Icon className="w-5 h-5" style={{ color: stat.color }} aria-hidden="true" />
                   </div>
-                  <p className="text-white text-xl font-bold">
+                  <p className="text-cozy-ink text-xl font-bold">
                     {isLoading ? "-" : stat.value}
                   </p>
-                  <p className="text-white/60 text-xs">{stat.label}</p>
+                  <p className="text-cozy-ink-soft text-xs">{stat.label}</p>
                 </motion.div>
               );
             })}
@@ -270,19 +270,19 @@ export default function ProfilePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="mt-3 bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10"
+            className="mt-3 bg-cozy-sunk rounded-2xl p-4 border border-cozy-line"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#22c55e]/20 flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-[#22c55e]" />
+                <div className="w-10 h-10 rounded-full bg-cozy-sage-soft flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-cozy-sage-deep" />
                 </div>
                 <div>
-                  <p className="text-white font-medium">Total Training Time</p>
-                  <p className="text-white/60 text-sm">{isLoading ? "-" : `${totalMinutes} minutes`}</p>
+                  <p className="text-cozy-ink font-medium">Total Training Time</p>
+                  <p className="text-cozy-ink-soft text-sm">{isLoading ? "-" : `${totalMinutes} minutes`}</p>
                 </div>
               </div>
-              <p className="text-white/60 text-sm">
+              <p className="text-cozy-ink-soft text-sm">
                 {isLoading ? "" : `~${Math.round(totalMinutes / 60)} hrs`}
               </p>
             </div>
@@ -291,7 +291,7 @@ export default function ProfilePage() {
 
         <section className="mb-6" aria-labelledby="achievements-heading">
           <div className="flex items-center justify-between mb-3">
-            <h2 id="achievements-heading" className="text-white font-semibold">
+            <h2 id="achievements-heading" className="text-cozy-ink font-semibold">
               Achievements ({unlockedCount}/{achievements.length})
             </h2>
           </div>
@@ -306,13 +306,13 @@ export default function ProfilePage() {
                   transition={{ delay: 0.4 + index * 0.05 }}
                   className={`aspect-square rounded-2xl flex flex-col items-center justify-center p-2 ${
                     achievement.unlocked 
-                      ? "bg-gradient-to-br from-[#7c57ff]/30 to-[#60a5fa]/30 border border-[#7c57ff]/50" 
-                      : "bg-white/5 border border-white/10 opacity-50"
+                      ? " bg-cozy-primary-soft border border-cozy-primary-line" 
+                      : "bg-cozy-sunk border border-cozy-line opacity-50"
                   }`}
                   title={achievement.requirement}
                 >
-                  <Icon className={`w-7 h-7 ${achievement.unlocked ? "text-[#aaf163]" : "text-white/40"}`} aria-hidden="true" />
-                  <p className={`text-[9px] mt-1.5 text-center leading-tight ${achievement.unlocked ? "text-white" : "text-white/40"}`}>
+                  <Icon className={`w-7 h-7 ${achievement.unlocked ? "text-cozy-sage-deep" : "text-cozy-ink-faint"}`} aria-hidden="true" />
+                  <p className={`text-[9px] mt-1.5 text-center leading-tight ${achievement.unlocked ? "text-cozy-ink" : "text-cozy-ink-faint"}`}>
                     {achievement.name}
                   </p>
                 </motion.div>
@@ -323,25 +323,25 @@ export default function ProfilePage() {
 
         <section aria-labelledby="menu-heading">
           <h2 id="menu-heading" className="sr-only">Menu Options</h2>
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
+          <div className="bg-cozy-sunk rounded-2xl border border-cozy-line overflow-hidden">
             {menuItems.map((item, index) => {
               const Icon = item.icon;
               return (
                 <Link
                   key={item.label}
                   to={item.path}
-                  className={`flex items-center justify-between p-4 hover:bg-white/5 transition-colors ${
-                    index !== menuItems.length - 1 ? "border-b border-white/10" : ""
+                  className={`flex items-center justify-between p-4 hover:bg-cozy-sunk transition-colors ${
+                    index !== menuItems.length - 1 ? "border-b border-cozy-line" : ""
                   }`}
                   data-testid={`menu-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-white" aria-hidden="true" />
+                    <div className="w-10 h-10 rounded-full bg-cozy-sunk flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-cozy-ink" aria-hidden="true" />
                     </div>
-                    <span className="text-white font-medium">{item.label}</span>
+                    <span className="text-cozy-ink font-medium">{item.label}</span>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-white/40" aria-hidden="true" />
+                  <ChevronRight className="w-5 h-5 text-cozy-ink-faint" aria-hidden="true" />
                 </Link>
               );
             })}
@@ -349,35 +349,35 @@ export default function ProfilePage() {
         </section>
 
         <section className="mt-6" aria-labelledby="help-heading">
-          <h2 id="help-heading" className="text-white font-semibold mb-3">Help & Support</h2>
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
+          <h2 id="help-heading" className="text-cozy-ink font-semibold mb-3">Help & Support</h2>
+          <div className="bg-cozy-sunk rounded-2xl border border-cozy-line overflow-hidden">
             <a
               href="mailto:hello.mgp.ai@gmail.com"
-              className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors border-b border-white/10"
+              className="flex items-center justify-between p-4 hover:bg-cozy-sunk transition-colors border-b border-cozy-line"
               data-testid="link-support-email"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#7c57ff]/20 flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-[#7c57ff]" aria-hidden="true" />
+                <div className="w-10 h-10 rounded-full bg-cozy-primary-soft flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-cozy-primary" aria-hidden="true" />
                 </div>
                 <div>
-                  <span className="text-white font-medium block">Email Us</span>
-                  <span className="text-white/40 text-xs">hello.mgp.ai@gmail.com</span>
+                  <span className="text-cozy-ink font-medium block">Email Us</span>
+                  <span className="text-cozy-ink-faint text-xs">hello.mgp.ai@gmail.com</span>
                 </div>
               </div>
-              <ExternalLink className="w-4 h-4 text-white/40" aria-hidden="true" />
+              <ExternalLink className="w-4 h-4 text-cozy-ink-faint" aria-hidden="true" />
             </a>
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                  <HelpCircle className="w-5 h-5 text-white" aria-hidden="true" />
+                <div className="w-10 h-10 rounded-full bg-cozy-sunk flex items-center justify-center">
+                  <HelpCircle className="w-5 h-5 text-cozy-ink" aria-hidden="true" />
                 </div>
                 <div>
-                  <span className="text-white font-medium block">FAQ</span>
-                  <span className="text-white/40 text-xs">Common questions answered</span>
+                  <span className="text-cozy-ink font-medium block">FAQ</span>
+                  <span className="text-cozy-ink-faint text-xs">Common questions answered</span>
                 </div>
               </div>
-              <span className="text-white/30 text-xs">Coming soon</span>
+              <span className="text-cozy-ink-faint text-xs">Coming soon</span>
             </div>
           </div>
         </section>
@@ -387,7 +387,7 @@ export default function ProfilePage() {
             onClick={handleResetPlan}
             disabled={isResetting}
             variant="outline"
-            className="w-full h-14 bg-[#7c57ff]/10 hover:bg-[#7c57ff]/20 border-[#7c57ff]/30 text-[#7c57ff]"
+            className="w-full h-14 bg-cozy-primary-soft hover:bg-cozy-primary-soft border-cozy-primary-line text-cozy-primary"
             data-testid="button-reset-plan"
           >
             <RefreshCw className={`w-5 h-5 mr-2 ${isResetting ? 'animate-spin' : ''}`} />
@@ -397,7 +397,7 @@ export default function ProfilePage() {
           <Button
             onClick={handleLogout}
             variant="outline"
-            className="w-full h-14 bg-red-500/10 hover:bg-red-500/20 border-red-500/30 text-red-400"
+            className="w-full h-14 bg-cozy-danger-soft hover:bg-cozy-danger-soft border-cozy-danger text-cozy-danger"
             data-testid="button-logout"
           >
             <LogOut className="w-5 h-5 mr-2" />
@@ -405,7 +405,7 @@ export default function ProfilePage() {
           </Button>
         </div>
 
-        <p className="text-center text-white/30 text-xs mt-8 mb-4">
+        <p className="text-center text-cozy-ink-faint text-xs mt-8 mb-4">
           MGP.AI v1.0.0
         </p>
       </div>

@@ -79,10 +79,10 @@ const Auth = () => {
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="p-3 rounded-full gradient-primary">
-              <Dumbbell className="h-8 w-8 text-white" />
+              <Dumbbell className="h-8 w-8 text-cozy-ink" />
             </div>
           </div>
-          <CardTitle className="text-3xl bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#aaf163] bg-clip-text text-transparent">MGP.AI</CardTitle>
+          <CardTitle className="text-3xl text-cozy-ink">MGP.AI</CardTitle>
           <CardDescription>Your personal fitness companion</CardDescription>
         </CardHeader>
         <CardContent>

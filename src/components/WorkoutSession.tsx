@@ -144,17 +144,17 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
   };
 
   return (
-    <div className="fixed inset-0 bg-[#0a0e27] z-50 flex flex-col">
+    <div className="fixed inset-0 bg-cozy-bg z-50 flex flex-col">
       <button
         onClick={onExit}
-        className="absolute top-4 left-4 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+        className="absolute top-4 left-4 z-20 w-12 h-12 rounded-full bg-cozy-sunk flex items-center justify-center hover:bg-cozy-line transition-colors"
         data-testid="button-exit-workout"
         aria-label="Exit workout"
       >
-        <X className="w-5 h-5 text-white" />
+        <X className="w-5 h-5 text-cozy-ink" />
       </button>
 
-      <div className="h-[50vh] relative bg-zinc-900 rounded-b-3xl overflow-hidden">
+      <div className="h-[50vh] relative bg-cozy-surface rounded-b-3xl overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentExercise.id}
@@ -172,20 +172,20 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
                 loading="lazy"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-zinc-800 to-zinc-900">
+              <div className="w-full h-full flex items-center justify-center bg-cozy-surface ">
                 <div className="text-center">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-[#7c57ff]/20 flex items-center justify-center">
-                    <Zap className="w-10 h-10 text-[#7c57ff]" />
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-cozy-primary-soft flex items-center justify-center">
+                    <Zap className="w-10 h-10 text-cozy-primary" />
                   </div>
-                  <span className="text-zinc-400 text-lg">{currentExercise.name}</span>
+                  <span className="text-cozy-ink-soft text-lg">{currentExercise.name}</span>
                 </div>
               </div>
             )}
           </motion.div>
         </AnimatePresence>
 
-        <div className="absolute top-4 right-4 px-4 py-2 rounded-full bg-black/50 backdrop-blur-sm">
-          <span className="text-white text-sm font-semibold">
+        <div className="absolute top-4 right-4 px-4 py-2 rounded-full bg-cozy-surface shadow-cozy-sm ">
+          <span className="text-cozy-ink text-sm font-semibold">
             Exercise {currentExerciseIndex + 1} of {totalExercises}
           </span>
         </div>
@@ -202,10 +202,10 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
             className="flex-1 flex flex-col"
           >
             <div className="text-center mb-6">
-              <h1 className="text-white text-2xl font-bold mb-1" data-testid="text-current-exercise">
+              <h1 className="text-cozy-ink text-2xl font-bold mb-1" data-testid="text-current-exercise">
                 {currentExercise.name}
               </h1>
-              <p className="text-[#7c57ff] text-sm font-medium">
+              <p className="text-cozy-primary text-sm font-medium">
                 {currentExercise.muscles}
               </p>
             </div>
@@ -218,7 +218,7 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
                     cy="50"
                     r="42"
                     fill="none"
-                    stroke="#27272a"
+                    stroke="#fffcf6"
                     strokeWidth="6"
                   />
                   <circle
@@ -233,26 +233,26 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
                   />
                   <defs>
                     <linearGradient id="setGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#7c57ff" />
-                      <stop offset="100%" stopColor="#60a5fa" />
+                      <stop offset="0%" stopColor="#7a5bd3" />
+                      <stop offset="100%" stopColor="#6f9fc4" />
                     </linearGradient>
                   </defs>
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-white text-4xl font-bold">{currentSet}</span>
-                  <span className="text-zinc-500 text-sm">of {currentExercise.sets}</span>
+                  <span className="text-cozy-ink text-4xl font-bold">{currentSet}</span>
+                  <span className="text-cozy-ink-soft text-sm">of {currentExercise.sets}</span>
                 </div>
               </div>
             </div>
 
             <div className="flex justify-center gap-6 mb-auto">
-              <div className="bg-white/5 rounded-2xl px-6 py-4 text-center min-w-[100px]">
-                <p className="text-zinc-500 text-xs uppercase tracking-wider mb-1">Reps</p>
-                <p className="text-white text-2xl font-bold">{currentExercise.reps}</p>
+              <div className="bg-cozy-sunk rounded-2xl px-6 py-4 text-center min-w-[100px]">
+                <p className="text-cozy-ink-soft text-xs uppercase tracking-wider mb-1">Reps</p>
+                <p className="text-cozy-ink text-2xl font-bold">{currentExercise.reps}</p>
               </div>
-              <div className="bg-white/5 rounded-2xl px-6 py-4 text-center min-w-[100px]">
-                <p className="text-zinc-500 text-xs uppercase tracking-wider mb-1">Time</p>
-                <p className="text-white text-2xl font-bold">{currentExercise.time}</p>
+              <div className="bg-cozy-sunk rounded-2xl px-6 py-4 text-center min-w-[100px]">
+                <p className="text-cozy-ink-soft text-xs uppercase tracking-wider mb-1">Time</p>
+                <p className="text-cozy-ink text-2xl font-bold">{currentExercise.time}</p>
               </div>
             </div>
           </motion.div>
@@ -261,17 +261,17 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
         <div className="flex items-center gap-3 mt-4 pb-safe">
           <button
             onClick={() => setIsAIOpen(true)}
-            className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors shrink-0"
+            className="w-16 h-16 rounded-2xl bg-cozy-sunk border border-cozy-line flex items-center justify-center hover:bg-cozy-sunk transition-colors shrink-0"
             data-testid="button-ai-assistant"
             aria-label="Ask AI for help with this exercise"
           >
-            <Sparkles className="w-6 h-6 text-[#7c57ff]" />
+            <Sparkles className="w-6 h-6 text-cozy-primary" />
           </button>
 
           <button
             onClick={handleCompleteSet}
             disabled={isSubmitting || isResting}
-            className="flex-1 h-16 bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-transform disabled:opacity-70 shadow-lg shadow-[#7c57ff]/30"
+            className="flex-1 h-16 bg-cozy-primary text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-transform disabled:opacity-70 shadow-cozy-md "
             data-testid="button-complete-set"
           >
             <Check className="w-6 h-6" />
@@ -291,7 +291,7 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center"
+            className="fixed inset-0 bg-cozy-bg z-50 flex flex-col items-center justify-center"
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
@@ -306,7 +306,7 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
                     cy="50"
                     r="42"
                     fill="none"
-                    stroke="#27272a"
+                    stroke="#fffcf6"
                     strokeWidth="4"
                   />
                   <circle
@@ -321,24 +321,24 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
                   />
                   <defs>
                     <linearGradient id="restGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#10b981" />
-                      <stop offset="100%" stopColor="#60a5fa" />
+                      <stop offset="0%" stopColor="#93b58c" />
+                      <stop offset="100%" stopColor="#6f9fc4" />
                     </linearGradient>
                   </defs>
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <Clock className="w-8 h-8 text-white/60 mb-2" />
-                  <span className="text-white text-5xl font-bold">{formatTime(restTimeLeft)}</span>
-                  <span className="text-white/60 text-sm mt-1">Rest Time</span>
+                  <Clock className="w-8 h-8 text-cozy-ink-soft mb-2" />
+                  <span className="text-cozy-ink text-5xl font-bold">{formatTime(restTimeLeft)}</span>
+                  <span className="text-cozy-ink-soft text-sm mt-1">Rest Time</span>
                 </div>
               </div>
 
-              <p className="text-white text-xl font-semibold mb-2">Set {completedSet} Complete!</p>
-              <p className="text-white/60 mb-8">Get ready for Set {completedSet + 1}</p>
+              <p className="text-cozy-ink text-xl font-semibold mb-2">Set {completedSet} Complete!</p>
+              <p className="text-cozy-ink-soft mb-8">Get ready for Set {completedSet + 1}</p>
 
               <button
                 onClick={skipRest}
-                className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 mx-auto transition-colors"
+                className="bg-cozy-sunk hover:bg-cozy-line text-cozy-ink px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 mx-auto transition-colors"
               >
                 <SkipForward className="w-5 h-5" />
                 Skip Rest
@@ -354,7 +354,7 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-gradient-to-b from-[#7c57ff] to-[#60a5fa] z-50 flex flex-col items-center justify-center"
+            className="fixed inset-0 bg-cozy-primary z-50 flex flex-col items-center justify-center"
           >
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
@@ -363,17 +363,17 @@ export default function WorkoutSession({ exercises, dayNumber, workoutName, onCo
               className="text-center"
             >
               <div className="text-8xl mb-6">🎉</div>
-              <h1 className="text-white text-4xl font-bold mb-4">Workout Complete!</h1>
-              <p className="text-white/80 text-xl mb-8">Amazing work today!</p>
+              <h1 className="text-cozy-ink text-4xl font-bold mb-4">Workout Complete!</h1>
+              <p className="text-cozy-ink-soft text-xl mb-8">Amazing work today!</p>
               
               <div className="flex justify-center gap-6 mb-8">
-                <div className="bg-white/20 rounded-2xl px-6 py-4 text-center">
-                  <p className="text-white/80 text-sm">XP Earned</p>
-                  <p className="text-white text-2xl font-bold">+100</p>
+                <div className="bg-cozy-line rounded-2xl px-6 py-4 text-center">
+                  <p className="text-cozy-ink-soft text-sm">XP Earned</p>
+                  <p className="text-cozy-ink text-2xl font-bold">+100</p>
                 </div>
-                <div className="bg-white/20 rounded-2xl px-6 py-4 text-center">
-                  <p className="text-white/80 text-sm">Streak</p>
-                  <p className="text-white text-2xl font-bold">12</p>
+                <div className="bg-cozy-line rounded-2xl px-6 py-4 text-center">
+                  <p className="text-cozy-ink-soft text-sm">Streak</p>
+                  <p className="text-cozy-ink text-2xl font-bold">12</p>
                 </div>
               </div>
             </motion.div>

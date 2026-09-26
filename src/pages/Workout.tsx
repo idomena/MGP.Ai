@@ -44,23 +44,23 @@ import {
 } from "@/data/workoutExercises";
 
 const MUSCLE_GROUP_COLORS: Record<string, string> = {
-  chest: "#f43f5e",
-  back: "#3b82f6",
-  lats: "#3b82f6",
-  shoulders: "#f97316",
-  deltoid: "#f97316",
-  deltoids: "#f97316",
-  arms: "#a855f7",
-  biceps: "#a855f7",
-  triceps: "#a855f7",
-  forearms: "#a855f7",
-  legs: "#22c55e",
-  quads: "#22c55e",
-  glutes: "#22c55e",
-  hamstrings: "#22c55e",
-  calves: "#22c55e",
-  core: "#ec4899",
-  abs: "#ec4899",
+  chest: "#c4553d",
+  back: "#6f9fc4",
+  lats: "#6f9fc4",
+  shoulders: "#ec8a3f",
+  deltoid: "#ec8a3f",
+  deltoids: "#ec8a3f",
+  arms: "#7a5bd3",
+  biceps: "#7a5bd3",
+  triceps: "#7a5bd3",
+  forearms: "#7a5bd3",
+  legs: "#93b58c",
+  quads: "#93b58c",
+  glutes: "#93b58c",
+  hamstrings: "#93b58c",
+  calves: "#93b58c",
+  core: "#c4553d",
+  abs: "#c4553d",
 };
 
 function getMuscleGroupColor(muscles: string): string {
@@ -70,7 +70,7 @@ function getMuscleGroupColor(muscles: string): string {
       if (part.includes(key)) return color;
     }
   }
-  return "#7c57ff";
+  return "#7a5bd3";
 }
 
 function getMuscleGroupLabel(muscles: string): string {
@@ -86,22 +86,22 @@ function getMuscleGroupLabel(muscles: string): string {
 
 function getWorkoutTypeColor(workoutType: string): string {
   const t = workoutType.toLowerCase();
-  if (t.includes("chest")) return "#f43f5e";
-  if (t.includes("back")) return "#3b82f6";
-  if (t.includes("shoulder")) return "#f97316";
-  if (t.includes("arm") || t.includes("bicep") || t.includes("tricep")) return "#a855f7";
-  if (t.includes("leg") || t.includes("lower")) return "#22c55e";
-  if (t.includes("core") || t.includes("abs")) return "#ec4899";
-  if (t.includes("full") || t.includes("upper") || t.includes("push") || t.includes("pull")) return "#7c57ff";
-  return "#7c57ff";
+  if (t.includes("chest")) return "#c4553d";
+  if (t.includes("back")) return "#6f9fc4";
+  if (t.includes("shoulder")) return "#ec8a3f";
+  if (t.includes("arm") || t.includes("bicep") || t.includes("tricep")) return "#7a5bd3";
+  if (t.includes("leg") || t.includes("lower")) return "#93b58c";
+  if (t.includes("core") || t.includes("abs")) return "#c4553d";
+  if (t.includes("full") || t.includes("upper") || t.includes("push") || t.includes("pull")) return "#7a5bd3";
+  return "#7a5bd3";
 }
 
 function getDifficultyColor(difficulty: string): string {
   switch (difficulty) {
-    case "Beginner": return "#22c55e";
-    case "Intermediate": return "#eab308";
-    case "Advanced": return "#ef4444";
-    default: return "#7c57ff";
+    case "Beginner": return "#93b58c";
+    case "Intermediate": return "#ec8a3f";
+    case "Advanced": return "#c4553d";
+    default: return "#7a5bd3";
   }
 }
 
@@ -453,10 +453,10 @@ export default function WorkoutPage() {
 
   if (isLoading && !id) {
     return (
-      <div className="min-h-screen bg-[#0f0f1a] flex items-center justify-center">
+      <div className="min-h-screen bg-cozy-bg flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-[#7c57ff] border-t-transparent rounded-full animate-spin" />
-          <span className="text-white/50 text-sm">Loading workout...</span>
+          <div className="w-10 h-10 border-2 border-cozy-primary border-t-transparent rounded-full animate-spin" />
+          <span className="text-cozy-ink-faint text-sm">Loading workout...</span>
         </div>
       </div>
     );
@@ -464,11 +464,11 @@ export default function WorkoutPage() {
 
   const getStatusColor = () => {
     switch (workoutStatus) {
-      case "completed": return "text-green-400";
-      case "active": return "text-[#7c57ff]";
-      case "missed": return "text-orange-400";
-      case "skipped": return "text-orange-400";
-      default: return "text-white/40";
+      case "completed": return "text-cozy-sage-deep";
+      case "active": return "text-cozy-primary";
+      case "missed": return "text-cozy-streak-deep";
+      case "skipped": return "text-cozy-streak-deep";
+      default: return "text-cozy-ink-faint";
     }
   };
 
@@ -486,8 +486,8 @@ export default function WorkoutPage() {
   const isAddedExercise = (exercise: Exercise) => addedExercises.some(ex => ex.id === exercise.id);
 
   return (
-    <div className="min-h-screen bg-[#0f0f1a] flex flex-col">
-      <header className="sticky top-0 z-40 px-4 py-4 bg-[#0f0f1a]/95 backdrop-blur-sm">
+    <div className="min-h-screen bg-cozy-bg flex flex-col">
+      <header className="sticky top-0 z-40 px-4 py-4 bg-cozy-surface ">
         <div className="flex items-center justify-between">
           <Button
             size="icon"
@@ -496,18 +496,18 @@ export default function WorkoutPage() {
             className="rounded-full"
             data-testid="button-back"
           >
-            <ArrowLeft className="w-5 h-5 text-white/70" />
+            <ArrowLeft className="w-5 h-5 text-cozy-ink-soft" />
           </Button>
           
           <div className="text-center">
-            <span className="text-white/40 text-xs font-medium" data-testid="text-day-number">DAY {dayNumber}</span>
+            <span className="text-cozy-ink-faint text-xs font-medium" data-testid="text-day-number">DAY {dayNumber}</span>
             <div className="flex items-center justify-center gap-2">
-              <h1 className="text-white font-bold text-lg" data-testid="text-workout-name">{workoutName}</h1>
+              <h1 className="text-cozy-ink font-bold text-lg" data-testid="text-workout-name">{workoutName}</h1>
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                workoutStatus === 'completed' ? 'bg-green-500/20 text-green-400' :
-                workoutStatus === 'active' ? 'bg-[#7c57ff]/20 text-[#7c57ff]' :
-                workoutStatus === 'missed' || workoutStatus === 'skipped' ? 'bg-orange-500/20 text-orange-400' :
-                'bg-white/10 text-white/40'
+                workoutStatus === 'completed' ? 'bg-cozy-sage-soft text-cozy-sage-deep' :
+                workoutStatus === 'active' ? 'bg-cozy-primary-soft text-cozy-primary' :
+                workoutStatus === 'missed' || workoutStatus === 'skipped' ? 'bg-cozy-streak-soft text-cozy-streak-deep' :
+                'bg-cozy-sunk text-cozy-ink-faint'
               }`} data-testid="text-status">{getStatusText()}</span>
             </div>
           </div>
@@ -519,7 +519,7 @@ export default function WorkoutPage() {
             className="rounded-full"
             data-testid="button-ai-help"
           >
-            <Sparkles className="w-5 h-5 text-[#7c57ff]" />
+            <Sparkles className="w-5 h-5 text-cozy-primary" />
           </Button>
         </div>
       </header>
@@ -528,20 +528,20 @@ export default function WorkoutPage() {
         {!isRestDay && (
           <div className="px-4 py-4" data-testid="stats-bar">
             <div className="grid grid-cols-3 gap-3">
-              <div className="bg-[#1a1a2e] rounded-2xl p-4 text-center">
-                <Dumbbell className="w-5 h-5 text-[#7c57ff] mx-auto mb-1" />
-                <span className="text-white font-bold text-xl block" data-testid="text-exercise-count">{exercises.length}</span>
-                <span className="text-white/40 text-xs">Exercises</span>
+              <div className="bg-cozy-surface rounded-2xl p-4 text-center">
+                <Dumbbell className="w-5 h-5 text-cozy-primary mx-auto mb-1" />
+                <span className="text-cozy-ink font-bold text-xl block" data-testid="text-exercise-count">{exercises.length}</span>
+                <span className="text-cozy-ink-faint text-xs">Exercises</span>
               </div>
-              <div className="bg-[#1a1a2e] rounded-2xl p-4 text-center">
-                <Clock className="w-5 h-5 text-[#60a5fa] mx-auto mb-1" />
-                <span className="text-white font-bold text-xl block" data-testid="text-duration">{totalDuration}</span>
-                <span className="text-white/40 text-xs">Minutes</span>
+              <div className="bg-cozy-surface rounded-2xl p-4 text-center">
+                <Clock className="w-5 h-5 text-cozy-sky-deep mx-auto mb-1" />
+                <span className="text-cozy-ink font-bold text-xl block" data-testid="text-duration">{totalDuration}</span>
+                <span className="text-cozy-ink-faint text-xs">Minutes</span>
               </div>
-              <div className="bg-[#1a1a2e] rounded-2xl p-4 text-center" style={{ borderTop: `3px solid ${workoutColor}` }}>
+              <div className="bg-cozy-surface rounded-2xl p-4 text-center" style={{ borderTop: `3px solid ${workoutColor}` }}>
                 <Target className="w-5 h-5 mx-auto mb-1" style={{ color: workoutColor }} />
-                <span className="text-white font-bold text-sm block capitalize" data-testid="text-workout-type">{workoutTemplate.workoutType.replace('_', ' ')}</span>
-                <span className="text-white/40 text-xs">Focus</span>
+                <span className="text-cozy-ink font-bold text-sm block capitalize" data-testid="text-workout-type">{workoutTemplate.workoutType.replace('_', ' ')}</span>
+                <span className="text-cozy-ink-faint text-xs">Focus</span>
               </div>
             </div>
             
@@ -549,37 +549,37 @@ export default function WorkoutPage() {
               <Button
                 variant="ghost"
                 onClick={() => setIsSchedulingAIOpen(true)}
-                className="flex-1 bg-white/5 rounded-xl py-3"
+                className="flex-1 bg-cozy-sunk rounded-xl py-3"
                 data-testid="button-schedule"
               >
-                <Calendar className="w-4 h-4 text-white/60 mr-2" />
-                <span className="text-white/70 text-sm">Reschedule</span>
+                <Calendar className="w-4 h-4 text-cozy-ink-soft mr-2" />
+                <span className="text-cozy-ink-soft text-sm">Reschedule</span>
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => setIsChangeTypeOpen(true)}
-                className="flex-1 bg-white/5 rounded-xl py-3"
+                className="flex-1 bg-cozy-sunk rounded-xl py-3"
                 data-testid="button-change-type"
               >
-                <RefreshCw className="w-4 h-4 text-white/60 mr-2" />
-                <span className="text-white/70 text-sm">Change Type</span>
+                <RefreshCw className="w-4 h-4 text-cozy-ink-soft mr-2" />
+                <span className="text-cozy-ink-soft text-sm">Change Type</span>
               </Button>
             </div>
 
-            <div className="mt-4 bg-[#1a1a2e] rounded-2xl overflow-hidden">
+            <div className="mt-4 bg-cozy-surface rounded-2xl overflow-hidden">
               <button
                 onClick={() => setIsMusclesExpanded(!isMusclesExpanded)}
                 className="w-full flex items-center justify-between p-4"
                 data-testid="button-toggle-muscles"
               >
                 <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-[#7c57ff]" />
-                  <span className="text-white font-medium">Targeted Muscles</span>
+                  <Target className="w-5 h-5 text-cozy-primary" />
+                  <span className="text-cozy-ink font-medium">Targeted Muscles</span>
                 </div>
                 {isMusclesExpanded ? (
-                  <ChevronUp className="w-5 h-5 text-white/50" />
+                  <ChevronUp className="w-5 h-5 text-cozy-ink-faint" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-white/50" />
+                  <ChevronDown className="w-5 h-5 text-cozy-ink-faint" />
                 )}
               </button>
               
@@ -604,20 +604,20 @@ export default function WorkoutPage() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center"
             >
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#7c57ff]/20 to-[#60a5fa]/20 flex items-center justify-center">
-                <Moon className="w-10 h-10 text-[#7c57ff]" />
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-cozy-primary-soft flex items-center justify-center">
+                <Moon className="w-10 h-10 text-cozy-primary" />
               </div>
-              <h2 className="text-white text-xl font-bold mb-2" data-testid="text-rest-day-title">Rest Day</h2>
-              <p className="text-white/50 text-sm mb-6">Take a break and recover. Your muscles need it!</p>
+              <h2 className="text-cozy-ink text-xl font-bold mb-2" data-testid="text-rest-day-title">Rest Day</h2>
+              <p className="text-cozy-ink-faint text-sm mb-6">Take a break and recover. Your muscles need it!</p>
               
               <Button
                 variant="ghost"
                 onClick={() => setIsChangeTypeOpen(true)}
-                className="mx-auto bg-white/10 px-6 rounded-xl"
+                className="mx-auto bg-cozy-sunk px-6 rounded-xl"
                 data-testid="button-change-to-workout"
               >
-                <RefreshCw className="w-4 h-4 text-white/70 mr-2" />
-                <span className="text-white text-sm font-medium">Change to Workout</span>
+                <RefreshCw className="w-4 h-4 text-cozy-ink-soft mr-2" />
+                <span className="text-cozy-ink text-sm font-medium">Change to Workout</span>
               </Button>
             </motion.div>
           </div>
@@ -636,9 +636,9 @@ export default function WorkoutPage() {
                 >
                   {workoutTemplate.workoutType.replace('_', ' ')}
                 </span>
-                <span className="text-white/60 text-sm font-medium">Exercises</span>
+                <span className="text-cozy-ink-soft text-sm font-medium">Exercises</span>
               </div>
-              <span className="text-white/30 text-xs">{exercises.length} total</span>
+              <span className="text-cozy-ink-faint text-xs">{exercises.length} total</span>
             </div>
             <div className="space-y-2.5">
               {exercises.map((exercise, index) => {
@@ -659,10 +659,10 @@ export default function WorkoutPage() {
                     onDragOver={(e) => handleDragOver(e, index)}
                     onDrop={(e) => handleDrop(e, index)}
                     onDragEnd={handleDragEnd}
-                    className={`bg-[#1a1a2e] rounded-2xl overflow-hidden transition-all duration-150 ${
+                    className={`bg-cozy-surface rounded-2xl overflow-hidden transition-all duration-150 ${
                       dragFromIndex === index ? 'opacity-40 scale-[0.97]' : ''
                     } ${
-                      dragOverIndex === index && dragFromIndex !== index ? 'ring-2 ring-[#7c57ff] ring-offset-1 ring-offset-[#0f0f1a]' : ''
+                      dragOverIndex === index && dragFromIndex !== index ? 'ring-2 ring-cozy-primary ring-offset-1 ring-offset-cozy-bg' : ''
                     }`}
                     data-testid={`card-exercise-${exercise.id}`}
                   >
@@ -674,20 +674,20 @@ export default function WorkoutPage() {
                         <button
                           onClick={(e) => { e.stopPropagation(); handleMoveExercise(index, 'up'); }}
                           disabled={index === 0}
-                          className={`w-5 h-5 rounded flex items-center justify-center ${index === 0 ? 'opacity-15' : 'opacity-30 active:opacity-80 active:bg-white/10'}`}
+                          className={`w-5 h-5 rounded flex items-center justify-center ${index === 0 ? 'opacity-15' : 'opacity-30 active:opacity-80 active:bg-cozy-sunk'}`}
                           data-testid={`button-move-up-${exercise.id}`}
                           aria-label={`Move ${exercise.name} up`}
                         >
-                          <ChevronUp className="w-3 h-3 text-white" />
+                          <ChevronUp className="w-3 h-3 text-cozy-ink" />
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleMoveExercise(index, 'down'); }}
                           disabled={index === exercises.length - 1}
-                          className={`w-5 h-5 rounded flex items-center justify-center ${index === exercises.length - 1 ? 'opacity-15' : 'opacity-30 active:opacity-80 active:bg-white/10'}`}
+                          className={`w-5 h-5 rounded flex items-center justify-center ${index === exercises.length - 1 ? 'opacity-15' : 'opacity-30 active:opacity-80 active:bg-cozy-sunk'}`}
                           data-testid={`button-move-down-${exercise.id}`}
                           aria-label={`Move ${exercise.name} down`}
                         >
-                          <ChevronDown className="w-3 h-3 text-white" />
+                          <ChevronDown className="w-3 h-3 text-cozy-ink" />
                         </button>
                       </div>
 
@@ -697,7 +697,7 @@ export default function WorkoutPage() {
                         data-testid={`button-details-${exercise.id}`}
                       >
                         <div className="flex items-center gap-3">
-                          <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-[#1e1e38]" data-testid={`thumbnail-${exercise.id}`}>
+                          <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-cozy-surface" data-testid={`thumbnail-${exercise.id}`}>
                             {exercise.gif_url ? (
                               <img
                                 src={`https://wsrv.nl/?url=${exercise.gif_url}&output=gif`}
@@ -706,13 +706,13 @@ export default function WorkoutPage() {
                                 loading="lazy"
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#252550] to-[#1a1a3a]">
-                                <Dumbbell className="w-6 h-6 text-white/20" />
+                              <div className="w-full h-full flex items-center justify-center bg-cozy-surface ">
+                                <Dumbbell className="w-6 h-6 text-cozy-ink-faint" />
                               </div>
                             )}
                             <div
-                              className="absolute bottom-0 left-0 w-5 h-5 flex items-center justify-center text-[10px] font-bold text-white rounded-tr-lg"
-                              style={{ backgroundColor: isCompleted ? '#22c55e' : '#7c57ff' }}
+                              className="absolute bottom-0 left-0 w-5 h-5 flex items-center justify-center text-[10px] font-bold text-cozy-ink rounded-tr-lg"
+                              style={{ backgroundColor: isCompleted ? '#93b58c' : '#7a5bd3' }}
                               data-testid={`badge-exercise-number-${exercise.id}`}
                             >
                               {isCompleted ? <CheckCircle2 className="w-3 h-3" /> : index + 1}
@@ -721,7 +721,7 @@ export default function WorkoutPage() {
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                              <h4 className="text-white font-semibold text-sm leading-tight" data-testid={`text-exercise-name-${exercise.id}`}>{exercise.name}</h4>
+                              <h4 className="text-cozy-ink font-semibold text-sm leading-tight" data-testid={`text-exercise-name-${exercise.id}`}>{exercise.name}</h4>
                               <span
                                 className="px-1.5 py-px rounded text-[10px] font-semibold shrink-0"
                                 style={{
@@ -733,31 +733,31 @@ export default function WorkoutPage() {
                                 {muscleLabel}
                               </span>
                             </div>
-                            <p className="text-white/35 text-xs mb-1.5" data-testid={`text-exercise-muscles-${exercise.id}`}>{exercise.muscles}</p>
+                            <p className="text-cozy-ink-faint text-xs mb-1.5" data-testid={`text-exercise-muscles-${exercise.id}`}>{exercise.muscles}</p>
                             
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-white/50 text-xs" data-testid={`text-exercise-sets-${exercise.id}`}>
+                              <span className="text-cozy-ink-faint text-xs" data-testid={`text-exercise-sets-${exercise.id}`}>
                                 {exercise.sets}s × {exercise.reps}
                               </span>
-                              <span className="text-white/20">·</span>
-                              <span className="text-white/35 text-xs" data-testid={`text-exercise-time-${exercise.id}`}>
+                              <span className="text-cozy-ink-faint">·</span>
+                              <span className="text-cozy-ink-faint text-xs" data-testid={`text-exercise-time-${exercise.id}`}>
                                 {exercise.time}
                               </span>
-                              <span className="text-white/20">·</span>
+                              <span className="text-cozy-ink-faint">·</span>
                               <span className="flex items-center gap-1 text-xs" data-testid={`badge-difficulty-${exercise.id}`}>
                                 <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: diffColor }} />
                                 <span style={{ color: diffColor, opacity: 0.8 }}>{exercise.difficulty}</span>
                               </span>
                               {exercise.equipmentName && (
                                 <>
-                                  <span className="text-white/20">·</span>
-                                  <span className="text-white/30 text-xs capitalize">{exercise.equipmentName}</span>
+                                  <span className="text-cozy-ink-faint">·</span>
+                                  <span className="text-cozy-ink-faint text-xs capitalize">{exercise.equipmentName}</span>
                                 </>
                               )}
                             </div>
                           </div>
 
-                          <ChevronRight className="w-4 h-4 text-white/15 shrink-0" />
+                          <ChevronRight className="w-4 h-4 text-cozy-ink-faint shrink-0" />
                         </div>
                       </button>
 
@@ -767,11 +767,11 @@ export default function WorkoutPage() {
                             e.stopPropagation();
                             setOpenActionsId(actionsOpen ? null : exercise.id);
                           }}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center opacity-40 active:opacity-100 active:bg-white/10"
+                          className="w-7 h-7 rounded-lg flex items-center justify-center opacity-40 active:opacity-100 active:bg-cozy-sunk"
                           data-testid={`button-actions-${exercise.id}`}
                           aria-label={`Actions for ${exercise.name}`}
                         >
-                          <MoreHorizontal className="w-4 h-4 text-white" />
+                          <MoreHorizontal className="w-4 h-4 text-cozy-ink" />
                         </button>
                       </div>
                     </div>
@@ -784,7 +784,7 @@ export default function WorkoutPage() {
                       >
                         <button
                           onClick={() => handleOpenSwapExercise(exercise)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#7c57ff]/10 rounded-lg text-xs text-[#7c57ff] font-medium"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-cozy-primary-soft rounded-lg text-xs text-cozy-primary font-medium"
                           data-testid={`button-swap-${exercise.id}`}
                         >
                           <ArrowRightLeft className="w-3.5 h-3.5" />
@@ -792,7 +792,7 @@ export default function WorkoutPage() {
                         </button>
                         <button
                           onClick={() => handleRemoveExercise(exercise)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 rounded-lg text-xs text-red-400 font-medium"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-cozy-danger-soft rounded-lg text-xs text-cozy-danger font-medium"
                           data-testid={`button-remove-${exercise.id}`}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -800,7 +800,7 @@ export default function WorkoutPage() {
                         </button>
                         <button
                           onClick={() => setOpenActionsId(null)}
-                          className="ml-auto flex items-center px-2 py-1.5 rounded-lg text-xs text-white/30"
+                          className="ml-auto flex items-center px-2 py-1.5 rounded-lg text-xs text-cozy-ink-faint"
                           data-testid={`button-close-actions-${exercise.id}`}
                         >
                           <X className="w-3.5 h-3.5" />
@@ -815,18 +815,18 @@ export default function WorkoutPage() {
             <Button
               variant="ghost"
               onClick={() => setIsAddExerciseOpen(true)}
-              className="w-full mt-4 bg-[#7c57ff]/10 border border-dashed border-[#7c57ff]/30 rounded-2xl py-4"
+              className="w-full mt-4 bg-cozy-primary-soft border border-dashed border-cozy-primary-line rounded-2xl py-4"
               data-testid="button-add-exercise"
             >
-              <Plus className="w-5 h-5 text-[#7c57ff] mr-2" />
-              <span className="text-[#7c57ff] font-medium">Add Exercise</span>
+              <Plus className="w-5 h-5 text-cozy-primary mr-2" />
+              <span className="text-cozy-primary font-medium">Add Exercise</span>
             </Button>
           </div>
         )}
       </div>
 
       {!isRestDay && (
-        <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-[#0f0f1a] via-[#0f0f1a] to-transparent pt-8">
+        <div className="fixed bottom-20 left-0 right-0 px-4 pb-4 bg-gradient-to-t from-cozy-bg via-cozy-bg to-transparent pt-8">
           {canStartWorkout ? (
             <motion.div
               initial={{ y: 20, opacity: 0 }}
@@ -834,7 +834,7 @@ export default function WorkoutPage() {
             >
               <Button
                 onClick={handleStartWorkout}
-                className="w-full bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white py-6 rounded-2xl font-bold text-base shadow-lg shadow-[#7c57ff]/30"
+                className="w-full bg-cozy-primary text-white py-6 rounded-2xl font-bold text-base shadow-cozy-md "
                 data-testid="button-start-workout"
               >
                 <Play className="w-5 h-5 fill-current mr-2" />
@@ -842,22 +842,22 @@ export default function WorkoutPage() {
               </Button>
             </motion.div>
           ) : workoutStatus === "skipped" ? (
-            <div className="w-full bg-orange-500/20 text-orange-400 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border border-orange-500/30" data-testid="status-skipped">
+            <div className="w-full bg-cozy-streak-soft text-cozy-streak-deep py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border border-cozy-streak" data-testid="status-skipped">
               <X className="w-5 h-5" />
               Workout Skipped
             </div>
           ) : isCompleted ? (
             <div>
-              <div className="w-full bg-green-500/20 text-green-400 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border border-green-500/30" data-testid="status-completed">
+              <div className="w-full bg-cozy-sage-soft text-cozy-sage-deep py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border border-cozy-sage" data-testid="status-completed">
                 <CheckCircle2 className="w-5 h-5" />
                 Workout Completed
               </div>
               {isToday && (
-                <p className="text-center text-white/50 text-sm mt-2">Come back tomorrow for your next workout</p>
+                <p className="text-center text-cozy-ink-faint text-sm mt-2">Come back tomorrow for your next workout</p>
               )}
             </div>
           ) : (
-            <div className="w-full bg-white/10 text-white/50 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2" data-testid="status-locked">
+            <div className="w-full bg-cozy-sunk text-cozy-ink-faint py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2" data-testid="status-locked">
               <Lock className="w-5 h-5" />
               {isPast ? "Workout Missed" : "Workout Locked"}
             </div>
@@ -945,37 +945,37 @@ export default function WorkoutPage() {
 
       {deleteConfirmExercise && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(59,47,39,0.36)] px-6"
           onClick={() => setDeleteConfirmExercise(null)}
           data-testid="modal-delete-confirm"
         >
           <div
-            className="w-full max-w-sm bg-[#1a1a2e] rounded-2xl p-6 border border-white/10"
+            className="w-full max-w-sm bg-cozy-surface rounded-2xl p-6 border border-cozy-line"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center shrink-0">
-                <Trash2 className="w-5 h-5 text-red-400" />
+              <div className="w-10 h-10 rounded-full bg-cozy-danger-soft flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5 text-cozy-danger" />
               </div>
               <div>
-                <h3 className="text-white font-semibold text-base" data-testid="text-delete-title">Remove Exercise</h3>
-                <p className="text-white/50 text-sm">This cannot be undone</p>
+                <h3 className="text-cozy-ink font-semibold text-base" data-testid="text-delete-title">Remove Exercise</h3>
+                <p className="text-cozy-ink-faint text-sm">This cannot be undone</p>
               </div>
             </div>
-            <p className="text-white/70 text-sm mb-6" data-testid="text-delete-message">
-              Are you sure you want to remove <span className="text-white font-medium">{deleteConfirmExercise.name}</span> from this workout?
+            <p className="text-cozy-ink-soft text-sm mb-6" data-testid="text-delete-message">
+              Are you sure you want to remove <span className="text-cozy-ink font-medium">{deleteConfirmExercise.name}</span> from this workout?
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirmExercise(null)}
-                className="flex-1 py-3 rounded-xl bg-white/10 text-white font-medium text-sm"
+                className="flex-1 py-3 rounded-xl bg-cozy-sunk text-cozy-ink font-medium text-sm"
                 data-testid="button-cancel-delete"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDeleteExercise}
-                className="flex-1 py-3 rounded-xl bg-red-500/20 text-red-400 font-medium text-sm border border-red-500/30"
+                className="flex-1 py-3 rounded-xl bg-cozy-danger-soft text-cozy-danger font-medium text-sm border border-cozy-danger"
                 data-testid="button-confirm-delete"
               >
                 Remove

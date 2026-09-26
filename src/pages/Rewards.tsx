@@ -24,7 +24,7 @@ const REWARDS = [
     description: "Protect your streak — one skipped day won't break it",
     pointsCost: 200,
     icon: Flame,
-    color: "#f97316",
+    color: "#ec8a3f",
   },
   {
     id: 2,
@@ -32,7 +32,7 @@ const REWARDS = [
     description: "Unlock the ability to swap any future workout type",
     pointsCost: 150,
     icon: Award,
-    color: "#60a5fa",
+    color: "#6f9fc4",
   },
   {
     id: 3,
@@ -40,7 +40,7 @@ const REWARDS = [
     description: "Unlock a deep-dive AI analysis of your progress so far",
     pointsCost: 300,
     icon: Trophy,
-    color: "#aaf163",
+    color: "#93b58c",
   },
 ];
 
@@ -106,48 +106,48 @@ export default function RewardsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f1a] pb-24 px-4 overflow-y-auto" role="main" aria-label="Rewards page">
+    <div className="min-h-screen bg-cozy-bg pb-24 px-4 overflow-y-auto" role="main" aria-label="Rewards page">
       <MobileHeader />
 
       <div className="mt-6">
-        <h1 className="text-2xl font-bold text-white">Rewards</h1>
-        <p className="text-white/40 mt-1 text-sm">Earn XP by completing workouts</p>
+        <h1 className="text-2xl font-bold text-cozy-ink">Rewards</h1>
+        <p className="text-cozy-ink-faint mt-1 text-sm">Earn XP by completing workouts</p>
       </div>
 
       {/* XP Card */}
-      <section className="mt-5 bg-gradient-to-r from-[#7c57ff] to-[#00c6ff] rounded-2xl p-0.5" aria-labelledby="points-heading">
-        <div className="bg-[#0f0f1a] rounded-[15px] p-5">
+      <section className="mt-5 bg-cozy-primary rounded-2xl p-0.5" aria-labelledby="points-heading">
+        <div className="bg-cozy-bg rounded-[15px] p-5">
           {isLoading ? (
             <div className="flex justify-center py-4">
-              <Loader2 className="w-6 h-6 text-[#7c57ff] animate-spin" />
+              <Loader2 className="w-6 h-6 text-cozy-primary animate-spin" />
             </div>
           ) : (
             <>
-              <p id="points-heading" className="text-white/40 text-sm mb-1">Total XP</p>
-              <p className="text-5xl font-bold text-white" data-testid="text-total-points" aria-live="polite">
+              <p id="points-heading" className="text-cozy-ink-faint text-sm mb-1">Total XP</p>
+              <p className="text-5xl font-bold text-cozy-ink" data-testid="text-total-points" aria-live="polite">
                 {totalXP.toLocaleString()}
               </p>
               <div className="mt-4 grid grid-cols-3 gap-3">
-                <div className="bg-white/5 rounded-xl p-3 text-center">
+                <div className="bg-cozy-sunk rounded-xl p-3 text-center">
                   <div className="flex justify-center mb-1">
-                    <Dumbbell className="w-4 h-4 text-[#7c57ff]" />
+                    <Dumbbell className="w-4 h-4 text-cozy-primary" />
                   </div>
-                  <p className="text-white font-bold text-lg">{workoutsCompleted}</p>
-                  <p className="text-white/40 text-xs">Workouts</p>
+                  <p className="text-cozy-ink font-bold text-lg">{workoutsCompleted}</p>
+                  <p className="text-cozy-ink-faint text-xs">Workouts</p>
                 </div>
-                <div className="bg-white/5 rounded-xl p-3 text-center">
+                <div className="bg-cozy-sunk rounded-xl p-3 text-center">
                   <div className="flex justify-center mb-1">
-                    <Flame className="w-4 h-4 text-orange-400" />
+                    <Flame className="w-4 h-4 text-cozy-streak-deep" />
                   </div>
-                  <p className="text-white font-bold text-lg">{streak}</p>
-                  <p className="text-white/40 text-xs">Streak</p>
+                  <p className="text-cozy-ink font-bold text-lg">{streak}</p>
+                  <p className="text-cozy-ink-faint text-xs">Streak</p>
                 </div>
-                <div className="bg-white/5 rounded-xl p-3 text-center">
+                <div className="bg-cozy-sunk rounded-xl p-3 text-center">
                   <div className="flex justify-center mb-1">
-                    <Zap className="w-4 h-4 text-yellow-400" />
+                    <Zap className="w-4 h-4 text-cozy-streak-deep" />
                   </div>
-                  <p className="text-white font-bold text-lg">{XP_PER_WORKOUT}</p>
-                  <p className="text-white/40 text-xs">XP/workout</p>
+                  <p className="text-cozy-ink font-bold text-lg">{XP_PER_WORKOUT}</p>
+                  <p className="text-cozy-ink-faint text-xs">XP/workout</p>
                 </div>
               </div>
             </>
@@ -161,10 +161,10 @@ export default function RewardsPage() {
           role="tab"
           aria-selected={activeTab === "rewards"}
           onClick={() => setActiveTab("rewards")}
-          className={`flex-1 py-2.5 px-4 rounded-xl font-semibold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#7c57ff] ${
+          className={`flex-1 py-2.5 px-4 rounded-xl font-semibold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-cozy-primary ${
             activeTab === "rewards"
-              ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white"
-              : "bg-white/5 text-white/50"
+              ? " bg-cozy-primary text-white"
+              : "bg-cozy-sunk text-cozy-ink-faint"
           }`}
           data-testid="tab-rewards"
         >
@@ -174,10 +174,10 @@ export default function RewardsPage() {
           role="tab"
           aria-selected={activeTab === "history"}
           onClick={() => setActiveTab("history")}
-          className={`flex-1 py-2.5 px-4 rounded-xl font-semibold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#7c57ff] ${
+          className={`flex-1 py-2.5 px-4 rounded-xl font-semibold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-cozy-primary ${
             activeTab === "history"
-              ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white"
-              : "bg-white/5 text-white/50"
+              ? " bg-cozy-primary text-white"
+              : "bg-cozy-sunk text-cozy-ink-faint"
           }`}
           data-testid="tab-history"
         >
@@ -197,7 +197,7 @@ export default function RewardsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.08 }}
-                className={`bg-[#1a1a2e]/80 border border-white/5 rounded-2xl p-4 ${!canAfford ? "opacity-60" : ""}`}
+                className={`bg-cozy-surface border border-cozy-line rounded-2xl p-4 ${!canAfford ? "opacity-60" : ""}`}
                 data-testid={`card-reward-${reward.id}`}
               >
                 <div className="flex items-start gap-4">
@@ -208,19 +208,19 @@ export default function RewardsPage() {
                     <Icon className="w-6 h-6" style={{ color: reward.color }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-semibold">{reward.name}</h3>
-                    <p className="text-white/40 text-sm mt-0.5 leading-snug">{reward.description}</p>
+                    <h3 className="text-cozy-ink font-semibold">{reward.name}</h3>
+                    <p className="text-cozy-ink-faint text-sm mt-0.5 leading-snug">{reward.description}</p>
                     <div className="mt-3 flex items-center justify-between">
                       <div className="flex items-center gap-1">
-                        <Zap className="w-3.5 h-3.5 text-yellow-400" />
-                        <span className="text-yellow-400 font-semibold text-sm">{reward.pointsCost} XP</span>
+                        <Zap className="w-3.5 h-3.5 text-cozy-streak-deep" />
+                        <span className="text-cozy-streak-deep font-semibold text-sm">{reward.pointsCost} XP</span>
                       </div>
                       <button
                         onClick={() => handleRedeem(reward.name, reward.pointsCost)}
-                        className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-white/30 ${
+                        className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-cozy-line ${
                           canAfford
-                            ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white hover:opacity-90"
-                            : "bg-white/10 text-white/30 cursor-not-allowed"
+                            ? " bg-cozy-primary text-white hover:opacity-90"
+                            : "bg-cozy-sunk text-cozy-ink-faint cursor-not-allowed"
                         }`}
                         aria-label={`Redeem ${reward.name} for ${reward.pointsCost} XP`}
                         data-testid={`button-redeem-${reward.id}`}
@@ -241,13 +241,13 @@ export default function RewardsPage() {
         <section id="history-panel" role="tabpanel" className="mt-4 space-y-2">
           {isLoading ? (
             <div className="flex justify-center py-10">
-              <Loader2 className="w-6 h-6 text-[#7c57ff] animate-spin" />
+              <Loader2 className="w-6 h-6 text-cozy-primary animate-spin" />
             </div>
           ) : completions.length === 0 ? (
             <div className="text-center py-12">
-              <Dumbbell className="w-10 h-10 text-white/10 mx-auto mb-3" />
-              <p className="text-white/30 text-sm">No workouts completed yet</p>
-              <p className="text-white/20 text-xs mt-1">Complete a workout to earn XP</p>
+              <Dumbbell className="w-10 h-10 text-cozy-ink-faint mx-auto mb-3" />
+              <p className="text-cozy-ink-faint text-sm">No workouts completed yet</p>
+              <p className="text-cozy-ink-faint text-xs mt-1">Complete a workout to earn XP</p>
             </div>
           ) : (
             completions
@@ -256,14 +256,14 @@ export default function RewardsPage() {
                 const isRest = item.workout_type === "rest";
                 const xpEarned = isRest ? XP_PER_REST : XP_PER_WORKOUT;
                 const Icon = isRest ? Moon : Dumbbell;
-                const color = isRest ? "#3b82f6" : "#7c57ff";
+                const color = isRest ? "#6f9fc4" : "#7a5bd3";
                 return (
                   <motion.article
                     key={`${item.day_number}-${index}`}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: Math.min(index * 0.04, 0.4) }}
-                    className="bg-[#1a1a2e]/80 border border-white/5 rounded-xl p-3 flex items-center gap-3"
+                    className="bg-cozy-surface border border-cozy-line rounded-xl p-3 flex items-center gap-3"
                     data-testid={`card-history-${index}`}
                   >
                     <div
@@ -273,16 +273,16 @@ export default function RewardsPage() {
                       <Icon className="w-4 h-4" style={{ color }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm font-medium truncate">
+                      <p className="text-cozy-ink text-sm font-medium truncate">
                         {isRest ? "Rest Day" : item.title || `Day ${item.day_number} Workout`}
                       </p>
-                      <p className="text-white/30 text-xs">
+                      <p className="text-cozy-ink-faint text-xs">
                         Day {item.day_number} · {formatDate(item.completed_at)}
                       </p>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      <Zap className="w-3 h-3 text-yellow-400" />
-                      <span className="text-yellow-400 font-bold text-sm">+{xpEarned}</span>
+                      <Zap className="w-3 h-3 text-cozy-streak-deep" />
+                      <span className="text-cozy-streak-deep font-bold text-sm">+{xpEarned}</span>
                     </div>
                   </motion.article>
                 );

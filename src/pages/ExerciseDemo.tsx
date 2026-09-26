@@ -16,21 +16,21 @@ export default function ExerciseDemo() {
   const ex = EXERCISES[selected];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 p-6 flex flex-col gap-6">
+    <div className="min-h-screen bg-cozy-sunk p-6 flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-lg bg-cozy-primary flex items-center justify-center">
           <span className="text-white text-xs font-bold">M</span>
         </div>
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Exercise Demonstrator</h1>
-          <p className="text-xs text-gray-500">3D animation preview — MGP.AI</p>
+          <h1 className="text-xl font-bold text-cozy-ink">Exercise Demonstrator</h1>
+          <p className="text-xs text-cozy-ink-soft">3D animation preview — MGP.AI</p>
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 flex-1">
         {/* 3D Viewer */}
-        <div className="flex-1 min-h-[520px] rounded-2xl overflow-hidden shadow-xl">
+        <div className="flex-1 min-h-[520px] rounded-2xl overflow-hidden shadow-cozy-lg">
           <ExerciseDemonstrator
             key={ex.animationId}
             exerciseName={ex.name}
@@ -42,7 +42,7 @@ export default function ExerciseDemo() {
 
         {/* Sidebar */}
         <div className="w-full lg:w-64 flex flex-col gap-3">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-1">
+          <p className="text-xs font-semibold text-cozy-ink-soft uppercase tracking-wider px-1">
             Animations
           </p>
           {EXERCISES.map((e, i) => (
@@ -51,22 +51,22 @@ export default function ExerciseDemo() {
               onClick={() => setSelected(i)}
               className={`w-full text-left px-4 py-3 rounded-xl border transition-all text-sm font-medium
                 ${i === selected
-                  ? "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-200"
-                  : "bg-white text-gray-700 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50"
+                  ? "bg-cozy-primary text-white border-cozy-primary shadow-md shadow-indigo-200"
+                  : "bg-cozy-surface text-cozy-ink-faint border-cozy-line hover:border-cozy-primary-line hover:bg-cozy-primary-soft"
                 }`}
             >
               <span className="block">{e.name}</span>
-              <span className={`text-[11px] capitalize ${i === selected ? "text-indigo-200" : "text-gray-400"}`}>
+              <span className={`text-[11px] capitalize ${i === selected ? "text-cozy-primary" : "text-cozy-ink-soft"}`}>
                 {e.difficulty} · {e.animationId}
               </span>
             </button>
           ))}
 
           {/* Info card */}
-          <div className="mt-auto p-4 bg-white rounded-xl border border-gray-200 text-xs text-gray-500 leading-relaxed">
-            <p className="font-semibold text-gray-700 mb-1">About this preview</p>
+          <div className="mt-auto p-4 bg-cozy-surface rounded-xl border border-cozy-line text-xs text-cozy-ink-soft leading-relaxed">
+            <p className="font-semibold text-cozy-ink-faint mb-1">About this preview</p>
             Approve the look &amp; feel here. Once confirmed, all 20 animations will be exported to
-            <span className="font-mono text-indigo-600"> src/assets/workouts/</span>
+            <span className="font-mono text-cozy-primary"> src/assets/workouts/</span>
           </div>
         </div>
       </div>

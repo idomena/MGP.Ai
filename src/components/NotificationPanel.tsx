@@ -38,15 +38,15 @@ function getRelativeTime(timestamp: number): string {
 function getNotificationIcon(type: AppNotification["type"]) {
   switch (type) {
     case "workout_complete":
-      return <Dumbbell className="w-4 h-4 text-green-400" />;
+      return <Dumbbell className="w-4 h-4 text-cozy-sage-deep" />;
     case "workout_reminder":
-      return <Bell className="w-4 h-4 text-[#60a5fa]" />;
+      return <Bell className="w-4 h-4 text-cozy-sky-deep" />;
     case "streak":
-      return <Flame className="w-4 h-4 text-orange-400" />;
+      return <Flame className="w-4 h-4 text-cozy-streak-deep" />;
     case "milestone":
-      return <Trophy className="w-4 h-4 text-yellow-400" />;
+      return <Trophy className="w-4 h-4 text-cozy-streak-deep" />;
     default:
-      return <Bell className="w-4 h-4 text-white/60" />;
+      return <Bell className="w-4 h-4 text-cozy-ink-soft" />;
   }
 }
 
@@ -85,14 +85,14 @@ export default function NotificationPanel({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="absolute top-full left-0 right-0 mt-2 mx-2 z-[60] rounded-2xl bg-[#1a1a2e]/95 backdrop-blur-xl border border-white/10 shadow-[0_8px_40px_rgba(0,0,0,0.5)] overflow-hidden"
+      className="absolute top-full left-0 right-0 mt-2 mx-2 z-[60] rounded-2xl bg-cozy-surface border border-cozy-line shadow-cozy-md overflow-hidden"
       data-testid="notification-panel"
     >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-        <h3 className="text-white font-semibold text-sm">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-cozy-line">
+        <h3 className="text-cozy-ink font-semibold text-sm">
           Notifications
           {unreadCount > 0 && (
-            <span className="ml-2 text-xs text-white/40">
+            <span className="ml-2 text-xs text-cozy-ink-faint">
               {unreadCount} unread
             </span>
           )}
@@ -101,7 +101,7 @@ export default function NotificationPanel({
           {unreadCount > 0 && (
             <button
               onClick={onMarkAllAsRead}
-              className="flex items-center gap-1 text-xs text-[#7c57ff] hover:text-[#7c57ff]/80 transition-colors"
+              className="flex items-center gap-1 text-xs text-cozy-primary hover:text-cozy-primary transition-colors"
               data-testid="button-mark-all-read"
             >
               <CheckCheck className="w-3.5 h-3.5" />
@@ -111,7 +111,7 @@ export default function NotificationPanel({
           {notifications.length > 0 && (
             <button
               onClick={onClearAll}
-              className="flex items-center gap-1 text-xs text-white/40 hover:text-red-400 transition-colors"
+              className="flex items-center gap-1 text-xs text-cozy-ink-faint hover:text-cozy-danger transition-colors"
               data-testid="button-clear-all"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -120,7 +120,7 @@ export default function NotificationPanel({
           )}
           <button
             onClick={onClose}
-            className="text-white/40 hover:text-white transition-colors ml-1"
+            className="text-cozy-ink-faint hover:text-cozy-ink transition-colors ml-1"
             data-testid="button-close-notifications"
           >
             <X className="w-4 h-4" />
@@ -131,9 +131,9 @@ export default function NotificationPanel({
       <div className="max-h-[60vh] overflow-y-auto overscroll-contain">
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 px-4">
-            <Bell className="w-8 h-8 text-white/20 mb-3" />
-            <p className="text-white/40 text-sm">No notifications yet</p>
-            <p className="text-white/20 text-xs mt-1">
+            <Bell className="w-8 h-8 text-cozy-ink-faint mb-3" />
+            <p className="text-cozy-ink-faint text-sm">No notifications yet</p>
+            <p className="text-cozy-ink-faint text-xs mt-1">
               Stay active and they will show up here
             </p>
           </div>
@@ -145,20 +145,20 @@ export default function NotificationPanel({
                   onClick={() => {
                     if (!notification.read) onMarkAsRead(notification.id);
                   }}
-                  className={`w-full text-left px-4 py-3 flex items-start gap-3 transition-colors hover:bg-white/5 ${
-                    !notification.read ? "bg-[#7c57ff]/5" : ""
+                  className={`w-full text-left px-4 py-3 flex items-start gap-3 transition-colors hover:bg-cozy-sunk ${
+                    !notification.read ? "bg-cozy-primary-soft" : ""
                   }`}
                   data-testid={`notification-item-${notification.id}`}
                 >
                   <div
                     className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                       notification.type === "workout_complete"
-                        ? "bg-green-500/10"
+                        ? "bg-cozy-sage-soft"
                         : notification.type === "workout_reminder"
-                        ? "bg-blue-500/10"
+                        ? "bg-cozy-sky-soft"
                         : notification.type === "streak"
-                        ? "bg-orange-500/10"
-                        : "bg-yellow-500/10"
+                        ? "bg-cozy-streak-soft"
+                        : "bg-cozy-streak-soft"
                     }`}
                   >
                     {getNotificationIcon(notification.type)}
@@ -167,23 +167,23 @@ export default function NotificationPanel({
                     <div className="flex items-center justify-between gap-2">
                       <p
                         className={`text-sm font-medium truncate ${
-                          !notification.read ? "text-white" : "text-white/70"
+                          !notification.read ? "text-cozy-ink" : "text-cozy-ink-soft"
                         }`}
                         data-testid={`notification-title-${notification.id}`}
                       >
                         {notification.title}
                       </p>
                       {!notification.read && (
-                        <span className="w-2 h-2 rounded-full bg-[#7c57ff] flex-shrink-0" />
+                        <span className="w-2 h-2 rounded-full bg-cozy-primary flex-shrink-0" />
                       )}
                     </div>
                     <p
-                      className="text-xs text-white/50 mt-0.5 line-clamp-2"
+                      className="text-xs text-cozy-ink-faint mt-0.5 line-clamp-2"
                       data-testid={`notification-message-${notification.id}`}
                     >
                       {notification.message}
                     </p>
-                    <p className="text-[10px] text-white/30 mt-1">
+                    <p className="text-[10px] text-cozy-ink-faint mt-1">
                       {getRelativeTime(notification.timestamp)}
                     </p>
                   </div>

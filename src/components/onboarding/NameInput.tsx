@@ -29,18 +29,18 @@ export default function NameInput({ onSubmit, placeholder = "Enter your name..."
       className="space-y-4"
     >
       <div className="flex items-center gap-3 justify-center mb-2">
-        <User className="w-5 h-5 text-[#7c57ff]" />
-        <span className="text-white/60 text-sm">What should we call you?</span>
+        <User className="w-5 h-5 text-cozy-primary" />
+        <span className="text-cozy-ink-soft text-sm">What should we call you?</span>
       </div>
 
-      <div className="flex gap-2 bg-white/10 rounded-2xl p-2">
+      <div className="flex gap-2 bg-cozy-sunk rounded-2xl p-2">
         <input
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder={placeholder}
-          className="flex-1 bg-transparent px-4 py-3 text-white placeholder-white/40 focus:outline-none text-lg"
+          className="flex-1 bg-transparent px-4 py-3 text-cozy-ink placeholder-cozy-ink-faint focus:outline-none text-lg"
           autoFocus
           data-testid="input-name"
         />
@@ -52,8 +52,8 @@ export default function NameInput({ onSubmit, placeholder = "Enter your name..."
           className={`
             p-3 rounded-xl transition-all
             ${value.trim()
-              ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-[#7c57ff]/30'
-              : 'bg-white/10 text-white/40'
+              ? ' bg-cozy-primary text-white shadow-cozy-md '
+              : 'bg-cozy-sunk text-cozy-ink-faint'
             }
           `}
           data-testid="button-submit-name"

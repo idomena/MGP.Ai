@@ -58,7 +58,7 @@ export default function EquipmentPreferences({ onSelect }: EquipmentPreferencesP
       className="w-full max-w-md mx-auto space-y-6"
     >
       <div className="space-y-3">
-        <h3 className="text-base font-semibold text-white">What equipment do you have?</h3>
+        <h3 className="text-base font-semibold text-cozy-ink">What equipment do you have?</h3>
         <div className="flex flex-wrap gap-2">
           {equipmentOptions.map((option, index) => {
             const isSelected = selectedEquipment.includes(option.id);
@@ -74,8 +74,8 @@ export default function EquipmentPreferences({ onSelect }: EquipmentPreferencesP
                   flex items-center gap-2 px-4 py-3 rounded-xl border
                   transition-all duration-200 min-h-[44px]
                   ${isSelected
-                    ? 'bg-[#7c57ff]/20 border-[#7c57ff] text-white'
-                    : 'bg-white/10 border-white/10 text-white/70 hover:bg-white/15'
+                    ? 'bg-cozy-primary-soft border-cozy-primary text-cozy-ink'
+                    : 'bg-cozy-sunk border-cozy-line text-cozy-ink-soft hover:bg-cozy-line'
                   }
                 `}
                 data-testid={`chip-equipment-${option.id}`}
@@ -86,13 +86,13 @@ export default function EquipmentPreferences({ onSelect }: EquipmentPreferencesP
             );
           })}
         </div>
-        <p className="text-xs text-white/50">
+        <p className="text-xs text-cozy-ink-faint">
           {selectedEquipment.length} equipment selected
         </p>
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-base font-semibold text-white/60">Training style preferences (optional)</h3>
+        <h3 className="text-base font-semibold text-cozy-ink-soft">Training style preferences (optional)</h3>
         <div className="flex flex-wrap gap-2">
           {preferenceOptions.map((option, index) => {
             const isSelected = selectedPreferences.includes(option.id);
@@ -108,8 +108,8 @@ export default function EquipmentPreferences({ onSelect }: EquipmentPreferencesP
                   flex items-center gap-2 px-4 py-3 rounded-xl border
                   transition-all duration-200 min-h-[44px]
                   ${isSelected
-                    ? 'bg-[#6c4de6]/20 border-[#6c4de6] text-white'
-                    : 'bg-white/10 border-white/10 text-white/70 hover:bg-white/15'
+                    ? 'bg-cozy-primary-soft border-cozy-primary text-cozy-ink'
+                    : 'bg-cozy-sunk border-cozy-line text-cozy-ink-soft hover:bg-cozy-line'
                   }
                 `}
                 data-testid={`chip-preference-${option.id}`}
@@ -120,7 +120,7 @@ export default function EquipmentPreferences({ onSelect }: EquipmentPreferencesP
             );
           })}
         </div>
-        <p className="text-xs text-white/50">
+        <p className="text-xs text-cozy-ink-faint">
           {selectedPreferences.length} preferences
         </p>
       </div>
@@ -136,15 +136,15 @@ export default function EquipmentPreferences({ onSelect }: EquipmentPreferencesP
           flex items-center justify-center gap-3
           transition-all duration-200
           ${selectedEquipment.length > 0
-            ? 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white shadow-lg shadow-[#7c57ff]/30'
-            : 'bg-white/10 text-white/50 cursor-not-allowed'
+            ? ' bg-cozy-primary text-white shadow-cozy-md '
+            : 'bg-cozy-sunk text-cozy-ink-faint cursor-not-allowed'
           }
         `}
         data-testid="button-continue-equipment"
       >
         <span>Continue</span>
         {selectedEquipment.length > 0 && (
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-cozy-line flex items-center justify-center">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>

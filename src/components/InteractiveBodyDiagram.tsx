@@ -7,12 +7,12 @@ interface InteractiveBodyDiagramProps {
 }
 
 const MUSCLE_COLORS: Record<string, string> = {
-  chest: "#f43f5e",
-  back: "#3b82f6",
-  shoulders: "#f97316",
-  arms: "#a855f7",
-  legs: "#22c55e",
-  core: "#ec4899",
+  chest: "#c4553d",
+  back: "#6f9fc4",
+  shoulders: "#ec8a3f",
+  arms: "#7a5bd3",
+  legs: "#93b58c",
+  core: "#c4553d",
 };
 
 const MUSCLE_LABELS: Record<string, string> = {
@@ -31,7 +31,7 @@ function getMuscleStyle(
 ) {
   const isSelected = selectedMuscle === muscleGroup;
   const isHighlighted = highlightedMuscles.includes(muscleGroup);
-  const color = MUSCLE_COLORS[muscleGroup] || "#374151";
+  const color = MUSCLE_COLORS[muscleGroup] || "#e9dcc7";
 
   if (isSelected) {
     return { fill: color, opacity: 1, filter: `drop-shadow(0 0 6px ${color})` };
@@ -39,7 +39,7 @@ function getMuscleStyle(
   if (isHighlighted) {
     return { fill: color, opacity: 0.6, filter: "none" };
   }
-  return { fill: "#374151", opacity: 0.5, filter: "none" };
+  return { fill: "#e9dcc7", opacity: 0.5, filter: "none" };
 }
 
 function MuscleGroup({
@@ -107,9 +107,9 @@ export default function InteractiveBodyDiagram({
         <div className="relative flex flex-col items-center">
           <svg width="140" height="220" viewBox="0 0 120 200">
             {/* Head */}
-            <ellipse cx="60" cy="18" rx="14" ry="16" fill="#6b7280" opacity="0.5" />
+            <ellipse cx="60" cy="18" rx="14" ry="16" fill="#867869" opacity="0.5" />
             {/* Neck */}
-            <rect x="54" y="32" width="12" height="10" fill="#6b7280" opacity="0.5" />
+            <rect x="54" y="32" width="12" height="10" fill="#867869" opacity="0.5" />
 
             {/* Shoulders Front */}
             <MuscleGroup
@@ -152,7 +152,7 @@ export default function InteractiveBodyDiagram({
             </MuscleGroup>
 
             {/* Hip */}
-            <ellipse cx="60" cy="120" rx="20" ry="8" fill="#6b7280" opacity="0.4" />
+            <ellipse cx="60" cy="120" rx="20" ry="8" fill="#867869" opacity="0.4" />
 
             {/* Arms Front (Biceps + Forearms) */}
             <MuscleGroup
@@ -181,8 +181,8 @@ export default function InteractiveBodyDiagram({
             </MuscleGroup>
 
             {/* Lower Legs (non-interactive) */}
-            <ellipse cx="46" cy="190" rx="6" ry="12" fill="#6b7280" opacity="0.4" />
-            <ellipse cx="74" cy="190" rx="6" ry="12" fill="#6b7280" opacity="0.4" />
+            <ellipse cx="46" cy="190" rx="6" ry="12" fill="#867869" opacity="0.4" />
+            <ellipse cx="74" cy="190" rx="6" ry="12" fill="#867869" opacity="0.4" />
           </svg>
           <span className="text-xs text-muted-foreground mt-1">Front</span>
         </div>
@@ -191,9 +191,9 @@ export default function InteractiveBodyDiagram({
         <div className="relative flex flex-col items-center">
           <svg width="140" height="220" viewBox="0 0 120 200">
             {/* Head */}
-            <ellipse cx="60" cy="18" rx="14" ry="16" fill="#6b7280" opacity="0.5" />
+            <ellipse cx="60" cy="18" rx="14" ry="16" fill="#867869" opacity="0.5" />
             {/* Neck */}
-            <rect x="54" y="32" width="12" height="10" fill="#6b7280" opacity="0.5" />
+            <rect x="54" y="32" width="12" height="10" fill="#867869" opacity="0.5" />
 
             {/* Back (Traps + Upper Back + Lats + Lower Back) */}
             <MuscleGroup
@@ -239,8 +239,8 @@ export default function InteractiveBodyDiagram({
             </MuscleGroup>
 
             {/* Forearms Back (non-interactive) */}
-            <ellipse cx="22" cy="100" rx="5" ry="14" fill="#6b7280" opacity="0.4" />
-            <ellipse cx="98" cy="100" rx="5" ry="14" fill="#6b7280" opacity="0.4" />
+            <ellipse cx="22" cy="100" rx="5" ry="14" fill="#867869" opacity="0.4" />
+            <ellipse cx="98" cy="100" rx="5" ry="14" fill="#867869" opacity="0.4" />
 
             {/* Legs Back (Glutes + Hamstrings + Calves) */}
             <MuscleGroup

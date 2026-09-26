@@ -164,7 +164,7 @@ export default function AssistantChatPage() {
         <div className="mt-4 flex items-center justify-between gap-2">
           <Link 
             to="/assistant" 
-            className="flex items-center text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#7c57ff] rounded-lg p-1"
+            className="flex items-center text-cozy-ink-soft hover:text-cozy-ink transition-colors focus:outline-none focus:ring-2 focus:ring-cozy-primary rounded-lg p-1"
             aria-label="Go back to Assistant"
             data-testid="button-back"
           >
@@ -174,7 +174,7 @@ export default function AssistantChatPage() {
           <button
             type="button"
             onClick={handleNewChat}
-            className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#7c57ff] rounded-lg p-1"
+            className="flex items-center gap-1.5 text-cozy-ink-soft hover:text-cozy-ink transition-colors focus:outline-none focus:ring-2 focus:ring-cozy-primary rounded-lg p-1"
             aria-label="Start new chat"
             data-testid="button-new-chat"
           >
@@ -201,8 +201,8 @@ export default function AssistantChatPage() {
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                 message.role === "user"
-                  ? "bg-gradient-to-r from-[#7c57ff] to-[#00c6ff] text-white"
-                  : "bg-[#3f3f3f] text-white"
+                  ? " bg-cozy-primary text-white"
+                  : "bg-cozy-surface text-cozy-ink"
               }`}
             >
               <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -218,11 +218,11 @@ export default function AssistantChatPage() {
 
         {isTyping && (
           <div className="flex justify-start" role="status" aria-label="Assistant is typing">
-            <div className="bg-[#3f3f3f] rounded-2xl px-4 py-3">
+            <div className="bg-cozy-surface rounded-2xl px-4 py-3">
               <div className="flex space-x-2" aria-hidden="true">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }} />
+                <div className="w-2 h-2 bg-cozy-sunk rounded-full animate-bounce" />
+                <div className="w-2 h-2 bg-cozy-sunk rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
+                <div className="w-2 h-2 bg-cozy-sunk rounded-full animate-bounce" style={{ animationDelay: "0.4s" }} />
               </div>
               <span className="sr-only">Assistant is typing...</span>
             </div>
@@ -235,7 +235,7 @@ export default function AssistantChatPage() {
       {/* Input */}
       <div className="px-4 pb-4 bg-background">
         <form 
-          className="flex items-center gap-2 bg-[#3f3f3f] rounded-full px-4 py-2"
+          className="flex items-center gap-2 bg-cozy-surface rounded-full px-4 py-2"
           onSubmit={(e) => { e.preventDefault(); handleSend(); }}
         >
           <label htmlFor="chat-input" className="sr-only">Type your message</label>
@@ -247,7 +247,7 @@ export default function AssistantChatPage() {
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
             disabled={isTyping}
-            className="flex-1 bg-transparent text-white placeholder-gray-400 outline-none focus:ring-0"
+            className="flex-1 bg-transparent text-cozy-ink placeholder-cozy-ink-soft outline-none focus:ring-0"
             data-testid="input-message"
             aria-describedby="send-hint"
           />
@@ -255,7 +255,7 @@ export default function AssistantChatPage() {
           <button
             type="submit"
             disabled={!inputValue.trim() || isTyping}
-            className="w-10 h-10 rounded-full bg-gradient-to-r from-[#00c6ff] to-[#7c57ff] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-white/50"
+            className="w-10 h-10 rounded-full bg-cozy-primary text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-cozy-primary-line"
             aria-label={isTyping ? "Sending message" : "Send message"}
             data-testid="button-send"
           >

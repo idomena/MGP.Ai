@@ -234,7 +234,7 @@ export default function WorkoutAIAssistant({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60]"
+            className="fixed inset-0 bg-[rgba(59,47,39,0.42)] z-[60]"
             onClick={onClose}
           />
 
@@ -243,27 +243,27 @@ export default function WorkoutAIAssistant({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[70] bg-[#1a1a2e] rounded-t-3xl h-[80vh] flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-[70] bg-cozy-surface rounded-t-3xl h-[80vh] flex flex-col"
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-cozy-line">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-cozy-primary flex items-center justify-center">
                   <Headphones className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-white font-bold text-lg">AI Workout Assistant</h3>
-                  <p className="text-white/60 text-sm">
+                  <h3 className="text-cozy-ink font-bold text-lg">AI Workout Assistant</h3>
+                  <p className="text-cozy-ink-soft text-sm">
                     {currentExercise ? `About: ${currentExercise}` : workoutName}
                   </p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                className="w-10 h-10 rounded-full bg-cozy-sunk flex items-center justify-center hover:bg-cozy-line transition-colors"
                 aria-label="Close AI assistant"
                 data-testid="button-close-workout-ai"
               >
-                <X className="w-5 h-5 text-white" />
+                <X className="w-5 h-5 text-cozy-ink" />
               </button>
             </div>
 
@@ -276,8 +276,8 @@ export default function WorkoutAIAssistant({
                   <div
                     className={`max-w-[85%] px-4 py-3 rounded-2xl ${
                       msg.role === "user"
-                        ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white rounded-br-md"
-                        : "bg-white/10 text-white rounded-bl-md"
+                        ? " bg-cozy-primary text-white rounded-br-md"
+                        : "bg-cozy-sunk text-cozy-ink rounded-bl-md"
                     }`}
                   >
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
@@ -286,7 +286,7 @@ export default function WorkoutAIAssistant({
                         {msg.actions.map((action, idx) => (
                           <div
                             key={idx}
-                            className="flex items-center gap-2 bg-green-500/20 text-green-400 rounded-lg px-3 py-1.5 text-xs"
+                            className="flex items-center gap-2 bg-cozy-sage-soft text-cozy-sage-deep rounded-lg px-3 py-1.5 text-xs"
                             data-testid={`action-indicator-${idx}`}
                           >
                             {action.type === 'ADD_EXERCISE' ? (
@@ -310,8 +310,8 @@ export default function WorkoutAIAssistant({
               
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-white/10 px-4 py-3 rounded-2xl rounded-bl-md">
-                    <Loader2 className="w-5 h-5 text-[#7c57ff] animate-spin" />
+                  <div className="bg-cozy-sunk px-4 py-3 rounded-2xl rounded-bl-md">
+                    <Loader2 className="w-5 h-5 text-cozy-primary animate-spin" />
                   </div>
                 </div>
               )}
@@ -320,7 +320,7 @@ export default function WorkoutAIAssistant({
 
             {messages.length <= 1 && (
               <div className="px-4 pb-3">
-                <p className="text-white/50 text-xs mb-2">Quick questions:</p>
+                <p className="text-cozy-ink-faint text-xs mb-2">Quick questions:</p>
                 <div className="flex flex-wrap gap-2">
                   {quickQuestions.map((q) => (
                     <button
@@ -329,7 +329,7 @@ export default function WorkoutAIAssistant({
                         setInput(q);
                         setTimeout(() => sendMessage(), 0);
                       }}
-                      className="px-3 py-2 bg-white/10 text-white/80 text-sm rounded-full hover:bg-white/20 transition-colors"
+                      className="px-3 py-2 bg-cozy-sunk text-cozy-ink-soft text-sm rounded-full hover:bg-cozy-line transition-colors"
                       data-testid={`button-quick-${q.slice(0, 8)}`}
                     >
                       {q}
@@ -339,7 +339,7 @@ export default function WorkoutAIAssistant({
               </div>
             )}
 
-            <div className="p-4 border-t border-white/10">
+            <div className="p-4 border-t border-cozy-line">
               <div className="flex items-center gap-3">
                 <input
                   ref={inputRef}
@@ -348,7 +348,7 @@ export default function WorkoutAIAssistant({
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask me anything about your workout..."
-                  className="flex-1 bg-white/10 text-white px-4 py-3 rounded-xl placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#7c57ff] border border-white/10 focus:border-[#7c57ff]"
+                  className="flex-1 bg-cozy-sunk text-cozy-ink px-4 py-3 rounded-xl placeholder-cozy-ink-faint focus:outline-none focus:ring-2 focus:ring-cozy-primary border border-cozy-line focus:border-cozy-primary"
                   disabled={isLoading}
                   data-testid="input-workout-ai-message"
                   aria-label="Type your question"
@@ -356,11 +356,11 @@ export default function WorkoutAIAssistant({
                 <button
                   onClick={sendMessage}
                   disabled={!input.trim() || isLoading}
-                  className="w-12 h-12 rounded-xl bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] flex items-center justify-center disabled:opacity-50 transition-opacity"
+                  className="w-12 h-12 rounded-xl bg-cozy-primary flex items-center justify-center disabled:opacity-50 transition-opacity"
                   aria-label="Send message"
                   data-testid="button-send-workout-ai"
                 >
-                  <Send className="w-5 h-5 text-white" />
+                  <Send className="w-5 h-5 text-cozy-ink" />
                 </button>
               </div>
             </div>

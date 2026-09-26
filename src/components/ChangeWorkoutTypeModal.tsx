@@ -18,26 +18,26 @@ interface MuscleGroup {
 }
 
 const MUSCLE_GROUPS: MuscleGroup[] = [
-  { id: "chest", title: "Chest", color: "bg-blue-500" },
-  { id: "shoulders", title: "Shoulders", color: "bg-orange-500" },
-  { id: "back", title: "Back", color: "bg-green-500" },
+  { id: "chest", title: "Chest", color: "bg-cozy-sky" },
+  { id: "shoulders", title: "Shoulders", color: "bg-cozy-streak" },
+  { id: "back", title: "Back", color: "bg-cozy-sage" },
   { 
     id: "arms", 
     title: "Arms", 
-    color: "bg-cyan-500",
+    color: "bg-cozy-sky",
     subOptions: [
       { id: "biceps", title: "Front Arm (Biceps)", shortTitle: "Biceps" },
       { id: "triceps", title: "Back Arm (Triceps)", shortTitle: "Triceps" },
     ]
   },
-  { id: "legs", title: "Legs", color: "bg-emerald-500" },
-  { id: "core", title: "Core / Abs", color: "bg-yellow-500" },
+  { id: "legs", title: "Legs", color: "bg-cozy-sage" },
+  { id: "core", title: "Core / Abs", color: "bg-cozy-streak" },
 ];
 
 const OTHER_OPTIONS: MuscleGroup[] = [
-  { id: "cardio", title: "Cardio", color: "bg-red-500" },
-  { id: "full", title: "Full Body", color: "bg-purple-500" },
-  { id: "rest", title: "Rest Day", color: "bg-gray-500" },
+  { id: "cardio", title: "Cardio", color: "bg-cozy-danger" },
+  { id: "full", title: "Full Body", color: "bg-cozy-primary" },
+  { id: "rest", title: "Rest Day", color: "bg-cozy-stone" },
 ];
 
 export default function ChangeWorkoutTypeModal({
@@ -136,11 +136,11 @@ export default function ChangeWorkoutTypeModal({
   };
 
   const getIconForType = (type: string) => {
-    if (type === "rest") return <Moon className="w-6 h-6 text-white" />;
-    if (type === "cardio") return <Heart className="w-6 h-6 text-white" />;
-    if (type === "full") return <Zap className="w-6 h-6 text-white" />;
-    if (type === "legs") return <Activity className="w-6 h-6 text-white" />;
-    return <Dumbbell className="w-6 h-6 text-white" />;
+    if (type === "rest") return <Moon className="w-6 h-6 text-cozy-ink" />;
+    if (type === "cardio") return <Heart className="w-6 h-6 text-cozy-ink" />;
+    if (type === "full") return <Zap className="w-6 h-6 text-cozy-ink" />;
+    if (type === "legs") return <Activity className="w-6 h-6 text-cozy-ink" />;
+    return <Dumbbell className="w-6 h-6 text-cozy-ink" />;
   };
 
   const isSelected = (id: string) => selectedMuscles.includes(id);
@@ -149,7 +149,7 @@ export default function ChangeWorkoutTypeModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[rgba(59,47,39,0.36)] " onClick={onClose}>
       {/* Spacer to push modal to bottom */}
       <div className="flex-1" />
       
@@ -159,7 +159,7 @@ export default function ChangeWorkoutTypeModal({
         animate={{ y: 0 }}
         exit={{ y: 300 }}
         transition={{ type: "spring", damping: 30, stiffness: 300 }}
-        className="w-full bg-[#1a1a2e] rounded-t-[28px] shadow-2xl"
+        className="w-full bg-cozy-surface rounded-t-[28px] shadow-cozy-lg"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle bar */}
@@ -170,24 +170,24 @@ export default function ChangeWorkoutTypeModal({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-3">
           <div>
-            <h2 className="text-white font-bold text-xl">Build Your Workout</h2>
-            <p className="text-white/50 text-base">Day {dayNumber}</p>
+            <h2 className="text-cozy-ink font-bold text-xl">Build Your Workout</h2>
+            <p className="text-cozy-ink-faint text-base">Day {dayNumber}</p>
           </div>
           <button
             onClick={onClose}
-            className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center"
+            className="w-11 h-11 rounded-full bg-cozy-sunk flex items-center justify-center"
             data-testid="button-close-change-type"
           >
-            <X className="w-5 h-5 text-white" />
+            <X className="w-5 h-5 text-cozy-ink" />
           </button>
         </div>
 
         {showSuccess ? (
           <div className="py-12 flex flex-col items-center justify-center">
-            <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-cozy-sage flex items-center justify-center mb-4">
               <Check className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-white font-semibold text-xl">Workout Updated!</h3>
+            <h3 className="text-cozy-ink font-semibold text-xl">Workout Updated!</h3>
           </div>
         ) : (
           <>
@@ -195,7 +195,7 @@ export default function ChangeWorkoutTypeModal({
             <div className="h-[45vh] overflow-y-auto px-6 py-2">
               {/* Muscle Groups */}
               <div className="space-y-3 mb-5">
-                <p className="text-white/40 text-sm font-semibold uppercase tracking-wider mb-3">Select Muscle Groups</p>
+                <p className="text-cozy-ink-faint text-sm font-semibold uppercase tracking-wider mb-3">Select Muscle Groups</p>
                 
                 {MUSCLE_GROUPS.map((muscle) => {
                   const hasSubOptions = !!muscle.subOptions;
@@ -208,8 +208,8 @@ export default function ChangeWorkoutTypeModal({
                         className={`
                           w-full min-h-[56px] px-4 rounded-2xl border-2 transition-all flex items-center gap-4
                           ${muscleSelected
-                            ? "bg-white/10 border-[#7c57ff]"
-                            : "bg-white/5 border-transparent"
+                            ? "bg-cozy-sunk border-cozy-primary"
+                            : "bg-cozy-sunk border-transparent"
                           }
                         `}
                         data-testid={`muscle-${muscle.id}`}
@@ -217,14 +217,14 @@ export default function ChangeWorkoutTypeModal({
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${muscle.color}`}>
                           {getIconForType(muscle.id)}
                         </div>
-                        <span className="flex-1 text-left text-white font-semibold text-lg">{muscle.title}</span>
+                        <span className="flex-1 text-left text-cozy-ink font-semibold text-lg">{muscle.title}</span>
                         
                         {hasSubOptions ? (
-                          <ChevronDown className={`w-6 h-6 text-white/50 transition-transform ${expandedArms ? "rotate-180" : ""}`} />
+                          <ChevronDown className={`w-6 h-6 text-cozy-ink-faint transition-transform ${expandedArms ? "rotate-180" : ""}`} />
                         ) : (
                           <div className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center
-                            ${muscleSelected ? "bg-[#7c57ff] border-[#7c57ff]" : "border-white/30"}`}>
-                            {muscleSelected && <Check className="w-5 h-5 text-white" />}
+                            ${muscleSelected ? "bg-cozy-primary border-cozy-primary" : "border-cozy-line"}`}>
+                            {muscleSelected && <Check className="w-5 h-5 text-cozy-ink" />}
                           </div>
                         )}
                       </button>
@@ -239,19 +239,19 @@ export default function ChangeWorkoutTypeModal({
                               className={`
                                 w-full min-h-[52px] px-4 rounded-xl border-2 flex items-center gap-3
                                 ${isSelected(sub.id)
-                                  ? "bg-cyan-500/20 border-cyan-400"
-                                  : "bg-white/5 border-transparent"
+                                  ? "bg-cozy-sky-soft border-cozy-sky"
+                                  : "bg-cozy-sunk border-transparent"
                                 }
                               `}
                               data-testid={`muscle-${sub.id}`}
                             >
                               <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${muscle.color}`}>
-                                <Dumbbell className="w-5 h-5 text-white" />
+                                <Dumbbell className="w-5 h-5 text-cozy-ink" />
                               </div>
-                              <span className="flex-1 text-left text-white text-base font-medium">{sub.title}</span>
+                              <span className="flex-1 text-left text-cozy-ink text-base font-medium">{sub.title}</span>
                               <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center
-                                ${isSelected(sub.id) ? "bg-cyan-400 border-cyan-400" : "border-white/30"}`}>
-                                {isSelected(sub.id) && <Check className="w-4 h-4 text-white" />}
+                                ${isSelected(sub.id) ? "bg-cozy-sky-soft border-cozy-sky" : "border-cozy-line"}`}>
+                                {isSelected(sub.id) && <Check className="w-4 h-4 text-cozy-ink" />}
                               </div>
                             </button>
                           ))}
@@ -264,14 +264,14 @@ export default function ChangeWorkoutTypeModal({
 
               {/* Divider */}
               <div className="flex items-center gap-4 my-4">
-                <div className="flex-1 h-px bg-white/10" />
-                <span className="text-white/30 text-sm font-medium">OR</span>
-                <div className="flex-1 h-px bg-white/10" />
+                <div className="flex-1 h-px bg-cozy-sunk" />
+                <span className="text-cozy-ink-faint text-sm font-medium">OR</span>
+                <div className="flex-1 h-px bg-cozy-sunk" />
               </div>
 
               {/* Other Options */}
               <div className="pb-4">
-                <p className="text-white/40 text-sm font-semibold uppercase tracking-wider mb-3">Quick Options</p>
+                <p className="text-cozy-ink-faint text-sm font-semibold uppercase tracking-wider mb-3">Quick Options</p>
                 <div className="grid grid-cols-3 gap-3">
                   {OTHER_OPTIONS.map((option) => (
                     <button
@@ -280,8 +280,8 @@ export default function ChangeWorkoutTypeModal({
                       className={`
                         min-h-[90px] p-3 rounded-2xl border-2 flex flex-col items-center justify-center gap-2
                         ${isSelected(option.id)
-                          ? "bg-white/10 border-[#7c57ff]"
-                          : "bg-white/5 border-transparent"
+                          ? "bg-cozy-sunk border-cozy-primary"
+                          : "bg-cozy-sunk border-transparent"
                         }
                       `}
                       data-testid={`option-${option.id}`}
@@ -289,7 +289,7 @@ export default function ChangeWorkoutTypeModal({
                       <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${option.color}`}>
                         {getIconForType(option.id)}
                       </div>
-                      <span className="text-sm text-white font-medium">{option.title}</span>
+                      <span className="text-sm text-cozy-ink font-medium">{option.title}</span>
                     </button>
                   ))}
                 </div>
@@ -297,12 +297,12 @@ export default function ChangeWorkoutTypeModal({
             </div>
 
             {/* FIXED Bottom Section */}
-            <div className="px-6 pt-4 pb-8 bg-[#1a1a2e] border-t border-white/10">
+            <div className="px-6 pt-4 pb-8 bg-cozy-surface border-t border-cozy-line">
               {/* Selection Preview */}
               {selectedMuscles.length > 0 && (
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-[#7c57ff]/20 to-[#60a5fa]/20 border border-white/10 mb-4">
-                  <p className="text-white/50 text-sm mb-1">Today's workout:</p>
-                  <p className="text-white font-bold text-lg">{getSelectionSummary()}</p>
+                <div className="p-4 rounded-2xl bg-cozy-primary-soft border border-cozy-line mb-4">
+                  <p className="text-cozy-ink-faint text-sm mb-1">Today's workout:</p>
+                  <p className="text-cozy-ink font-bold text-lg">{getSelectionSummary()}</p>
                 </div>
               )}
               
@@ -314,14 +314,14 @@ export default function ChangeWorkoutTypeModal({
                   w-full h-14 rounded-2xl font-bold text-lg flex items-center justify-center gap-3
                   ${
                     selectedMuscles.length > 0 && !isLoading
-                      ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white"
-                      : "bg-white/10 text-white/40"
+                      ? " bg-cozy-primary text-white"
+                      : "bg-cozy-sunk text-cozy-ink-faint"
                   }
                 `}
                 data-testid="button-confirm-change-type"
               >
                 {isLoading ? (
-                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-cozy-line border-t-cozy-line rounded-full animate-spin" />
                 ) : selectedMuscles.length > 0 ? (
                   <>
                     <Check className="w-6 h-6" />

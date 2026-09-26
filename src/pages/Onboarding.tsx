@@ -362,21 +362,21 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f1a] flex flex-col">
-      <header className="sticky top-0 z-50 px-4 py-4 border-b border-white/10 bg-[#0f0f1a]/80 backdrop-blur-lg">
+    <div className="min-h-screen bg-cozy-bg flex flex-col">
+      <header className="sticky top-0 z-50 px-4 py-4 border-b border-cozy-line bg-cozy-surface ">
         <div className="flex items-center justify-center gap-2">
-          <Sparkles className="w-5 h-5 text-[#7c57ff]" />
-          <h1 className="text-xl font-bold bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] bg-clip-text text-transparent">
+          <Sparkles className="w-5 h-5 text-cozy-primary" />
+          <h1 className="text-xl font-bold text-cozy-ink">
             {selections.coachName || DEFAULT_COACH_NAME} - AI Coach
           </h1>
         </div>
-        <div className="mt-3 w-full bg-white/10 rounded-full h-1.5">
+        <div className="mt-3 w-full bg-cozy-sunk rounded-full h-1.5">
           <div 
-            className="h-full bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] rounded-full transition-all duration-500"
+            className="h-full bg-cozy-primary rounded-full transition-all duration-500"
             style={{ width: `${((currentQuestionIndex + 1) / QUESTIONS.length) * 100}%` }}
           />
         </div>
-        <p className="text-white/40 text-xs mt-1 text-center">
+        <p className="text-cozy-ink-faint text-xs mt-1 text-center">
           Step {currentQuestionIndex + 1} of {QUESTIONS.length}
         </p>
       </header>
@@ -396,25 +396,25 @@ export default function Onboarding() {
                 <div className={`
                   w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
                   ${message.type === 'bot' 
-                    ? 'bg-gradient-to-br from-[#7c57ff] to-[#60a5fa]' 
-                    : 'bg-white/10'
+                    ? ' bg-cozy-primary ' 
+                    : 'bg-cozy-sunk'
                   }
                 `}>
                   {message.type === 'bot' ? (
                     <Bot className="w-5 h-5 text-white" />
                   ) : (
-                    <User className="w-5 h-5 text-white/70" />
+                    <User className="w-5 h-5 text-cozy-ink-soft" />
                   )}
                 </div>
 
                 <div className={`
                   max-w-[80%] px-4 py-3 rounded-2xl
                   ${message.type === 'bot'
-                    ? 'bg-white/5 rounded-tl-sm'
-                    : 'bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] rounded-tr-sm'
+                    ? 'bg-cozy-sunk rounded-tl-sm'
+                    : ' bg-cozy-primary rounded-tr-sm'
                   }
                 `}>
-                  <p className="text-white text-sm leading-relaxed">{message.content}</p>
+                  <p className={`${message.type === 'bot' ? 'text-cozy-ink' : 'text-white'} text-sm leading-relaxed`}>{message.content}</p>
                 </div>
               </motion.div>
             ))}

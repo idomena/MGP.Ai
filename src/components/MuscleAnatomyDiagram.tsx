@@ -45,7 +45,7 @@ export default function MuscleAnatomyDiagram({ targetedMuscles }: MuscleAnatomyD
   });
 
   const getMuscleColor = (muscleId: string) => {
-    return activeMuscles.has(muscleId) ? '#ef4444' : '#4a5568';
+    return activeMuscles.has(muscleId) ? '#c4553d' : '#e9dcc7';
   };
 
   const getMuscleOpacity = (muscleId: string) => {
@@ -58,10 +58,10 @@ export default function MuscleAnatomyDiagram({ targetedMuscles }: MuscleAnatomyD
       <div className="relative">
         <svg width="120" height="200" viewBox="0 0 120 200">
           {/* Head */}
-          <ellipse cx="60" cy="18" rx="14" ry="16" fill="#6b7280" opacity="0.5" />
+          <ellipse cx="60" cy="18" rx="14" ry="16" fill="#867869" opacity="0.5" />
           
           {/* Neck */}
-          <rect x="54" y="32" width="12" height="10" fill="#6b7280" opacity="0.5" />
+          <rect x="54" y="32" width="12" height="10" fill="#867869" opacity="0.5" />
           
           {/* Shoulders Front */}
           <ellipse id="shoulders-front" cx="32" cy="48" rx="12" ry="8" 
@@ -84,7 +84,7 @@ export default function MuscleAnatomyDiagram({ targetedMuscles }: MuscleAnatomyD
             fill={getMuscleColor('obliques-front')} opacity={getMuscleOpacity('obliques-front')} />
           
           {/* Hip */}
-          <ellipse id="hip-front" cx="60" cy="120" rx="20" ry="8" fill="#6b7280" opacity="0.4" />
+          <ellipse id="hip-front" cx="60" cy="120" rx="20" ry="8" fill="#867869" opacity="0.4" />
           
           {/* Biceps */}
           <ellipse id="biceps-front" cx="26" cy="70" rx="6" ry="18" 
@@ -105,20 +105,20 @@ export default function MuscleAnatomyDiagram({ targetedMuscles }: MuscleAnatomyD
             fill={getMuscleColor('quads-front')} opacity={getMuscleOpacity('quads-front')} />
           
           {/* Lower Legs Front */}
-          <ellipse cx="46" cy="190" rx="6" ry="12" fill="#6b7280" opacity="0.4" />
-          <ellipse cx="74" cy="190" rx="6" ry="12" fill="#6b7280" opacity="0.4" />
+          <ellipse cx="46" cy="190" rx="6" ry="12" fill="#867869" opacity="0.4" />
+          <ellipse cx="74" cy="190" rx="6" ry="12" fill="#867869" opacity="0.4" />
         </svg>
-        <p className="text-center text-white/50 text-xs mt-1">Front</p>
+        <p className="text-center text-cozy-ink-faint text-xs mt-1">Front</p>
       </div>
 
       {/* Back View */}
       <div className="relative">
         <svg width="120" height="200" viewBox="0 0 120 200">
           {/* Head */}
-          <ellipse cx="60" cy="18" rx="14" ry="16" fill="#6b7280" opacity="0.5" />
+          <ellipse cx="60" cy="18" rx="14" ry="16" fill="#867869" opacity="0.5" />
           
           {/* Neck */}
-          <rect x="54" y="32" width="12" height="10" fill="#6b7280" opacity="0.5" />
+          <rect x="54" y="32" width="12" height="10" fill="#867869" opacity="0.5" />
           
           {/* Traps */}
           <path id="traps-back" d="M40 40 Q60 35 80 40 L75 55 Q60 50 45 55 Z" 
@@ -151,8 +151,8 @@ export default function MuscleAnatomyDiagram({ targetedMuscles }: MuscleAnatomyD
             fill={getMuscleColor('triceps-back')} opacity={getMuscleOpacity('triceps-back')} />
           
           {/* Forearms Back */}
-          <ellipse cx="22" cy="100" rx="5" ry="14" fill="#6b7280" opacity="0.4" />
-          <ellipse cx="98" cy="100" rx="5" ry="14" fill="#6b7280" opacity="0.4" />
+          <ellipse cx="22" cy="100" rx="5" ry="14" fill="#867869" opacity="0.4" />
+          <ellipse cx="98" cy="100" rx="5" ry="14" fill="#867869" opacity="0.4" />
           
           {/* Glutes */}
           <ellipse id="glutes-back" cx="50" cy="122" rx="12" ry="10" 
@@ -172,7 +172,7 @@ export default function MuscleAnatomyDiagram({ targetedMuscles }: MuscleAnatomyD
           <ellipse cx="74" cy="188" rx="6" ry="12" 
             fill={getMuscleColor('calves-back')} opacity={getMuscleOpacity('calves-back')} />
         </svg>
-        <p className="text-center text-white/50 text-xs mt-1">Back</p>
+        <p className="text-center text-cozy-ink-faint text-xs mt-1">Back</p>
       </div>
     </div>
   );

@@ -109,14 +109,14 @@ export default function ReviewSelections({ selections, onConfirm, onEdit }: Revi
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-md mx-auto space-y-4"
     >
-      <div className="p-4 rounded-2xl bg-gradient-to-br from-[#7c57ff]/20 to-[#60a5fa]/20 border border-[#7c57ff]/30 mb-6">
+      <div className="p-4 rounded-2xl bg-cozy-primary-soft border border-cozy-primary-line mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-cozy-primary flex items-center justify-center">
             <Check className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-white">Profile Summary</h3>
-            <p className="text-xs text-white/60">Review your selections below</p>
+            <h3 className="font-semibold text-cozy-ink">Profile Summary</h3>
+            <p className="text-xs text-cozy-ink-soft">Review your selections below</p>
           </div>
         </div>
       </div>
@@ -133,27 +133,27 @@ export default function ReviewSelections({ selections, onConfirm, onEdit }: Revi
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: sectionIndex * 0.1 }}
-            className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden"
+            className="rounded-2xl bg-cozy-sunk border border-cozy-line overflow-hidden"
           >
             <button
               onClick={() => toggleSection(section.id)}
-              className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
+              className="w-full flex items-center justify-between p-4 hover:bg-cozy-sunk transition-colors"
               data-testid={`button-toggle-${section.id}`}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-[#7c57ff]">
+                <div className="w-10 h-10 rounded-xl bg-cozy-sunk flex items-center justify-center text-cozy-primary">
                   {section.icon}
                 </div>
                 <div className="text-left">
-                  <h4 className="font-semibold text-white">{section.title}</h4>
-                  <p className="text-xs text-white/50">{fields.length} items</p>
+                  <h4 className="font-semibold text-cozy-ink">{section.title}</h4>
+                  <p className="text-xs text-cozy-ink-faint">{fields.length} items</p>
                 </div>
               </div>
               <motion.div
                 animate={{ rotate: isExpanded ? 90 : 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <ChevronRight className="w-5 h-5 text-white/50" />
+                <ChevronRight className="w-5 h-5 text-cozy-ink-faint" />
               </motion.div>
             </button>
 
@@ -170,15 +170,15 @@ export default function ReviewSelections({ selections, onConfirm, onEdit }: Revi
                     {fields.map((field) => (
                       <div
                         key={field.key}
-                        className="flex items-center justify-between p-3 rounded-xl bg-white/5 group"
+                        className="flex items-center justify-between p-3 rounded-xl bg-cozy-sunk group"
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 text-[#7c57ff]">
+                          <div className="w-8 h-8 rounded-lg bg-cozy-sunk flex items-center justify-center flex-shrink-0 text-cozy-primary">
                             {field.icon}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs text-white/50">{field.label}</p>
-                            <p className="text-sm text-white font-medium truncate">
+                            <p className="text-xs text-cozy-ink-faint">{field.label}</p>
+                            <p className="text-sm text-cozy-ink font-medium truncate">
                               {formatValue(field.value)}
                             </p>
                           </div>
@@ -188,10 +188,10 @@ export default function ReviewSelections({ selections, onConfirm, onEdit }: Revi
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => onEdit(field.key)}
-                          className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/20"
+                          className="w-8 h-8 rounded-lg bg-cozy-sunk flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-cozy-line"
                           data-testid={`button-edit-${field.key}`}
                         >
-                          <Edit2 className="w-4 h-4 text-white/60" />
+                          <Edit2 className="w-4 h-4 text-cozy-ink-soft" />
                         </motion.button>
                       </div>
                     ))}
@@ -208,7 +208,7 @@ export default function ReviewSelections({ selections, onConfirm, onEdit }: Revi
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
         onClick={onConfirm}
-        className="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] text-white font-semibold text-lg shadow-lg shadow-[#7c57ff]/30 hover:shadow-[#7c57ff]/50 transition-all flex items-center justify-center gap-3"
+        className="w-full mt-6 py-4 rounded-2xl bg-cozy-primary text-white font-semibold text-lg shadow-cozy-md transition-all flex items-center justify-center gap-3"
         data-testid="button-confirm-all"
       >
         <ArrowRight className="w-5 h-5" />

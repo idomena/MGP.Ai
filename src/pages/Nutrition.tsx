@@ -178,15 +178,15 @@ export default function NutritionPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0f0f1a] pb-24 overflow-y-auto" role="main" aria-label="Nutrition page">
+    <div className="min-h-screen bg-cozy-bg pb-24 overflow-y-auto" role="main" aria-label="Nutrition page">
       <div className="px-4">
         <MobileHeader />
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white" data-testid="text-page-title">
+          <h1 className="text-2xl font-bold text-cozy-ink" data-testid="text-page-title">
             Nutrition Scanner
           </h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-sm text-cozy-ink-soft mt-1">
             Take a photo of any nutrition label or food to get instant nutritional info
           </p>
         </div>
@@ -213,19 +213,19 @@ export default function NutritionPage() {
 
         {!isLoading && !extractedText && !error && (
           <div className="mb-6">
-            <div className="bg-gradient-to-r from-[#7c57ff] via-[#60a5fa] to-[#00c6ff] rounded-2xl p-0.5">
-              <div className="bg-[#1a1a2e] rounded-[15px] p-6 flex flex-col items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
+            <div className=" bg-cozy-primary rounded-2xl p-0.5">
+              <div className="bg-cozy-surface rounded-[15px] p-6 flex flex-col items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-cozy-primary flex items-center justify-center">
                   <Camera className="w-7 h-7 text-white" />
                 </div>
                 <div className="text-center">
-                  <p className="text-white text-lg font-semibold">Scan a Nutrition Label</p>
-                  <p className="text-gray-400 text-sm mt-1">Take a photo or pick one from your gallery</p>
+                  <p className="text-cozy-ink text-lg font-semibold">Scan a Nutrition Label</p>
+                  <p className="text-cozy-ink-soft text-sm mt-1">Take a photo or pick one from your gallery</p>
                 </div>
                 <div className="flex gap-3 w-full">
                   <button
                     onClick={handleCameraClick}
-                    className="flex-1 flex items-center justify-center gap-2 bg-[#7c57ff] text-white py-3 rounded-xl font-medium"
+                    className="flex-1 flex items-center justify-center gap-2 bg-cozy-primary text-white py-3 rounded-xl font-medium"
                     data-testid="button-camera"
                   >
                     <Camera className="w-5 h-5" />
@@ -233,7 +233,7 @@ export default function NutritionPage() {
                   </button>
                   <button
                     onClick={handleGalleryClick}
-                    className="flex-1 flex items-center justify-center gap-2 bg-[#1a1a2e] border border-white/10 text-white py-3 rounded-xl font-medium"
+                    className="flex-1 flex items-center justify-center gap-2 bg-cozy-surface border border-cozy-line text-cozy-ink py-3 rounded-xl font-medium"
                     data-testid="button-gallery"
                   >
                     <ImageIcon className="w-5 h-5" />
@@ -246,7 +246,7 @@ export default function NutritionPage() {
         )}
 
         {isLoading && (
-          <div className="w-full bg-[#1a1a2e]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 mb-6">
+          <div className="w-full bg-cozy-surface border border-cozy-line rounded-2xl p-8 mb-6">
             <div className="flex flex-col items-center gap-4">
               {previewUrl && (
                 <img
@@ -256,9 +256,9 @@ export default function NutritionPage() {
                   data-testid="img-preview-loading"
                 />
               )}
-              <Loader2 className="w-10 h-10 text-[#7c57ff] animate-spin" />
-              <p className="text-white font-medium">Analyzing your nutrition label...</p>
-              <p className="text-gray-400 text-sm">This may take a few seconds</p>
+              <Loader2 className="w-10 h-10 text-cozy-primary animate-spin" />
+              <p className="text-cozy-ink font-medium">Analyzing your nutrition label...</p>
+              <p className="text-cozy-ink-soft text-sm">This may take a few seconds</p>
             </div>
           </div>
         )}
@@ -270,19 +270,19 @@ export default function NutritionPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="w-full bg-[#1a1a2e]/80 backdrop-blur-xl border border-red-500/20 rounded-2xl p-6 mb-6"
+              className="w-full bg-cozy-surface border border-cozy-danger rounded-2xl p-6 mb-6"
               data-testid="section-error"
             >
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-6 h-6 text-cozy-danger flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-white font-medium mb-1">Scan unsuccessful</p>
-                  <p className="text-gray-400 text-sm">{error}</p>
+                  <p className="text-cozy-ink font-medium mb-1">Scan unsuccessful</p>
+                  <p className="text-cozy-ink-soft text-sm">{error}</p>
                 </div>
               </div>
               <button
                 onClick={handleReset}
-                className="mt-4 w-full flex items-center justify-center gap-2 bg-[#7c57ff] text-white py-3 rounded-xl font-medium"
+                className="mt-4 w-full flex items-center justify-center gap-2 bg-cozy-primary text-white py-3 rounded-xl font-medium"
                 data-testid="button-try-again"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -299,28 +299,28 @@ export default function NutritionPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.4 }}
-              className="w-full bg-[#1a1a2e]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-5 mb-6"
+              className="w-full bg-cozy-surface border border-cozy-line rounded-2xl p-5 mb-6"
               data-testid="section-results"
             >
-              <h2 className="text-white font-semibold text-lg mb-4">Scan Results</h2>
+              <h2 className="text-cozy-ink font-semibold text-lg mb-4">Scan Results</h2>
 
               {previewUrl && (
                 <div className="mb-4">
                   <img
                     src={previewUrl}
                     alt="Scanned nutrition label"
-                    className="w-full max-h-48 object-contain rounded-xl bg-black/30"
+                    className="w-full max-h-48 object-contain rounded-xl bg-cozy-sunk"
                     data-testid="img-preview-result"
                   />
                 </div>
               )}
 
-              <div className="bg-[#0f0f1a]/60 rounded-xl p-4 mb-4 max-h-72 overflow-y-auto">
+              <div className="bg-cozy-surface rounded-xl p-4 mb-4 max-h-72 overflow-y-auto">
                 {extractedText.split("\n").map((line, i) => (
                   <p
                     key={i}
                     className={`text-sm leading-relaxed ${
-                      line.trim() === "" ? "h-3" : "text-gray-200"
+                      line.trim() === "" ? "h-3" : "text-cozy-ink"
                     }`}
                   >
                     {line}
@@ -331,7 +331,7 @@ export default function NutritionPage() {
               <div className="flex gap-3">
                 <button
                   onClick={handleReset}
-                  className="flex-1 flex items-center justify-center gap-2 bg-[#1a1a2e] border border-white/10 text-white py-3 rounded-xl font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 bg-cozy-surface border border-cozy-line text-cozy-ink py-3 rounded-xl font-medium"
                   data-testid="button-scan-another"
                 >
                   <RotateCcw className="w-4 h-4" />
@@ -339,7 +339,7 @@ export default function NutritionPage() {
                 </button>
                 <button
                   onClick={handleCopyText}
-                  className="flex-1 flex items-center justify-center gap-2 bg-[#7c57ff] text-white py-3 rounded-xl font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 bg-cozy-primary text-white py-3 rounded-xl font-medium"
                   data-testid="button-copy-results"
                 >
                   <Copy className="w-4 h-4" />
@@ -352,20 +352,20 @@ export default function NutritionPage() {
 
         {!isLoading && !extractedText && !error && (
           <div className="mb-6">
-            <h2 className="text-white font-semibold text-base mb-3">Get the best results</h2>
+            <h2 className="text-cozy-ink font-semibold text-base mb-3">Get the best results</h2>
             <div className="flex flex-col gap-2">
               {tips.map((tip, i) => {
                 const Icon = tip.icon;
                 return (
                   <div
                     key={i}
-                    className="flex items-center gap-3 bg-[#1a1a2e]/60 border border-white/5 rounded-xl px-4 py-3"
+                    className="flex items-center gap-3 bg-cozy-surface border border-cozy-line rounded-xl px-4 py-3"
                     data-testid={`tip-card-${i}`}
                   >
-                    <div className="w-8 h-8 rounded-lg bg-[#7c57ff]/15 flex items-center justify-center flex-shrink-0">
-                      <Icon className="w-4 h-4 text-[#7c57ff]" />
+                    <div className="w-8 h-8 rounded-lg bg-cozy-primary-soft flex items-center justify-center flex-shrink-0">
+                      <Icon className="w-4 h-4 text-cozy-primary" />
                     </div>
-                    <p className="text-gray-300 text-sm">{tip.text}</p>
+                    <p className="text-cozy-ink text-sm">{tip.text}</p>
                   </div>
                 );
               })}
@@ -375,18 +375,18 @@ export default function NutritionPage() {
       </div>
 
         {/* Food Log Section */}
-        <div className="mb-6">
+        <div className="mb-6 px-4">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-white font-semibold text-base">Today's Food Log</h2>
+              <h2 className="text-cozy-ink font-semibold text-base">Today's Food Log</h2>
               <div className="flex items-center gap-1 mt-0.5">
-                <Flame className="w-3.5 h-3.5 text-orange-400" />
-                <span className="text-orange-400 text-sm font-medium">{totalCalories} kcal</span>
+                <Flame className="w-3.5 h-3.5 text-cozy-streak-deep" />
+                <span className="text-cozy-streak-deep text-sm font-medium">{totalCalories} kcal</span>
               </div>
             </div>
             <button
               onClick={() => setShowAddForm((v) => !v)}
-              className="flex items-center gap-1 bg-[#7c57ff] text-white text-sm px-3 py-1.5 rounded-full font-medium"
+              className="flex items-center gap-1 bg-cozy-primary text-white text-sm px-3 py-1.5 rounded-full font-medium"
             >
               <Plus className="w-4 h-4" />
               Add food
@@ -400,38 +400,38 @@ export default function NutritionPage() {
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 onSubmit={handleAddFood}
-                className="bg-[#1a1a2e]/80 border border-white/10 rounded-2xl p-4 mb-3 overflow-hidden"
+                className="bg-cozy-surface border border-cozy-line rounded-2xl p-4 mb-3 overflow-hidden"
               >
                 <div className="grid grid-cols-2 gap-2 mb-2">
                   <input
-                    className="col-span-2 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-[#7c57ff]"
+                    className="col-span-2 bg-cozy-sunk border border-cozy-line rounded-xl px-3 py-2 text-cozy-ink text-sm placeholder-cozy-ink-faint focus:outline-none focus:border-cozy-primary"
                     placeholder="Food name *"
                     value={newFood.foodName}
                     onChange={(e) => setNewFood((p) => ({ ...p, foodName: e.target.value }))}
                     required
                   />
                   <input
-                    className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-[#7c57ff]"
+                    className="bg-cozy-sunk border border-cozy-line rounded-xl px-3 py-2 text-cozy-ink text-sm placeholder-cozy-ink-faint focus:outline-none focus:border-cozy-primary"
                     placeholder="Calories"
                     type="number"
                     value={newFood.calories}
                     onChange={(e) => setNewFood((p) => ({ ...p, calories: e.target.value }))}
                   />
                   <input
-                    className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-[#7c57ff]"
+                    className="bg-cozy-sunk border border-cozy-line rounded-xl px-3 py-2 text-cozy-ink text-sm placeholder-cozy-ink-faint focus:outline-none focus:border-cozy-primary"
                     placeholder="Serving (e.g. 100g)"
                     value={newFood.servingSize}
                     onChange={(e) => setNewFood((p) => ({ ...p, servingSize: e.target.value }))}
                   />
                   <input
-                    className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-[#7c57ff]"
+                    className="bg-cozy-sunk border border-cozy-line rounded-xl px-3 py-2 text-cozy-ink text-sm placeholder-cozy-ink-faint focus:outline-none focus:border-cozy-primary"
                     placeholder="Protein (g)"
                     type="number"
                     value={newFood.proteinG}
                     onChange={(e) => setNewFood((p) => ({ ...p, proteinG: e.target.value }))}
                   />
                   <input
-                    className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-[#7c57ff]"
+                    className="bg-cozy-sunk border border-cozy-line rounded-xl px-3 py-2 text-cozy-ink text-sm placeholder-cozy-ink-faint focus:outline-none focus:border-cozy-primary"
                     placeholder="Carbs (g)"
                     type="number"
                     value={newFood.carbsG}
@@ -441,7 +441,7 @@ export default function NutritionPage() {
                 <button
                   type="submit"
                   disabled={logLoading}
-                  className="w-full py-2.5 rounded-xl bg-[#7c57ff] text-white text-sm font-medium disabled:opacity-50"
+                  className="w-full py-2.5 rounded-xl bg-cozy-primary text-white text-sm font-medium disabled:opacity-50"
                 >
                   {logLoading ? "Logging..." : "Log food"}
                 </button>
@@ -450,17 +450,17 @@ export default function NutritionPage() {
           </AnimatePresence>
 
           {foodLog.length === 0 ? (
-            <div className="bg-[#1a1a2e]/60 border border-white/5 rounded-2xl p-6 text-center">
-              <UtensilsCrossed className="w-8 h-8 text-white/20 mx-auto mb-2" />
-              <p className="text-white/40 text-sm">No food logged today yet</p>
+            <div className="bg-cozy-surface border border-cozy-line rounded-2xl p-6 text-center">
+              <UtensilsCrossed className="w-8 h-8 text-cozy-ink-faint mx-auto mb-2" />
+              <p className="text-cozy-ink-faint text-sm">No food logged today yet</p>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
               {foodLog.map((entry) => (
-                <div key={entry.id} className="flex items-center justify-between bg-[#1a1a2e]/60 border border-white/5 rounded-xl px-4 py-3">
+                <div key={entry.id} className="flex items-center justify-between bg-cozy-surface border border-cozy-line rounded-xl px-4 py-3">
                   <div>
-                    <p className="text-white text-sm font-medium">{entry.foodName}</p>
-                    <p className="text-white/40 text-xs mt-0.5">
+                    <p className="text-cozy-ink text-sm font-medium">{entry.foodName}</p>
+                    <p className="text-cozy-ink-faint text-xs mt-0.5">
                       {entry.calories != null ? `${entry.calories} kcal` : ""}
                       {entry.servingSize ? ` · ${entry.servingSize}` : ""}
                       {entry.proteinG ? ` · ${entry.proteinG}g protein` : ""}
@@ -468,7 +468,7 @@ export default function NutritionPage() {
                   </div>
                   <button
                     onClick={() => handleDeleteFood(entry.id, entry.calories)}
-                    className="p-2 text-white/30 hover:text-red-400 transition-colors"
+                    className="p-2 text-cozy-ink-faint hover:text-cozy-danger transition-colors"
                     aria-label="Delete food entry"
                   >
                     <Trash2 className="w-4 h-4" />

@@ -477,7 +477,7 @@ If the user is asking about scheduling or moving workouts, explain how they can 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60]"
+            className="fixed inset-0 bg-[rgba(59,47,39,0.42)] z-[60]"
             onClick={onClose}
           />
 
@@ -486,26 +486,26 @@ If the user is asking about scheduling or moving workouts, explain how they can 
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[70] bg-[#1a1a2e] rounded-t-3xl h-[80vh] flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-[70] bg-cozy-surface rounded-t-3xl h-[80vh] flex flex-col"
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-cozy-line">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#7c57ff] to-[#60a5fa] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-cozy-primary flex items-center justify-center">
                   <Calendar className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-white font-bold text-lg">
+                  <h3 className="text-cozy-ink font-bold text-lg">
                     Scheduling Assistant
                   </h3>
-                  <p className="text-white/60 text-sm">Move and manage workouts</p>
+                  <p className="text-cozy-ink-soft text-sm">Move and manage workouts</p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                className="w-10 h-10 rounded-full bg-cozy-sunk flex items-center justify-center hover:bg-cozy-line transition-colors"
                 data-testid="button-close-scheduling-ai"
               >
-                <X className="w-5 h-5 text-white" />
+                <X className="w-5 h-5 text-cozy-ink" />
               </button>
             </div>
 
@@ -518,8 +518,8 @@ If the user is asking about scheduling or moving workouts, explain how they can 
                   <div
                     className={`max-w-[85%] px-4 py-3 rounded-2xl ${
                       msg.role === "user"
-                        ? "bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white rounded-br-md"
-                        : "bg-white/10 text-white rounded-bl-md"
+                        ? " bg-cozy-primary text-white rounded-br-md"
+                        : "bg-cozy-sunk text-cozy-ink rounded-bl-md"
                     }`}
                   >
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -531,8 +531,8 @@ If the user is asking about scheduling or moving workouts, explain how they can 
 
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-white/10 px-4 py-3 rounded-2xl rounded-bl-md">
-                    <Loader2 className="w-5 h-5 text-[#7c57ff] animate-spin" />
+                  <div className="bg-cozy-sunk px-4 py-3 rounded-2xl rounded-bl-md">
+                    <Loader2 className="w-5 h-5 text-cozy-primary animate-spin" />
                   </div>
                 </div>
               )}
@@ -541,24 +541,24 @@ If the user is asking about scheduling or moving workouts, explain how they can 
 
             {pendingAction && (
               <div className="px-4 pb-3">
-                <div className="bg-[#252540] rounded-2xl p-4 border border-[#7c57ff]/30">
+                <div className="bg-cozy-surface rounded-2xl p-4 border border-cozy-primary-line">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <div className="text-center">
-                        <p className="text-white/50 text-xs">Day {pendingAction.fromDay}</p>
-                        <p className="text-white font-medium text-sm">{pendingAction.fromTitle}</p>
+                        <p className="text-cozy-ink-faint text-xs">Day {pendingAction.fromDay}</p>
+                        <p className="text-cozy-ink font-medium text-sm">{pendingAction.fromTitle}</p>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-[#7c57ff]" />
+                      <ArrowRight className="w-4 h-4 text-cozy-primary" />
                       <div className="text-center">
-                        <p className="text-white/50 text-xs">Day {pendingAction.toDay}</p>
-                        <p className="text-white font-medium text-sm">{pendingAction.fromTitle}</p>
+                        <p className="text-cozy-ink-faint text-xs">Day {pendingAction.toDay}</p>
+                        <p className="text-cozy-ink font-medium text-sm">{pendingAction.fromTitle}</p>
                       </div>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={handleCancelAction}
-                      className="flex-1 py-2.5 rounded-xl bg-white/10 text-white font-medium text-sm"
+                      className="flex-1 py-2.5 rounded-xl bg-cozy-sunk text-cozy-ink font-medium text-sm"
                       data-testid="button-cancel-move"
                     >
                       Cancel
@@ -566,7 +566,7 @@ If the user is asking about scheduling or moving workouts, explain how they can 
                     <button
                       onClick={handleConfirmAction}
                       disabled={isLoading}
-                      className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] text-white font-medium text-sm flex items-center justify-center gap-2"
+                      className="flex-1 py-2.5 rounded-xl bg-cozy-primary text-white font-medium text-sm flex items-center justify-center gap-2"
                       data-testid="button-confirm-move"
                     >
                       <Check className="w-4 h-4" />
@@ -579,7 +579,7 @@ If the user is asking about scheduling or moving workouts, explain how they can 
 
             {messages.length <= 1 && !pendingAction && (
               <div className="px-4 pb-3">
-                <p className="text-white/50 text-xs mb-2">Quick commands:</p>
+                <p className="text-cozy-ink-faint text-xs mb-2">Quick commands:</p>
                 <div className="flex flex-wrap gap-2">
                   {quickCommands.map((cmd) => (
                     <button
@@ -618,7 +618,7 @@ If the user is asking about scheduling or moving workouts, explain how they can 
                           setIsLoading(false);
                         }
                       }}
-                      className="px-3 py-2 bg-white/10 text-white/80 text-sm rounded-full hover:bg-white/20 transition-colors"
+                      className="px-3 py-2 bg-cozy-sunk text-cozy-ink-soft text-sm rounded-full hover:bg-cozy-line transition-colors"
                       data-testid={`button-quick-${cmd.slice(0, 8)}`}
                     >
                       {cmd}
@@ -628,7 +628,7 @@ If the user is asking about scheduling or moving workouts, explain how they can 
               </div>
             )}
 
-            <div className="p-4 border-t border-white/10">
+            <div className="p-4 border-t border-cozy-line">
               <div className="flex items-center gap-3">
                 <input
                   ref={inputRef}
@@ -637,14 +637,14 @@ If the user is asking about scheduling or moving workouts, explain how they can 
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Tell me how to reschedule..."
-                  className="flex-1 bg-white/10 text-white px-4 py-3 rounded-xl placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#7c57ff] border border-white/10 focus:border-[#7c57ff]"
+                  className="flex-1 bg-cozy-sunk text-cozy-ink px-4 py-3 rounded-xl placeholder-cozy-ink-faint focus:outline-none focus:ring-2 focus:ring-cozy-primary border border-cozy-line focus:border-cozy-primary"
                   disabled={isLoading}
                   data-testid="input-scheduling-message"
                 />
                 <button
                   onClick={sendMessage}
                   disabled={!input.trim() || isLoading}
-                  className="w-12 h-12 rounded-xl bg-gradient-to-r from-[#7c57ff] to-[#60a5fa] flex items-center justify-center disabled:opacity-50 transition-opacity"
+                  className="w-12 h-12 rounded-xl bg-cozy-primary flex items-center justify-center disabled:opacity-50 transition-opacity"
                   data-testid="button-send-scheduling"
                 >
                   <Send className="w-5 h-5 text-white" />
